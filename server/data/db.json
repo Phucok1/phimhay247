@@ -1,0 +1,93 @@
+{
+  "movies": [
+    {
+      "id": "mov-1789021018594-1jfha",
+      "title": "Lưu Ly Kiếm Tông",
+      "slug": "luu-ly-kiem-tong",
+      "description": "",
+      "posterUrl": "",
+      "bannerUrl": "https://i.ytimg.com/vi/qx010r7-l1c/hqdefault.jpg?sqp=-oaymwEmCKgBEF5IWvKriqkDGQgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAE=&rs=AOn4CLA6QG9GYL1jtO66qIaZXID_zyG0fw",
+      "category": [
+        "Kiếm Hiệp"
+      ],
+      "year": 2026,
+      "status": "Đang cập nhật",
+      "keywords": "L, phim L, xem phim L youtube",
+      "seoTitle": "L - Xem Phim Trọn Bộ",
+      "seoDescription": "",
+      "episodeCount": 1,
+      "latestEpisode": 30,
+      "viewCount": 1,
+      "hidden": false,
+      "featured": true,
+      "createdAt": "2026-09-10T06:16:58.594Z",
+      "updatedAt": "2026-09-10T06:17:36.621Z"
+    }
+  ],
+  "episodes": [
+    {
+      "id": "ep-1789021056621-ayvfa",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 30,
+      "title": "Tập 30",
+      "youtubeUrl": "https://www.youtube.com/watch?v=qx010r7-l1c",
+      "youtubeVideoId": "qx010r7-l1c",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/qx010r7-l1c?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/qx010r7-l1c/hqdefault.jpg",
+      "viewCount": 1,
+      "createdAt": "2026-09-10T06:17:36.621Z",
+      "updatedAt": "2026-09-10T06:17:36.621Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Kiếm Hiệp",
+      "slug": "kiem-hiep"
+    },
+    {
+      "id": "cat-2",
+      "name": "Tiên Hiệp",
+      "slug": "tien-hiep"
+    },
+    {
+      "id": "cat-3",
+      "name": "Cổ Trang",
+      "slug": "co-trang"
+    },
+    {
+      "id": "cat-4",
+      "name": "Hành Động",
+      "slug": "hanh-dong"
+    },
+    {
+      "id": "cat-5",
+      "name": "Huyền Huyễn",
+      "slug": "huyen-huyen"
+    },
+    {
+      "id": "cat-6",
+      "name": "Ngôn Tình",
+      "slug": "ngon-tinh"
+    },
+    {
+      "id": "cat-7",
+      "name": "Xuyên Không",
+      "slug": "xuyen-khong"
+    },
+    {
+      "id": "cat-8",
+      "name": "Hoạt Hình 3D",
+      "slug": "hoat-hinh-3d"
+    }
+  ],
+  "settings": {
+    "siteName": "PHIM HAY 247",
+    "channelUrl": "https://www.youtube.com/@phimhay.momtiti",
+    "channelName": "@phimhay.momtiti",
+    "seoTitle": "PHIM HAY 247 - Xem Phim Tuyển Chọn Mới Nhất Từ YouTube",
+    "seoDescription": "PHIM HAY 247 - Website tổng hợp các bộ phim kiếm hiệp, cổ trang, tiên hiệp phát chính thức từ YouTube channel @phimhay.momtiti.",
+    "seoKeywords": "phim hay, phim moi, xem phim 247, phim kiem hiep, phim youtube",
+    "adminKey": "admin123"
+  }
+}

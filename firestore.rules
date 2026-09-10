@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Hàm kiểm tra admin thông qua token custom claim hoặc danh sách email admin
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.role == 'admin' ||
+        request.auth.token.admin == true
+      );
+    }
+    
+    // Collection Movies: Khách vãng lai chỉ được đọc phim không bị ẩn (hidden != true)
+    match /movies/{movieId} {
+      allow read: if resource.data.hidden != true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Collection Episodes: Khách đọc các tập, chỉ admin thêm sửa xóa
+    match /episodes/{episodeId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Collection Categories: Khách đọc, chỉ admin quản lý
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Collection Settings & Analytics
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
