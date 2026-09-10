@@ -96,14 +96,14 @@ export const LoginPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={useFirebase ? 'Nhập mật khẩu...' : 'Mặc định: admin123'}
+                  placeholder={useFirebase ? 'Nhập mật khẩu...' : 'Mặc định: phucok1234'}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white placeholder-gray-500 focus:outline-none focus:border-primary text-sm"
                 />
                 <Lock className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
               </div>
               {!useFirebase && (
                 <p className="mt-1.5 text-[11px] text-gray-500">
-                  Mật khẩu mặc định hệ thống: <code className="text-amber-400 bg-black/40 px-1 py-0.5 rounded">admin123</code> (có thể đổi trong Cài đặt).
+                  Mật khẩu mặc định hệ thống: <code className="text-amber-400 bg-black/40 px-1 py-0.5 rounded">phucok1234</code> (có thể đổi trong Cài đặt).
                 </p>
               )}
             </div>
