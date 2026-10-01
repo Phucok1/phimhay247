@@ -11,6 +11,7 @@
     "server:dev": "tsx watch server/index.ts",
     "server:start": "tsx server/index.ts",
     "build": "tsc -b && vite build",
+    "sync": "node scripts/sync_from_live.js",
     "start": "tsx server/index.ts"
   },
   "dependencies": {

@@ -52,30 +52,48 @@ async function syncFromLive() {
       });
     }
 
-    // 2. Dong bo movies moi tu Live ve Local (phim do admin duyet tren web live)
+    // 2. Dong bo movies moi & cap nhat tu Live ve Local
     if (Array.isArray(liveDb.movies)) {
       if (!Array.isArray(localDb.movies)) localDb.movies = [];
       liveDb.movies.forEach((liveMovie) => {
-        const exists = localDb.movies.some((m) => m.id === liveMovie.id || m.slug === liveMovie.slug);
-        if (!exists) {
+        const localIdx = localDb.movies.findIndex((m) => m.id === liveMovie.id || m.slug === liveMovie.slug);
+        if (localIdx === -1) {
           localDb.movies.unshift(liveMovie);
           newMoviesCount++;
+        } else {
+          // Cap nhat neu tren live moi hon hoac co them thong tin
+          const liveTime = new Date(liveMovie.updatedAt || 0).getTime();
+          const localTime = new Date(localDb.movies[localIdx].updatedAt || 0).getTime();
+          if (liveTime >= localTime) {
+            localDb.movies[localIdx] = { ...localDb.movies[localIdx], ...liveMovie };
+          }
         }
       });
     }
 
-    // 3. Dong bo episodes moi tu Live ve Local
+    // 3. Dong bo episodes moi & cap nhat tu Live ve Local
     if (Array.isArray(liveDb.episodes)) {
       if (!Array.isArray(localDb.episodes)) localDb.episodes = [];
       liveDb.episodes.forEach((liveEp) => {
-        const exists = localDb.episodes.some((e) => e.id === liveEp.id);
-        if (!exists) {
+        const localIdx = localDb.episodes.findIndex((e) => e.id === liveEp.id);
+        if (localIdx === -1) {
           localDb.episodes.push(liveEp);
+        } else {
+          const liveTime = new Date(liveEp.updatedAt || 0).getTime();
+          const localTime = new Date(localDb.episodes[localIdx].updatedAt || 0).getTime();
+          if (liveTime >= localTime) {
+            localDb.episodes[localIdx] = { ...localDb.episodes[localIdx], ...liveEp };
+          }
         }
       });
     }
 
-    // 4. Dong bo feedbacks moi tu Live ve Local
+    // 4. Dong bo settings tu Live ve Local (neu co thay doi so tai khoan, donate...)
+    if (liveDb.settings && typeof liveDb.settings === 'object') {
+      localDb.settings = { ...(localDb.settings || {}), ...liveDb.settings };
+    }
+
+    // 5. Dong bo feedbacks moi tu Live ve Local
     if (Array.isArray(liveDb.feedbacks)) {
       if (!Array.isArray(localDb.feedbacks)) localDb.feedbacks = [];
       liveDb.feedbacks.forEach((liveFb) => {
