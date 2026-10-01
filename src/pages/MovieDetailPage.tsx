@@ -61,38 +61,38 @@ export const MovieDetailPage: React.FC = () => {
     );
   }
 
-  // Chia nhóm tập (1-50, 51-100, ...)
-  const episodes = movie.episodes || [];
-  const totalEpisodesCount = episodes.length;
+  // Sắp xếp danh sách tập theo thứ tự tăng dần
+  const sortedEpisodes = [...(movie.episodes || [])].sort((a, b) => a.episodeNumber - b.episodeNumber);
+  const episodes = sortedEpisodes;
+  const totalEpisodesCount = sortedEpisodes.length;
 
   // Lọc tập theo ô tìm kiếm nếu có
   const filteredEpisodes = episodeSearch.trim()
-    ? episodes.filter((ep) =>
+    ? sortedEpisodes.filter((ep) =>
         ep.episodeNumber.toString().includes(episodeSearch.trim()) ||
         ep.title.toLowerCase().includes(episodeSearch.toLowerCase())
       )
-    : episodes;
+    : sortedEpisodes;
 
-  const groupCount = Math.ceil(totalEpisodesCount / EPISODES_PER_GROUP);
+  // Phân nhóm tập an toàn dựa trên số lượng tập thực tế
+  const groupCount = Math.max(1, Math.ceil(totalEpisodesCount / EPISODES_PER_GROUP));
   const groups = Array.from({ length: groupCount }, (_, idx) => {
-    const start = idx * EPISODES_PER_GROUP + 1;
-    const end = Math.min((idx + 1) * EPISODES_PER_GROUP, totalEpisodesCount);
-    return { label: `${start} - ${end}`, start, end, index: idx };
+    const chunk = sortedEpisodes.slice(idx * EPISODES_PER_GROUP, (idx + 1) * EPISODES_PER_GROUP);
+    const startEp = chunk[0]?.episodeNumber ?? (idx * EPISODES_PER_GROUP + 1);
+    const endEp = chunk[chunk.length - 1]?.episodeNumber ?? ((idx + 1) * EPISODES_PER_GROUP);
+    return { label: `${startEp} - ${endEp}`, index: idx };
   });
 
   // Episodes trong nhóm hiện tại (khi không search)
-  const currentGroup = groups[selectedGroupIndex];
   const displayedEpisodes = episodeSearch.trim()
     ? filteredEpisodes
-    : episodes.filter(
-        (ep) =>
-          currentGroup &&
-          ep.episodeNumber >= currentGroup.start &&
-          ep.episodeNumber <= currentGroup.end
+    : sortedEpisodes.slice(
+        selectedGroupIndex * EPISODES_PER_GROUP,
+        (selectedGroupIndex + 1) * EPISODES_PER_GROUP
       );
 
-  const latestEpisodeNum = movie.latestEpisode || (episodes.length > 0 ? episodes[episodes.length - 1].episodeNumber : 1);
-  const firstEpisodeNum = episodes.length > 0 ? episodes[0].episodeNumber : 1;
+  const latestEpisodeNum = movie.latestEpisode || (sortedEpisodes.length > 0 ? sortedEpisodes[sortedEpisodes.length - 1].episodeNumber : 1);
+  const firstEpisodeNum = sortedEpisodes.length > 0 ? sortedEpisodes[0].episodeNumber : 1;
 
   // Schema.org Movie Structured Data
   const movieSchema = {
@@ -154,7 +154,7 @@ export const MovieDetailPage: React.FC = () => {
 
               {/* Action Buttons dưới poster */}
               <div className="w-full mt-5 space-y-2.5">
-                {episodes.length > 0 ? (
+                {sortedEpisodes.length > 0 ? (
                   <Link
                     to={`/phim/${movie.slug}/tap-${latestEpisodeNum}`}
                     className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-extrabold text-sm uppercase tracking-wider transition-all shadow-lg shadow-red-950 hover:scale-[1.02]"
@@ -168,12 +168,12 @@ export const MovieDetailPage: React.FC = () => {
                   </div>
                 )}
 
-                {episodes.length > 0 && (
+                {sortedEpisodes.length > 0 && (
                   <Link
                     to={`/phim/${movie.slug}/tap-${firstEpisodeNum}`}
                     className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-cinema-800/80 hover:bg-cinema-700 text-gray-200 font-semibold text-xs transition border border-cinema-700/60"
                   >
-                    Xem từ tập 1
+                    Xem từ tập {firstEpisodeNum}
                   </Link>
                 )}
               </div>

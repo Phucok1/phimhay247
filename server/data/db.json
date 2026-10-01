@@ -239,8 +239,8 @@
       "keywords": "L, phim L, xem phim L youtube",
       "seoTitle": "L - Xem Phim Trọn Bộ",
       "seoDescription": "",
-      "episodeCount": 5,
-      "latestEpisode": 28,
+      "episodeCount": 6,
+      "latestEpisode": 30,
       "viewCount": 1,
       "hidden": false,
       "featured": true,
@@ -757,6 +757,19 @@
       ],
       "createdAt": "2026-10-01T02:20:11.700Z",
       "updatedAt": "2026-10-01T02:20:11.700Z"
+    },
+    {
+      "id": "ep-1789021056621-ayvfa",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 30,
+      "title": "Tập 30",
+      "youtubeUrl": "https://www.youtube.com/watch?v=qx010r7-l1c",
+      "youtubeVideoId": "qx010r7-l1c",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/qx010r7-l1c?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/qx010r7-l1c/hqdefault.jpg",
+      "viewCount": 1,
+      "createdAt": "2026-09-10T06:17:36.621Z",
+      "updatedAt": "2026-09-10T06:17:36.621Z"
     }
   ],
   "categories": [

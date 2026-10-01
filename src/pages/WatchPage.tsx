@@ -47,7 +47,15 @@ export const WatchPage: React.FC = () => {
     fetchMovieBySlug(slug)
       .then((data) => {
         setMovie(data);
-        const ep = (data.episodes || []).find((e) => e.episodeNumber === currentEpNum);
+        const epList = [...(data.episodes || [])].sort((a, b) => a.episodeNumber - b.episodeNumber);
+        let ep = epList.find((e) => e.episodeNumber === currentEpNum);
+
+        // Nếu không tìm thấy tập theo số truyền vào (ví dụ tap-1 mà phim bắt đầu từ tập 24)
+        // tự động chọn tập đầu tiên khả dụng để người xem không bị báo lỗi mất tập
+        if (!ep && epList.length > 0) {
+          ep = epList[0];
+        }
+
         if (ep) {
           setCurrentEpisode(ep);
 
@@ -64,7 +72,7 @@ export const WatchPage: React.FC = () => {
             episodeTitle: ep.title,
           });
         } else {
-          setError(`Không tìm thấy tập ${currentEpNum} của bộ phim này.`);
+          setError(`Bộ phim này chưa có tập phim nào khả dụng.`);
         }
       })
       .catch((err) => {
@@ -107,8 +115,8 @@ export const WatchPage: React.FC = () => {
     );
   }
 
-  const allEpisodes = movie.episodes || [];
-  const currentIdx = allEpisodes.findIndex((e) => e.episodeNumber === currentEpNum);
+  const allEpisodes = [...(movie.episodes || [])].sort((a, b) => a.episodeNumber - b.episodeNumber);
+  const currentIdx = allEpisodes.findIndex((e) => e.episodeNumber === currentEpisode.episodeNumber);
   const prevEpisode = currentIdx > 0 ? allEpisodes[currentIdx - 1] : null;
   const nextEpisode = currentIdx < allEpisodes.length - 1 ? allEpisodes[currentIdx + 1] : null;
 
