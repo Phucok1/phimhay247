@@ -7,6 +7,7 @@ import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { LiveChatWidget } from './components/common/LiveChatWidget';
+import { QuickSubmitMovieWidget } from './components/common/QuickSubmitMovieWidget';
 
 // Public Pages
 import { HomePage } from './pages/HomePage';
@@ -37,8 +38,10 @@ const PublicLayout: React.FC = () => {
         <Outlet />
       </main>
       <Footer />
-      {/* Kênh Chat Trực Tiếp Cộng Đồng & Báo Lỗi */}
+      {/* Kênh Chat Trực Tiếp Cộng Đồng & Báo Lỗi (Bên Phải) */}
       <LiveChatWidget />
+      {/* Nút Nổi Thêm Phim Hội Viên (Bên Trái) */}
+      <QuickSubmitMovieWidget />
     </div>
   );
 };

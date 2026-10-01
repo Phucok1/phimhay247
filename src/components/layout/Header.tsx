@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown, Crown, MessageSquare, Heart, PlusCircle, Sparkles } from 'lucide-react';
+import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown, Crown, MessageSquare, Heart } from 'lucide-react';
 import { SearchModal } from '../common/SearchModal';
 import { FeedbackModal } from '../common/FeedbackModal';
 import { DonateModal } from '../common/DonateModal';
-import { SubmitMovieModal } from '../common/SubmitMovieModal';
 import { fetchCategories } from '../../services/api';
 import { Category } from '../../types';
 
@@ -14,7 +13,6 @@ export const Header: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
-  const [submitMovieOpen, setSubmitMovieOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const location = useLocation();
@@ -150,26 +148,8 @@ export const Header: React.FC = () => {
               </button>
             </nav>
 
-            {/* Right actions: Thêm Phim Nhanh + Search + Feedback + Admin */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
-              {/* Nút Nhanh Thêm Phim Cho Hội Viên */}
-              <button
-                type="button"
-                onClick={() => setSubmitMovieOpen(true)}
-                className="relative inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-400 hover:to-red-500 shadow-md shadow-amber-950/60 hover:shadow-amber-500/30 hover:scale-[1.03] active:scale-95 transition-all group border border-amber-400/40"
-                title="Hội viên bấm để chia sẻ, đóng góp phim mới"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-200 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-300"></span>
-                </span>
-                <PlusCircle className="w-4 h-4 text-white group-hover:rotate-90 transition-transform" />
-                <span className="font-extrabold tracking-wide whitespace-nowrap">Thêm Phim</span>
-                <span className="hidden lg:inline-block px-1.5 py-0.2 rounded text-[10px] bg-black/40 text-amber-200 font-bold border border-amber-300/30">
-                  +Tập
-                </span>
-              </button>
-
+            {/* Right actions: Search + Feedback + Admin */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
               <button
                 onClick={() => setSearchOpen(true)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-cinema-800/60 hover:bg-cinema-800 text-gray-300 hover:text-white border border-cinema-700/60 transition text-sm shadow-sm"
@@ -212,31 +192,6 @@ export const Header: React.FC = () => {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-cinema-900/98 border-b border-cinema-800 px-4 pt-2 pb-6 space-y-3 animate-fadeIn backdrop-blur-xl">
-            {/* Nút Thêm Phim nổi bật trên Mobile */}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setSubmitMovieOpen(true);
-              }}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-950/80 via-cinema-900 to-cinema-900 border border-amber-500/40 text-amber-300 font-bold text-sm shadow-md mb-2 group"
-            >
-              <span className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/40 group-hover:scale-105 transition-transform">
-                  <PlusCircle className="w-5 h-5 text-amber-400" />
-                </div>
-                <div className="text-left">
-                  <div className="text-sm font-bold text-white flex items-center gap-1.5">
-                    <span>Đăng Phim / Chia Sẻ Link</span>
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  </div>
-                  <p className="text-[11px] text-gray-400">Hội viên đóng góp danh sách tập</p>
-                </div>
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-black font-extrabold">
-                + Thêm
-              </span>
-            </button>
-
             <div className="space-y-1">
               {navLinks.map((link: any) => (
                 <Link
@@ -312,8 +267,6 @@ export const Header: React.FC = () => {
       {/* Global Donate Modal */}
       <DonateModal isOpen={donateOpen} onClose={() => setDonateOpen(false)} />
 
-      {/* Global Submit Movie Modal Cho Hội Viên */}
-      <SubmitMovieModal isOpen={submitMovieOpen} onClose={() => setSubmitMovieOpen(false)} />
     </>
   );
 };
