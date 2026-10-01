@@ -59,7 +59,7 @@ router.get('/messages', (req: Request, res: Response) => {
 // POST /api/chat/messages - Gửi tin nhắn mới
 router.post('/messages', (req: Request, res: Response) => {
   try {
-    const { senderName, content, senderBadge, avatarColor } = req.body;
+    const { senderName, content, senderBadge, avatarColor, avatar } = req.body;
 
     if (!content || !content.trim()) {
       return res.status(400).json({ success: false, error: 'Nội dung tin nhắn không được để trống.' });
@@ -69,6 +69,7 @@ router.post('/messages', (req: Request, res: Response) => {
       senderName: senderName?.trim() || 'Thành viên',
       senderBadge: senderBadge || 'Thành viên',
       avatarColor,
+      avatar,
       content: content.trim(),
     });
 

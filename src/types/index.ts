@@ -26,6 +26,7 @@ export interface ChatMessage {
   senderName: string;
   senderBadge?: string;
   avatarColor?: string;
+  avatar?: string;
   content: string;
   createdAt: string;
 }

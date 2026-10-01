@@ -239,6 +239,7 @@ export const sendChatMessage = async (data: {
   content: string;
   senderBadge?: string;
   avatarColor?: string;
+  avatar?: string;
 }): Promise<ChatMessage> => {
   const res = await client.post('/chat/messages', data);
   return res.data.data;

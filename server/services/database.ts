@@ -639,14 +639,15 @@ class DatabaseService {
     return messages.slice(-limit);
   }
 
-  public addChatMessage(payload: { senderName: string; content: string; senderBadge?: string; avatarColor?: string }): ChatMessage {
+  public addChatMessage(payload: { senderName: string; content: string; senderBadge?: string; avatarColor?: string; avatar?: string }): ChatMessage {
     this.cleanExpiredChatMessages();
     if (!this.data.chatMessages) this.data.chatMessages = [];
     const msg: ChatMessage = {
       id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       senderName: payload.senderName.trim().slice(0, 30) || 'Thành viên',
       senderBadge: payload.senderBadge || 'Thành viên',
-      avatarColor: payload.avatarColor || 'from-red-500 to-amber-500',
+      avatarColor: payload.avatarColor || '#2563eb',
+      avatar: payload.avatar || '🦁',
       content: payload.content.trim().slice(0, 500),
       createdAt: new Date().toISOString(),
     };
