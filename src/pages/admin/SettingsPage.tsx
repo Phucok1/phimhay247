@@ -11,6 +11,9 @@ import {
   ExternalLink,
   Flame,
   Info,
+  Heart,
+  CreditCard,
+  Smartphone,
 } from 'lucide-react';
 import { fetchAdminSettings, updateSettings } from '../../services/api';
 import { SiteSettings } from '../../types';
@@ -31,6 +34,10 @@ export const SettingsPage: React.FC = () => {
   const [seoKeywords, setKeywords] = useState('');
   const [youtubeApiKey, setYoutubeApiKey] = useState('');
   const [adminKey, setAdminKey] = useState('');
+  const [donateBankName, setDonateBankName] = useState('MB Bank');
+  const [donateAccountNumber, setDonateAccountNumber] = useState('');
+  const [donateAccountName, setDonateAccountName] = useState('PHIM HAY 247');
+  const [donateMomo, setDonateMomo] = useState('');
 
   useEffect(() => {
     fetchAdminSettings()
@@ -44,6 +51,10 @@ export const SettingsPage: React.FC = () => {
         setKeywords(data.seoKeywords || '');
         setYoutubeApiKey(data.youtubeApiKey || '');
         setAdminKey(data.adminKey || 'admin123');
+        setDonateBankName(data.donateBankName || 'MB Bank');
+        setDonateAccountNumber(data.donateAccountNumber || '');
+        setDonateAccountName(data.donateAccountName || 'PHIM HAY 247');
+        setDonateMomo(data.donateMomo || '');
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -65,6 +76,10 @@ export const SettingsPage: React.FC = () => {
         seoKeywords,
         youtubeApiKey: youtubeApiKey.trim() || undefined,
         adminKey: adminKey.trim() || 'admin123',
+        donateBankName: donateBankName.trim(),
+        donateAccountNumber: donateAccountNumber.trim(),
+        donateAccountName: donateAccountName.trim(),
+        donateMomo: donateMomo.trim(),
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
@@ -259,11 +274,68 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Khối 5: Sao Lưu & Khôi Phục Dữ Liệu (Backup & Restore) */}
+        {/* Khối 5: Cấu Hình Tài Khoản Nhận Ủng Hộ & Donate */}
+        <div className="p-6 rounded-2xl bg-cinema-900 border border-cinema-800 shadow-xl space-y-4">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-cinema-800 pb-3 flex items-center gap-2">
+            <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+            5. Tài Khoản Nhận Ủng Hộ &amp; Donate Kênh
+          </h3>
+          <p className="text-xs text-gray-400">
+            Thông tin sẽ hiển thị khi khán giả bấm nút "Ủng hộ kênh" trên thanh Menu.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Tên Ngân Hàng</label>
+              <input
+                type="text"
+                value={donateBankName}
+                onChange={(e) => setDonateBankName(e.target.value)}
+                placeholder="VD: MB Bank, Vietcombank, Techcombank..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Số Tài Khoản Ngân Hàng</label>
+              <input
+                type="text"
+                value={donateAccountNumber}
+                onChange={(e) => setDonateAccountNumber(e.target.value)}
+                placeholder="VD: 0123456789..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 font-mono font-bold text-amber-300"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Tên Chủ Tài Khoản</label>
+              <input
+                type="text"
+                value={donateAccountName}
+                onChange={(e) => setDonateAccountName(e.target.value)}
+                placeholder="VD: NGUYEN VAN A"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 uppercase font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Số Ví MoMo (Không bắt buộc)</label>
+              <input
+                type="text"
+                value={donateMomo}
+                onChange={(e) => setDonateMomo(e.target.value)}
+                placeholder="VD: 0987654321"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 font-mono"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Khối 6: Sao Lưu & Khôi Phục Dữ Liệu (Backup & Restore) */}
         <div className="p-6 rounded-2xl bg-cinema-900 border border-cinema-800 shadow-xl space-y-4">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-cinema-800 pb-3 flex items-center gap-2">
             <Save className="w-4 h-4 text-emerald-400" />
-            5. Sao Lưu &amp; Khôi Phục Dữ Liệu (Chống Mất Phim Trên Cloud)
+            6. Sao Lưu &amp; Khôi Phục Dữ Liệu (Chống Mất Phim Trên Cloud)
           </h3>
 
           <div className="space-y-4 text-xs">

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown, Crown, MessageSquare } from 'lucide-react';
+import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown, Crown, MessageSquare, Heart } from 'lucide-react';
 import { SearchModal } from '../common/SearchModal';
 import { FeedbackModal } from '../common/FeedbackModal';
+import { DonateModal } from '../common/DonateModal';
 import { fetchCategories } from '../../services/api';
 import { Category } from '../../types';
 
@@ -11,6 +12,7 @@ export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [donateOpen, setDonateOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const location = useLocation();
@@ -132,16 +134,16 @@ export const Header: React.FC = () => {
                 )}
               </div>
 
-              {/* YouTube Channel link */}
-              <a
-                href="https://www.youtube.com/@phimhay.momtiti"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-400 bg-red-950/40 border border-red-800/40 hover:bg-red-900/40 hover:text-white transition ml-1"
+              {/* Nút Ủng hộ / Donate phát triển kênh */}
+              <button
+                type="button"
+                onClick={() => setDonateOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-300 bg-rose-950/40 border border-rose-500/40 hover:bg-rose-900/50 hover:text-white transition shadow-sm ml-1 group"
+                title="Ủng hộ, donate để phát triển kênh Phim Hay 247"
               >
-                <Youtube className="w-4 h-4 text-red-500 fill-red-500" />
-                <span className="hidden lg:inline">@phimhay.momtiti</span>
-              </a>
+                <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-500 group-hover:scale-110 transition-transform" />
+                <span>Ủng hộ kênh</span>
+              </button>
             </nav>
 
             {/* Right actions: Search + Feedback + Admin */}
@@ -233,15 +235,22 @@ export const Header: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t border-cinema-800">
-              <a
-                href="https://www.youtube.com/@phimhay.momtiti"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-red-400 bg-red-950/40 border border-red-900/50"
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setDonateOpen(true);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-rose-300 bg-rose-950/40 border border-rose-500/40 hover:bg-rose-900/50 transition"
               >
-                <Youtube className="w-5 h-5 text-red-500 fill-red-500" />
-                <span>Kênh YouTube: @phimhay.momtiti</span>
-              </a>
+                <span className="flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-rose-400 fill-rose-500" />
+                  <span>Ủng hộ, donate phát triển kênh</span>
+                </span>
+                <span className="text-[11px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full border border-rose-500/30">
+                  Donate
+                </span>
+              </button>
             </div>
           </div>
         )}
@@ -252,6 +261,9 @@ export const Header: React.FC = () => {
 
       {/* Global Feedback Modal */}
       <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+
+      {/* Global Donate Modal */}
+      <DonateModal isOpen={donateOpen} onClose={() => setDonateOpen(false)} />
     </>
   );
 };

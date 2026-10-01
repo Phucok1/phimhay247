@@ -112,6 +112,12 @@ export interface SiteSettings {
     messagingSenderId: string;
     appId: string;
   };
+  donateBankName?: string;
+  donateAccountNumber?: string;
+  donateAccountName?: string;
+  donateMomo?: string;
+  donateQrUrl?: string;
+  donateNote?: string;
 }
 
 export interface WatchHistoryItem {
