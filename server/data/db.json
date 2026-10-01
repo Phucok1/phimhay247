@@ -239,13 +239,13 @@
       "keywords": "L, phim L, xem phim L youtube",
       "seoTitle": "L - Xem Phim Trọn Bộ",
       "seoDescription": "",
-      "episodeCount": 5,
-      "latestEpisode": 28,
+      "episodeCount": 29,
+      "latestEpisode": 38,
       "viewCount": 1,
       "hidden": false,
       "featured": true,
       "createdAt": "2026-09-10T06:16:58.594Z",
-      "updatedAt": "2026-10-01T01:39:50.726Z"
+      "updatedAt": "2026-10-01T12:44:01.709Z"
     }
   ],
   "episodes": [
@@ -345,26 +345,62 @@
       "movieId": "mov-1789021018594-1jfha",
       "episodeNumber": 24,
       "title": "Tập 24",
-      "youtubeUrl": "https://www.facebook.com/watch/?v=1557367875325033",
-      "youtubeVideoId": "1557367875325033",
-      "youtubeEmbedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D1557367875325033&show_text=0&autoplay=1",
-      "thumbnailUrl": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80",
+      "youtubeUrl": "https://www.youtube.com/watch?v=JLIyA-IJLBc",
+      "youtubeVideoId": "JLIyA-IJLBc",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/JLIyA-IJLBc?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/JLIyA-IJLBc/hqdefault.jpg",
       "viewCount": 0,
       "createdAt": "2026-10-01T01:38:42.385Z",
-      "updatedAt": "2026-10-01T01:39:50.726Z"
+      "updatedAt": "2026-10-01T12:41:38.073Z",
+      "servers": [
+        {
+          "id": "srv-1790858498034-0",
+          "name": "Server 2 (Dự phòng)",
+          "url": "https://www.youtube.com/watch?v=JLIyA-IJLBc",
+          "videoId": "JLIyA-IJLBc",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/JLIyA-IJLBc?rel=0&modestbranding=1",
+          "platform": "youtube"
+        },
+        {
+          "id": "srv-1790858498042-1",
+          "name": "Server 3 (Dự phòng)",
+          "url": "https://www.facebook.com/watch/?v=1557367875325033",
+          "videoId": "1557367875325033",
+          "embedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D1557367875325033&show_text=0&autoplay=1",
+          "platform": "facebook"
+        }
+      ]
     },
     {
       "id": "ep-1790818734782-ai61z",
       "movieId": "mov-1789021018594-1jfha",
       "episodeNumber": 25,
       "title": "Tập 25",
-      "youtubeUrl": "https://www.facebook.com/watch/?v=2160333678218591",
-      "youtubeVideoId": "2160333678218591",
-      "youtubeEmbedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D2160333678218591&show_text=0&autoplay=1",
-      "thumbnailUrl": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80",
+      "youtubeUrl": "https://www.youtube.com/watch?v=EywuQALn748",
+      "youtubeVideoId": "EywuQALn748",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/EywuQALn748?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/EywuQALn748/hqdefault.jpg",
       "viewCount": 0,
       "createdAt": "2026-10-01T01:38:54.782Z",
-      "updatedAt": "2026-10-01T01:38:54.782Z"
+      "updatedAt": "2026-10-01T12:42:08.476Z",
+      "servers": [
+        {
+          "id": "srv-1790858528475-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=EywuQALn748",
+          "videoId": "EywuQALn748",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/EywuQALn748?rel=0&modestbranding=1",
+          "platform": "youtube"
+        },
+        {
+          "id": "srv-1790858528476-1",
+          "name": "Server 2 (Dự phòng)",
+          "url": "https://www.facebook.com/watch/?v=2160333678218591",
+          "videoId": "2160333678218591",
+          "embedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D2160333678218591&show_text=0&autoplay=1",
+          "platform": "facebook"
+        }
+      ]
     },
     {
       "id": "ep-1790818748150-1v5r0",
@@ -780,6 +816,558 @@
       ],
       "createdAt": "2026-10-01T10:39:08.773Z",
       "updatedAt": "2026-10-01T11:01:08.578Z"
+    },
+    {
+      "id": "ep-1790853040830-7s10e",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 1,
+      "title": "Tập 1",
+      "youtubeUrl": "https://playmogo.com/d/6gl0tabc56e1",
+      "youtubeVideoId": "embed-1790853040829",
+      "youtubeEmbedUrl": "https://playmogo.com/d/6gl0tabc56e1",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790853040829-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/6gl0tabc56e1",
+          "videoId": "embed-1790853040829",
+          "embedUrl": "https://playmogo.com/d/6gl0tabc56e1",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:10:40.829Z",
+      "updatedAt": "2026-10-01T11:10:40.829Z"
+    },
+    {
+      "id": "ep-1790853273920-wt292",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 2,
+      "title": "Tập 2",
+      "youtubeUrl": "https://playmogo.com/d/hz9tcflfwo9g",
+      "youtubeVideoId": "embed-1790853273920",
+      "youtubeEmbedUrl": "https://playmogo.com/d/hz9tcflfwo9g",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790853273920-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/hz9tcflfwo9g",
+          "videoId": "embed-1790853273920",
+          "embedUrl": "https://playmogo.com/d/hz9tcflfwo9g",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:14:33.920Z",
+      "updatedAt": "2026-10-01T11:14:33.920Z"
+    },
+    {
+      "id": "ep-1790853870089-huluu",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 3,
+      "title": "Tập 3",
+      "youtubeUrl": "https://playmogo.com/d/x925f2ss9s7m",
+      "youtubeVideoId": "embed-1790853870088",
+      "youtubeEmbedUrl": "https://playmogo.com/d/x925f2ss9s7m",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790853870088-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/x925f2ss9s7m",
+          "videoId": "embed-1790853870088",
+          "embedUrl": "https://playmogo.com/d/x925f2ss9s7m",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:24:30.089Z",
+      "updatedAt": "2026-10-01T11:24:30.089Z"
+    },
+    {
+      "id": "ep-1790853993451-1b5f1",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 4,
+      "title": "Tập 4",
+      "youtubeUrl": "https://playmogo.com/d/iy6kyqfmt7ky",
+      "youtubeVideoId": "embed-1790853993450",
+      "youtubeEmbedUrl": "https://playmogo.com/d/iy6kyqfmt7ky",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790853993450-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/iy6kyqfmt7ky",
+          "videoId": "embed-1790853993450",
+          "embedUrl": "https://playmogo.com/d/iy6kyqfmt7ky",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:26:33.450Z",
+      "updatedAt": "2026-10-01T11:26:33.450Z"
+    },
+    {
+      "id": "ep-1790854233725-yi93c",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 5,
+      "title": "Tập 5",
+      "youtubeUrl": "https://playmogo.com/d/chthnjmhsthk",
+      "youtubeVideoId": "embed-1790854233725",
+      "youtubeEmbedUrl": "https://playmogo.com/d/chthnjmhsthk",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790854233725-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/chthnjmhsthk",
+          "videoId": "embed-1790854233725",
+          "embedUrl": "https://playmogo.com/d/chthnjmhsthk",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:30:33.725Z",
+      "updatedAt": "2026-10-01T11:30:33.725Z"
+    },
+    {
+      "id": "ep-1790854540571-4yo1q",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 6,
+      "title": "Tập 6",
+      "youtubeUrl": "https://playmogo.com/d/25mau3hdi1rh",
+      "youtubeVideoId": "embed-1790854577121",
+      "youtubeEmbedUrl": "https://playmogo.com/d/25mau3hdi1rh",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790854577121-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/25mau3hdi1rh",
+          "videoId": "embed-1790854577121",
+          "embedUrl": "https://playmogo.com/d/25mau3hdi1rh",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:35:40.571Z",
+      "updatedAt": "2026-10-01T11:36:17.122Z"
+    },
+    {
+      "id": "ep-1790854690320-n58pn",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 7,
+      "title": "Tập 7",
+      "youtubeUrl": "https://playmogo.com/d/i0ry28tvyq5k",
+      "youtubeVideoId": "embed-1790854690320",
+      "youtubeEmbedUrl": "https://playmogo.com/d/i0ry28tvyq5k",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790854690320-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/i0ry28tvyq5k",
+          "videoId": "embed-1790854690320",
+          "embedUrl": "https://playmogo.com/d/i0ry28tvyq5k",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:38:10.320Z",
+      "updatedAt": "2026-10-01T11:38:10.320Z"
+    },
+    {
+      "id": "ep-1790854784547-zz3t6",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 8,
+      "title": "Tập 8",
+      "youtubeUrl": "https://playmogo.com/d/ybmbh72ki6iy",
+      "youtubeVideoId": "embed-1790854784547",
+      "youtubeEmbedUrl": "https://playmogo.com/d/ybmbh72ki6iy",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790854784547-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/ybmbh72ki6iy",
+          "videoId": "embed-1790854784547",
+          "embedUrl": "https://playmogo.com/d/ybmbh72ki6iy",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:39:44.547Z",
+      "updatedAt": "2026-10-01T11:39:44.547Z"
+    },
+    {
+      "id": "ep-1790855388534-k4mlr",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 9,
+      "title": "Tập 9",
+      "youtubeUrl": "https://playmogo.com/d/7qavvxvoh7t7",
+      "youtubeVideoId": "embed-1790855388534",
+      "youtubeEmbedUrl": "https://playmogo.com/d/7qavvxvoh7t7",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790855388534-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/7qavvxvoh7t7",
+          "videoId": "embed-1790855388534",
+          "embedUrl": "https://playmogo.com/d/7qavvxvoh7t7",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:49:48.534Z",
+      "updatedAt": "2026-10-01T11:49:48.534Z"
+    },
+    {
+      "id": "ep-1790855693731-6m85p",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 10,
+      "title": "Tập 10",
+      "youtubeUrl": "https://playmogo.com/d/illmxz2e5tqy",
+      "youtubeVideoId": "embed-1790855693731",
+      "youtubeEmbedUrl": "https://playmogo.com/d/illmxz2e5tqy",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790855693731-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/illmxz2e5tqy",
+          "videoId": "embed-1790855693731",
+          "embedUrl": "https://playmogo.com/d/illmxz2e5tqy",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:54:53.731Z",
+      "updatedAt": "2026-10-01T11:54:53.731Z"
+    },
+    {
+      "id": "ep-1790855726522-d29zm",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 11,
+      "title": "Tập 11",
+      "youtubeUrl": "https://playmogo.com/d/2disnq79nvio",
+      "youtubeVideoId": "embed-1790855726522",
+      "youtubeEmbedUrl": "https://playmogo.com/d/2disnq79nvio",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790855726522-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/2disnq79nvio",
+          "videoId": "embed-1790855726522",
+          "embedUrl": "https://playmogo.com/d/2disnq79nvio",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:55:26.522Z",
+      "updatedAt": "2026-10-01T11:55:26.522Z"
+    },
+    {
+      "id": "ep-1790855963435-354gm",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 12,
+      "title": "Tập 12",
+      "youtubeUrl": "https://playmogo.com/d/3eyu5msgzowm",
+      "youtubeVideoId": "embed-1790855963435",
+      "youtubeEmbedUrl": "https://playmogo.com/d/3eyu5msgzowm",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790855963435-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/3eyu5msgzowm",
+          "videoId": "embed-1790855963435",
+          "embedUrl": "https://playmogo.com/d/3eyu5msgzowm",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T11:59:23.435Z",
+      "updatedAt": "2026-10-01T11:59:23.435Z"
+    },
+    {
+      "id": "ep-1790856545135-3qrvg",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 13,
+      "title": "Tập 13",
+      "youtubeUrl": "https://playmogo.com/d/miernr6tn3d6",
+      "youtubeVideoId": "embed-1790856545135",
+      "youtubeEmbedUrl": "https://playmogo.com/d/miernr6tn3d6",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790856545135-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/miernr6tn3d6",
+          "videoId": "embed-1790856545135",
+          "embedUrl": "https://playmogo.com/d/miernr6tn3d6",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T12:09:05.135Z",
+      "updatedAt": "2026-10-01T12:09:05.135Z"
+    },
+    {
+      "id": "ep-1790856631678-kee9e",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 14,
+      "title": "Tập 14",
+      "youtubeUrl": "https://playmogo.com/d/y3et48fmlkck",
+      "youtubeVideoId": "embed-1790856631678",
+      "youtubeEmbedUrl": "https://playmogo.com/d/y3et48fmlkck",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790856631678-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/y3et48fmlkck",
+          "videoId": "embed-1790856631678",
+          "embedUrl": "https://playmogo.com/d/y3et48fmlkck",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T12:10:31.678Z",
+      "updatedAt": "2026-10-01T12:10:31.678Z"
+    },
+    {
+      "id": "ep-1790858362649-p2svw",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 15,
+      "title": "Tập 15",
+      "youtubeUrl": "https://playmogo.com/d/j8x6tbg6cjc9",
+      "youtubeVideoId": "embed-1790858362647",
+      "youtubeEmbedUrl": "https://playmogo.com/d/j8x6tbg6cjc9",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858362647-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/j8x6tbg6cjc9",
+          "videoId": "embed-1790858362647",
+          "embedUrl": "https://playmogo.com/d/j8x6tbg6cjc9",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T12:39:22.647Z",
+      "updatedAt": "2026-10-01T12:39:22.647Z"
+    },
+    {
+      "id": "ep-1790858396631-5o2ha",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 17,
+      "title": "Tập 17",
+      "youtubeUrl": "https://www.youtube.com/watch?v=H2JW8wTWSyE",
+      "youtubeVideoId": "H2JW8wTWSyE",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/H2JW8wTWSyE?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/H2JW8wTWSyE/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858396631-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=H2JW8wTWSyE",
+          "videoId": "H2JW8wTWSyE",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/H2JW8wTWSyE?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:39:56.631Z",
+      "updatedAt": "2026-10-01T12:39:56.631Z"
+    },
+    {
+      "id": "ep-1790858405890-fcdvm",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 18,
+      "title": "Tập 18",
+      "youtubeUrl": "https://www.youtube.com/watch?v=7Vhz70gLTzA",
+      "youtubeVideoId": "7Vhz70gLTzA",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/7Vhz70gLTzA?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/7Vhz70gLTzA/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858405890-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=7Vhz70gLTzA",
+          "videoId": "7Vhz70gLTzA",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/7Vhz70gLTzA?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:40:05.890Z",
+      "updatedAt": "2026-10-01T12:40:05.890Z"
+    },
+    {
+      "id": "ep-1790858415225-0irla",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 19,
+      "title": "Tập 19",
+      "youtubeUrl": "https://www.youtube.com/watch?v=tw5mkrIDIfo",
+      "youtubeVideoId": "tw5mkrIDIfo",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/tw5mkrIDIfo?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/tw5mkrIDIfo/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858415225-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=tw5mkrIDIfo",
+          "videoId": "tw5mkrIDIfo",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/tw5mkrIDIfo?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:40:15.225Z",
+      "updatedAt": "2026-10-01T12:40:15.225Z"
+    },
+    {
+      "id": "ep-1790858429138-mazjj",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 20,
+      "title": "Tập 20",
+      "youtubeUrl": "https://www.youtube.com/watch?v=su3QRwqJk0E",
+      "youtubeVideoId": "su3QRwqJk0E",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/su3QRwqJk0E?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/su3QRwqJk0E/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858429138-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=su3QRwqJk0E",
+          "videoId": "su3QRwqJk0E",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/su3QRwqJk0E?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:40:29.138Z",
+      "updatedAt": "2026-10-01T12:40:29.138Z"
+    },
+    {
+      "id": "ep-1790858438842-q2h2m",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 21,
+      "title": "Tập 21",
+      "youtubeUrl": "https://www.youtube.com/watch?v=txaGsbTOrYY",
+      "youtubeVideoId": "txaGsbTOrYY",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/txaGsbTOrYY?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/txaGsbTOrYY/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858438842-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=txaGsbTOrYY",
+          "videoId": "txaGsbTOrYY",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/txaGsbTOrYY?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:40:38.842Z",
+      "updatedAt": "2026-10-01T12:40:38.842Z"
+    },
+    {
+      "id": "ep-1790858447141-ym77d",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 22,
+      "title": "Tập 22",
+      "youtubeUrl": "https://www.youtube.com/watch?v=8_gRpF1TnWI",
+      "youtubeVideoId": "8_gRpF1TnWI",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/8_gRpF1TnWI?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/8_gRpF1TnWI/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858447141-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=8_gRpF1TnWI",
+          "videoId": "8_gRpF1TnWI",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/8_gRpF1TnWI?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:40:47.141Z",
+      "updatedAt": "2026-10-01T12:40:47.141Z"
+    },
+    {
+      "id": "ep-1790858457086-k6jqr",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 23,
+      "title": "Tập 23",
+      "youtubeUrl": "https://www.youtube.com/watch?v=h43GK5QGqgE",
+      "youtubeVideoId": "h43GK5QGqgE",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/h43GK5QGqgE?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/h43GK5QGqgE/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858457086-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=h43GK5QGqgE",
+          "videoId": "h43GK5QGqgE",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/h43GK5QGqgE?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:40:57.086Z",
+      "updatedAt": "2026-10-01T12:40:57.086Z"
+    },
+    {
+      "id": "ep-1790858631843-lzb62",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 31,
+      "title": "Tập 31",
+      "youtubeUrl": "https://www.youtube.com/watch?v=pEeb7thk-bY",
+      "youtubeVideoId": "pEeb7thk-bY",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/pEeb7thk-bY?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/pEeb7thk-bY/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858631843-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=pEeb7thk-bY",
+          "videoId": "pEeb7thk-bY",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/pEeb7thk-bY?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:43:51.843Z",
+      "updatedAt": "2026-10-01T12:43:51.843Z"
+    },
+    {
+      "id": "ep-1790858641709-zda7k",
+      "movieId": "mov-1789021018594-1jfha",
+      "episodeNumber": 38,
+      "title": "Tập 38",
+      "youtubeUrl": "https://www.youtube.com/watch?v=FoGPCZNwX7A",
+      "youtubeVideoId": "FoGPCZNwX7A",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/FoGPCZNwX7A?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/FoGPCZNwX7A/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790858641709-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=FoGPCZNwX7A",
+          "videoId": "FoGPCZNwX7A",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/FoGPCZNwX7A?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T12:44:01.709Z",
+      "updatedAt": "2026-10-01T12:44:01.709Z"
     }
   ],
   "categories": [
