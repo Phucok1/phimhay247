@@ -195,3 +195,15 @@ export const loginAdmin = async (password: string): Promise<{ success: boolean; 
   const res = await client.post('/settings/verify-admin', { password });
   return res.data;
 };
+
+// --- Database Backup & Restore ---
+export const downloadDatabaseBackup = async (): Promise<any> => {
+  const res = await client.get('/settings/export-db');
+  return res.data;
+};
+
+export const restoreDatabaseBackup = async (data: any): Promise<{ success: boolean; message: string }> => {
+  const res = await client.post('/settings/import-db', data);
+  return res.data;
+};
+

@@ -66,4 +66,30 @@ router.post('/verify-admin', (req: Request, res: Response) => {
   }
 });
 
+// GET /api/settings/export-db (Tải toàn bộ database json về máy)
+router.get('/export-db', (req: Request, res: Response) => {
+  try {
+    const data = db.exportDatabase();
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=phimhay247_db_${new Date().toISOString().slice(0, 10)}.json`);
+    res.send(JSON.stringify(data, null, 2));
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/settings/import-db (Khôi phục database từ file json)
+router.post('/import-db', (req: Request, res: Response) => {
+  try {
+    const payload = req.body;
+    const ok = db.importDatabase(payload);
+    if (!ok) {
+      return res.status(400).json({ success: false, error: 'Dữ liệu file JSON không đúng định dạng database.' });
+    }
+    res.json({ success: true, message: 'Đã khôi phục toàn bộ dữ liệu phim và tập thành công!' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

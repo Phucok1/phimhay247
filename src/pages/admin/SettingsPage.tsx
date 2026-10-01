@@ -259,6 +259,71 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Khối 5: Sao Lưu & Khôi Phục Dữ Liệu (Backup & Restore) */}
+        <div className="p-6 rounded-2xl bg-cinema-900 border border-cinema-800 shadow-xl space-y-4">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-cinema-800 pb-3 flex items-center gap-2">
+            <Save className="w-4 h-4 text-emerald-400" />
+            5. Sao Lưu &amp; Khôi Phục Dữ Liệu (Chống Mất Phim Trên Cloud)
+          </h3>
+
+          <div className="space-y-4 text-xs">
+            <p className="text-gray-300 leading-relaxed">
+              Trên các nền tảng Cloud miễn phí như Render, bộ nhớ đĩa là tạm thời (sẽ khôi phục về trạng thái GitHub khi server khởi động lại). Hãy sử dụng công cụ dưới đây để không bao giờ bị mất danh sách phim:
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Nút tải backup */}
+              <a
+                href="/api/settings/export-db"
+                download
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition shadow-lg shadow-emerald-950"
+              >
+                <Save className="w-4 h-4" />
+                Tải Về Bản Sao Lưu Database (.json)
+              </a>
+
+              {/* Nút khôi phục backup */}
+              <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cinema-800 hover:bg-cinema-700 text-gray-200 font-semibold cursor-pointer transition border border-cinema-700">
+                <CheckCircle className="w-4 h-4 text-primary" />
+                <span>Khôi Phục Dữ Liệu Từ File Backup</span>
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const text = await file.text();
+                      const json = JSON.parse(text);
+                      const res = await fetch('/api/settings/import-db', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(json),
+                      });
+                      const result = await res.json();
+                      if (result.success) {
+                        alert('Khôi phục database thành công! Trang web sẽ được tải lại.');
+                        window.location.reload();
+                      } else {
+                        alert(result.error || 'Lỗi khi khôi phục.');
+                      }
+                    } catch (err: any) {
+                      alert('File JSON không hợp lệ: ' + err.message);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+
+            <div className="p-3 bg-cinema-950/80 rounded-xl border border-cinema-800 text-gray-400 space-y-1">
+              <p className="font-semibold text-gray-200">Mẹo lưu phim vĩnh viễn không bao giờ mất:</p>
+              <p>• <strong>Cách 1:</strong> Sau khi thêm phim trên web, bấm nút <strong className="text-emerald-400">"Tải Về Bản Sao Lưu Database"</strong> cất vào máy tính.</p>
+              <p>• <strong>Cách 2 (Khuyên dùng):</strong> Bấm đúp vào file <strong className="text-amber-400">"DAY_CODE_LEN_GITHUB.bat"</strong> trên màn hình Desktop máy tính để đẩy toàn bộ phim lên GitHub vĩnh viễn!</p>
+            </div>
+          </div>
+        </div>
+
         {/* Nút Lưu */}
         <div className="flex items-center justify-end gap-3 pt-4">
           <button

@@ -130,22 +130,25 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
           {step === 'input' ? (
             <div className="space-y-3">
               <p className="text-gray-300">
-                Dán danh sách các link YouTube vào ô dưới đây (mỗi link nằm trên một dòng riêng biệt). Hệ thống sẽ tự động bóc tách Video ID và đánh số tập tiếp theo:
+                Dán danh sách các đường link video vào ô dưới đây (mỗi link nằm trên một dòng riêng biệt). Hệ thống sẽ tự động phân loại nguồn phát và đánh số tập tiếp theo:
               </p>
 
               <textarea
                 rows={10}
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
-                placeholder={`https://www.youtube.com/watch?v=dQw4w9WgXcQ\nhttps://youtu.be/abc123xyz\nhttps://www.youtube.com/watch?v=def456uvw\n...`}
+                placeholder={`https://www.youtube.com/watch?v=dQw4w9WgXcQ\nhttps://www.facebook.com/reel/123456789\nhttps://doodstream.com/d/abc123xyz\nhttps://streamwish.to/def456uvw\nhttps://example.com/video.mp4\n...`}
                 className="w-full p-3.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white font-mono text-xs placeholder-gray-500 focus:outline-none focus:border-primary"
               />
 
               <div className="p-3 bg-cinema-950/80 rounded-xl border border-cinema-800/80 text-gray-400 space-y-1">
-                <p className="font-semibold text-gray-300">Hỗ trợ các định dạng URL:</p>
-                <p>• https://www.youtube.com/watch?v=VIDEO_ID</p>
-                <p>• https://youtu.be/VIDEO_ID</p>
-                <p>• https://www.youtube.com/shorts/VIDEO_ID</p>
+                <p className="font-semibold text-gray-300">Hỗ trợ các nền tảng video:</p>
+                <p>• <strong>Ok.ru:</strong> Mạng xã hội Nga (Dung lượng không giới hạn, 32GB/file, không bản quyền)</p>
+                <p>• <strong>Google Drive:</strong> drive.google.com (15GB/acc, tốc độ cực nhanh)</p>
+                <p>• <strong>YouTube:</strong> watch, youtu.be, shorts, live</p>
+                <p>• <strong>Facebook:</strong> Reels, Watch video, fb.watch</p>
+                <p>• <strong>Archive.org &amp; DoodStream:</strong> archive.org, doodstream.com, streamwish.to</p>
+                <p>• <strong>Khác:</strong> Dailymotion, link trực tiếp .MP4 / .M3U8</p>
               </div>
             </div>
           ) : (

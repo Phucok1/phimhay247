@@ -9,7 +9,7 @@ router.post('/parse-url', (req: Request, res: Response) => {
   try {
     const { url } = req.body;
     if (!url) {
-      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp URL YouTube.' });
+      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp URL video (YouTube, Facebook, DoodStream, StreamWish, MP4...).' });
     }
 
     const result = parseYouTubeUrl(url);
@@ -81,7 +81,7 @@ router.post('/', (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Thiếu thông tin bộ phim (movieId).' });
     }
     if (!youtubeUrl) {
-      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp link YouTube.' });
+      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp link video.' });
     }
 
     const parsed = parseYouTubeUrl(youtubeUrl);
@@ -105,7 +105,7 @@ router.post('/', (req: Request, res: Response) => {
   }
 });
 
-// POST /api/episodes/bulk (Nhập nhiều tập từ danh sách link YouTube)
+// POST /api/episodes/bulk (Nhập nhiều tập từ danh sách link Video)
 router.post('/bulk', (req: Request, res: Response) => {
   try {
     const { movieId, episodes } = req.body;
@@ -141,7 +141,7 @@ router.post('/bulk', (req: Request, res: Response) => {
     if (validPayloads.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Không có link YouTube hợp lệ nào trong danh sách.',
+        error: 'Không có link video hợp lệ nào trong danh sách.',
         details: errors,
       });
     }

@@ -518,6 +518,25 @@ class DatabaseService {
       topMovies,
     };
   }
+
+  // --- BACKUP & RESTORE ---
+  public exportDatabase(): DatabaseSchema {
+    return this.data;
+  }
+
+  public importDatabase(newData: any): boolean {
+    if (!newData || !Array.isArray(newData.movies) || !Array.isArray(newData.episodes)) {
+      return false;
+    }
+    this.data = {
+      movies: newData.movies,
+      episodes: newData.episodes,
+      categories: Array.isArray(newData.categories) ? newData.categories : DEFAULT_CATEGORIES,
+      settings: { ...DEFAULT_SETTINGS, ...(newData.settings || {}) },
+    };
+    this.save();
+    return true;
+  }
 }
 
 export const db = new DatabaseService();

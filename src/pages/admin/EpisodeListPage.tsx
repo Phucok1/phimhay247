@@ -243,7 +243,7 @@ export const EpisodeListPage: React.FC = () => {
               <Plus className="w-4 h-4 text-red-500" />
               Thêm Tập Mới Cho Phim
             </h3>
-            <span className="text-[11px] text-gray-400">Chỉ cần dán link YouTube và lưu</span>
+            <span className="text-[11px] text-gray-400">Hỗ trợ YouTube, Reels Facebook, DoodStream, StreamWish, Dailymotion, MP4...</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
@@ -276,17 +276,17 @@ export const EpisodeListPage: React.FC = () => {
               />
             </div>
 
-            {/* Link YouTube / Facebook */}
+            {/* Link YouTube / Facebook / DoodStream / MP4 */}
             <div className="sm:col-span-6">
               <label className="block text-xs font-semibold text-gray-300 mb-1">
-                Link YouTube hoặc Facebook Reel <span className="text-red-500">*</span>
+                Link Video (YouTube, FB Reels, DoodStream, StreamWish, Dailymotion, MP4...) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={epYoutubeUrl}
                 onChange={(e) => handleYoutubeUrlChange(e.target.value)}
-                placeholder="YouTube (watch, youtu.be, shorts) hoặc Facebook (reel, watch)"
+                placeholder="YouTube, Facebook Reels, DoodStream, StreamWish, Dailymotion hoặc link trực tiếp MP4..."
                 className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-primary font-mono"
               />
             </div>
@@ -296,7 +296,7 @@ export const EpisodeListPage: React.FC = () => {
           {parsing && (
             <div className="text-xs text-gray-400 flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-              <span>Đang kiểm tra và bóc tách YouTube Video ID...</span>
+              <span>Đang kiểm tra và nhận diện link video...</span>
             </div>
           )}
 
@@ -314,7 +314,7 @@ export const EpisodeListPage: React.FC = () => {
               <div className="relative w-48 aspect-video rounded-lg overflow-hidden border border-cinema-700 bg-black flex-shrink-0">
                 <img
                   src={parsedPreview.thumbnailUrl}
-                  alt="YouTube thumbnail"
+                  alt="Thumbnail"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -324,10 +324,10 @@ export const EpisodeListPage: React.FC = () => {
 
               <div className="text-xs space-y-1.5 flex-grow">
                 <p className="text-emerald-400 font-semibold flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" /> Bóc tách thành công YouTube Video ID!
+                  <CheckCircle className="w-4 h-4" /> Bóc tách nguồn video thành công!
                 </p>
                 <p className="text-gray-300">
-                  Video ID: <code className="text-amber-400 font-bold">{parsedPreview.videoId}</code>
+                  Video ID / Host: <code className="text-amber-400 font-bold">{parsedPreview.videoId}</code>
                 </p>
                 <p className="text-gray-400 break-all text-[11px]">
                   Embed URL: <span>{parsedPreview.embedUrl}</span>
@@ -386,7 +386,7 @@ export const EpisodeListPage: React.FC = () => {
                 <tr className="border-b border-cinema-800 bg-cinema-950/60 text-gray-400 font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4 w-20 text-center">Số tập</th>
                   <th className="py-3 px-4">Thumbnail / Tiêu đề</th>
-                  <th className="py-3 px-4">YouTube Video ID</th>
+                  <th className="py-3 px-4">Server / Video ID</th>
                   <th className="py-3 px-4">Lượt xem</th>
                   <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
