@@ -171,10 +171,11 @@ const DEFAULT_SETTINGS: SiteSettings = {
   seoDescription: 'PHIM HAY 247 - Website xem phim tuyển chọn, tổng hợp các bộ phim kiếm hiệp, cổ trang, ngôn tình phát trực tiếp từ YouTube.',
   seoKeywords: 'phim hay, phim moi, phim youtube, xem phim 247, phim kiem hiep, phim co trang',
   adminKey: 'admin123',
-  donateBankName: 'MB Bank',
+  donateBankName: 'Vietcombank',
   donateAccountNumber: '',
-  donateAccountName: 'PHIM HAY 247',
+  donateAccountName: 'NGUYỄN THIỆN PHÚC',
   donateMomo: '',
+  donateQrUrl: '/images/donate-qr.png',
   donateNote: 'Ủng hộ duy trì server và phát triển kênh Phim Hay 247',
 };
 

@@ -800,6 +800,10 @@
     "seoTitle": "PHIM HAY 247 - Xem Phim Tuyển Chọn Mới Nhất Từ YouTube",
     "seoDescription": "PHIM HAY 247 - Website tổng hợp các bộ phim kiếm hiệp, cổ trang, tiên hiệp phát chính thức từ YouTube channel @phimhay.momtiti.",
     "seoKeywords": "phim hay, phim moi, xem phim 247, phim kiem hiep, phim youtube",
-    "adminKey": "phucok1234"
+    "adminKey": "phucok1234",
+    "donateBankName": "Vietcombank",
+    "donateAccountName": "NGUYỄN THIỆN PHÚC",
+    "donateQrUrl": "/images/donate-qr.png",
+    "donateNote": "Ủng hộ duy trì server và phát triển kênh Phim Hay 247"
   }
 }

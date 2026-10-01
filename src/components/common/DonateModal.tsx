@@ -34,22 +34,14 @@ export const DonateModal: React.FC<DonateModalProps> = ({ isOpen, onClose }) => 
 
   if (!isOpen) return null;
 
-  const bankName = settings?.donateBankName || 'MB Bank';
+  const bankName = settings?.donateBankName || 'Vietcombank';
   const accountNumber = settings?.donateAccountNumber || '';
-  const accountName = settings?.donateAccountName || 'PHIM HAY 247';
+  const accountName = settings?.donateAccountName || 'NGUYỄN THIỆN PHÚC';
   const momoNumber = settings?.donateMomo || '';
   const donateNote = settings?.donateNote || 'Ủng hộ duy trì server và phát triển kênh Phim Hay 247';
 
-  // Tạo link VietQR tự động nếu có số tài khoản
-  const qrImage =
-    settings?.donateQrUrl ||
-    (accountNumber
-      ? `https://img.vietqr.io/image/${encodeURIComponent(bankName)}-${encodeURIComponent(
-          accountNumber
-        )}-compact2.png?amount=&addInfo=${encodeURIComponent('Ung ho PhimHay247')}&accountName=${encodeURIComponent(
-          accountName
-        )}`
-      : null);
+  // Ưu tiên ảnh QR được cấu hình hoặc ảnh mã VietQR Napas 247 chính thức
+  const qrImage = settings?.donateQrUrl || '/images/donate-qr.png';
 
   const handleCopy = (text: string, type: 'account' | 'momo') => {
     if (!text) return;
@@ -99,36 +91,58 @@ export const DonateModal: React.FC<DonateModalProps> = ({ isOpen, onClose }) => 
               <span>Tiếp thêm động lực cho kênh!</span>
             </p>
             <p>
-              Mọi sự đóng góp của bạn là nguồn kinh phí quý báu giúp chúng tôi chi trả máy chủ, duy trì website hoạt động ổn định, sưu tầm thêm nhiều phim hiếm và nâng cấp chất lượng phát trực tuyến hoàn toàn miễn phí cho cộng đồng!
+              Mọi sự đóng góp của bạn là nguồn kinh phí quý báu giúp chúng tôi chi trả máy chủ, duy trì website hoạt động ổn định, sưu tầm thêm nhiều phim hay và nâng cấp chất lượng phát trực tuyến hoàn toàn miễn phí cho cộng đồng!
             </p>
           </div>
 
           {/* Phương thức 1: Chuyển khoản ngân hàng & VietQR */}
-          <div className="p-4 rounded-2xl bg-cinema-950 border border-cinema-800 space-y-3">
-            <div className="flex items-center gap-2 text-white font-semibold text-xs uppercase tracking-wider">
-              <CreditCard className="w-4 h-4 text-amber-400" />
-              <span>Chuyển khoản Ngân Hàng (VietQR)</span>
+          <div className="p-4 rounded-2xl bg-cinema-950 border border-cinema-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white font-semibold text-xs uppercase tracking-wider">
+                <CreditCard className="w-4 h-4 text-emerald-400" />
+                <span>Chuyển khoản Ngân Hàng (VietQR)</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Napas 247
+              </span>
             </div>
 
-            {accountNumber ? (
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                {qrImage && (
-                  <div className="p-2 bg-white rounded-xl shadow-md flex-shrink-0">
-                    <img
-                      src={qrImage}
-                      alt="VietQR Donate"
-                      className="w-32 h-32 object-contain"
-                    />
-                  </div>
-                )}
-                <div className="space-y-2 text-xs flex-grow w-full">
-                  <div>
-                    <span className="text-gray-400 block text-[11px]">Ngân hàng:</span>
-                    <span className="font-bold text-white text-sm">{bankName}</span>
-                  </div>
+            {/* Khung hiển thị Mã QR VietQR */}
+            <div className="flex flex-col sm:flex-row items-center gap-5 bg-cinema-900/80 p-4 rounded-2xl border border-cinema-800">
+              <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                <div className="p-2.5 bg-white rounded-2xl shadow-xl border-2 border-emerald-500/40 flex items-center justify-center">
+                  <img
+                    src={qrImage}
+                    alt="Mã QR VietQR Ủng Hộ Kênh"
+                    className="w-36 h-36 sm:w-40 sm:h-40 object-contain rounded-lg"
+                  />
+                </div>
+                <a
+                  href={qrImage}
+                  download="VietQR-PhimHay247.png"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-gray-400 hover:text-emerald-400 flex items-center gap-1 transition"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>Tải ảnh QR / Mở lớn</span>
+                </a>
+              </div>
+
+              <div className="space-y-2.5 text-xs flex-grow w-full">
+                <div className="p-2 rounded-xl bg-emerald-950/30 border border-emerald-900/40 text-[11px] text-emerald-300 leading-relaxed">
+                  ⚡ <strong>Quét 1-chạm:</strong> Mở app ngân hàng (VCB, MB, Techcombank, BIDV, MoMo...) quét mã QR để chuyển tiền nhanh 24/7!
+                </div>
+
+                <div>
+                  <span className="text-gray-400 block text-[11px]">Ngân hàng:</span>
+                  <span className="font-bold text-white text-sm">{bankName}</span>
+                </div>
+
+                {accountNumber ? (
                   <div>
                     <span className="text-gray-400 block text-[11px]">Số tài khoản:</span>
-                    <div className="flex items-center justify-between gap-2 bg-cinema-900 p-2 rounded-xl border border-cinema-700">
+                    <div className="flex items-center justify-between gap-2 bg-cinema-850 p-2 rounded-xl border border-cinema-700">
                       <span className="font-mono font-bold text-amber-300 text-sm tracking-wide">
                         {accountNumber}
                       </span>
@@ -150,23 +164,26 @@ export const DonateModal: React.FC<DonateModalProps> = ({ isOpen, onClose }) => 
                       </button>
                     </div>
                   </div>
+                ) : (
                   <div>
-                    <span className="text-gray-400 block text-[11px]">Chủ tài khoản:</span>
-                    <span className="font-semibold text-white uppercase">{accountName}</span>
+                    <span className="text-gray-400 block text-[11px]">Tài khoản thụ hưởng:</span>
+                    <span className="font-mono text-gray-300 text-xs">(Đã mã hóa trong mã QR VietQR)</span>
                   </div>
+                )}
+
+                <div>
+                  <span className="text-gray-400 block text-[11px]">Chủ tài khoản:</span>
+                  <span className="font-semibold text-white uppercase">{accountName}</span>
                 </div>
+
+                {donateNote && (
+                  <div>
+                    <span className="text-gray-400 block text-[11px]">Nội dung chuyển khoản (gợi ý):</span>
+                    <span className="text-gray-300 italic text-[11px]">{donateNote}</span>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="p-3 bg-cinema-900/60 rounded-xl border border-cinema-800 text-xs text-gray-400 space-y-2 text-center py-4">
-                <QrCode className="w-8 h-8 text-amber-400/80 mx-auto" />
-                <p>
-                  Thông tin số tài khoản đang được Admin cập nhật. Bạn có thể ủng hộ kênh bằng cách Đăng ký kênh YouTube bên dưới!
-                </p>
-                <p className="text-[11px] text-gray-500">
-                  (Admin có thể cài đặt số tài khoản của mình trong mục <strong className="text-gray-300">Cài đặt hệ thống</strong>).
-                </p>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Phương thức 2: Ví MoMo (nếu có) */}

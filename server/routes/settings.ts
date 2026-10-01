@@ -17,6 +17,12 @@ router.get('/', (req: Request, res: Response) => {
       seoKeywords: s.seoKeywords,
       hasYoutubeApiKey: Boolean(s.youtubeApiKey || process.env.YOUTUBE_API_KEY),
       hasFirebaseConfig: Boolean(s.firebaseConfig?.apiKey),
+      donateBankName: s.donateBankName || 'Vietcombank',
+      donateAccountNumber: s.donateAccountNumber || '',
+      donateAccountName: s.donateAccountName || 'NGUYỄN THIỆN PHÚC',
+      donateMomo: s.donateMomo || '',
+      donateQrUrl: s.donateQrUrl || '/images/donate-qr.png',
+      donateNote: s.donateNote || 'Ủng hộ duy trì server và phát triển kênh Phim Hay 247',
     };
     res.json({ success: true, data: publicSettings });
   } catch (error: any) {

@@ -34,10 +34,11 @@ export const SettingsPage: React.FC = () => {
   const [seoKeywords, setKeywords] = useState('');
   const [youtubeApiKey, setYoutubeApiKey] = useState('');
   const [adminKey, setAdminKey] = useState('');
-  const [donateBankName, setDonateBankName] = useState('MB Bank');
+  const [donateBankName, setDonateBankName] = useState('Vietcombank');
   const [donateAccountNumber, setDonateAccountNumber] = useState('');
-  const [donateAccountName, setDonateAccountName] = useState('PHIM HAY 247');
+  const [donateAccountName, setDonateAccountName] = useState('NGUYỄN THIỆN PHÚC');
   const [donateMomo, setDonateMomo] = useState('');
+  const [donateQrUrl, setDonateQrUrl] = useState('/images/donate-qr.png');
 
   useEffect(() => {
     fetchAdminSettings()
@@ -51,10 +52,11 @@ export const SettingsPage: React.FC = () => {
         setKeywords(data.seoKeywords || '');
         setYoutubeApiKey(data.youtubeApiKey || '');
         setAdminKey(data.adminKey || 'admin123');
-        setDonateBankName(data.donateBankName || 'MB Bank');
+        setDonateBankName(data.donateBankName || 'Vietcombank');
         setDonateAccountNumber(data.donateAccountNumber || '');
-        setDonateAccountName(data.donateAccountName || 'PHIM HAY 247');
+        setDonateAccountName(data.donateAccountName || 'NGUYỄN THIỆN PHÚC');
         setDonateMomo(data.donateMomo || '');
+        setDonateQrUrl(data.donateQrUrl || '/images/donate-qr.png');
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -80,6 +82,7 @@ export const SettingsPage: React.FC = () => {
         donateAccountNumber: donateAccountNumber.trim(),
         donateAccountName: donateAccountName.trim(),
         donateMomo: donateMomo.trim(),
+        donateQrUrl: donateQrUrl.trim() || '/images/donate-qr.png',
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
@@ -284,6 +287,28 @@ export const SettingsPage: React.FC = () => {
             Thông tin sẽ hiển thị khi khán giả bấm nút "Ủng hộ kênh" trên thanh Menu.
           </p>
 
+          {/* Hiển thị Mã QR hiện tại */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-cinema-850 border border-cinema-700">
+            <div className="p-2 bg-white rounded-xl shadow-md flex-shrink-0">
+              <img
+                src={donateQrUrl || '/images/donate-qr.png'}
+                alt="Mã QR Hiện Tại"
+                className="w-24 h-24 object-contain rounded"
+              />
+            </div>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-white">Mã QR VietQR Napas 247 Chính Thức</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Đang hoạt động
+                </span>
+              </div>
+              <p className="text-gray-400 text-[11px] leading-relaxed">
+                Mã QR đã được gán trực tiếp vào website. Khán giả bấm "Ủng hộ kênh" sẽ thấy mã QR này và có thể mở bất kỳ ứng dụng ngân hàng nào (VCB, MB, BIDV, Techcombank, MoMo...) để quét chuyển tiền nhanh 24/7!
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-300 mb-1.5">Tên Ngân Hàng</label>
@@ -291,18 +316,18 @@ export const SettingsPage: React.FC = () => {
                 type="text"
                 value={donateBankName}
                 onChange={(e) => setDonateBankName(e.target.value)}
-                placeholder="VD: MB Bank, Vietcombank, Techcombank..."
+                placeholder="VD: Vietcombank, MB Bank, Techcombank..."
                 className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Số Tài Khoản Ngân Hàng</label>
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Số Tài Khoản Ngân Hàng (Tùy chọn)</label>
               <input
                 type="text"
                 value={donateAccountNumber}
                 onChange={(e) => setDonateAccountNumber(e.target.value)}
-                placeholder="VD: 0123456789..."
+                placeholder="Nhập nếu muốn hiện số tài khoản dạng văn bản để chép"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 font-mono font-bold text-amber-300"
               />
             </div>
@@ -325,6 +350,17 @@ export const SettingsPage: React.FC = () => {
                 value={donateMomo}
                 onChange={(e) => setDonateMomo(e.target.value)}
                 placeholder="VD: 0987654321"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 font-mono"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Đường Dẫn Ảnh QR Code (Mặc định: /images/donate-qr.png)</label>
+              <input
+                type="text"
+                value={donateQrUrl}
+                onChange={(e) => setDonateQrUrl(e.target.value)}
+                placeholder="/images/donate-qr.png"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs focus:outline-none focus:border-rose-500 font-mono"
               />
             </div>
