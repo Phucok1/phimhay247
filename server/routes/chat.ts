@@ -4,24 +4,70 @@ import { db } from '../services/database.js';
 const router = Router();
 
 // In-memory active visitor store
-const activeVisitors = new Map<string, number>();
+export interface ActiveVisitor {
+  id: string;
+  ip: string;
+  device: 'Mobile' | 'Desktop' | 'Tablet';
+  lastSeen: number;
+}
 
-// Clean up visitors inactive for more than 45 seconds & compute online count
-function getActiveOnlineCount(clientIpOrId?: string): number {
+const activeVisitorsMap = new Map<string, ActiveVisitor>();
+
+export function recordVisitorActivity(id: string, ip: string, userAgent?: string): number {
   const now = Date.now();
-  if (clientIpOrId) {
-    activeVisitors.set(clientIpOrId, now);
+  const ua = (userAgent || '').toLowerCase();
+  let device: 'Mobile' | 'Desktop' | 'Tablet' = 'Desktop';
+  if (/ipad|tablet/i.test(ua)) device = 'Tablet';
+  else if (/mobile|android|iphone|ipod/i.test(ua)) device = 'Mobile';
+
+  if (id) {
+    activeVisitorsMap.set(id, {
+      id,
+      ip: (ip || 'unknown').replace(/^.*:/, ''),
+      device,
+      lastSeen: now,
+    });
   }
 
-  // Remove stale entries older than 45 seconds
-  for (const [id, lastSeen] of activeVisitors.entries()) {
-    if (now - lastSeen > 45000) {
-      activeVisitors.delete(id);
+  // Clean stale (> 45s)
+  for (const [key, item] of activeVisitorsMap.entries()) {
+    if (now - item.lastSeen > 45000) {
+      activeVisitorsMap.delete(key);
     }
   }
 
-  const realCount = activeVisitors.size;
-  // Natural realistic baseline based on hour of the day (e.g., peak evening vs normal)
+  return activeVisitorsMap.size;
+}
+
+export function getRealVisitorStats() {
+  const now = Date.now();
+  for (const [id, item] of activeVisitorsMap.entries()) {
+    if (now - item.lastSeen > 60000) {
+      activeVisitorsMap.delete(id);
+    }
+  }
+  const list = Array.from(activeVisitorsMap.values());
+  const mobileCount = list.filter((v) => v.device === 'Mobile').length;
+  const desktopCount = list.filter((v) => v.device === 'Desktop').length;
+  const tabletCount = list.filter((v) => v.device === 'Tablet').length;
+
+  return {
+    realCount: list.length,
+    mobileCount,
+    desktopCount: desktopCount + tabletCount,
+    visitors: list.map((v) => ({
+      device: v.device,
+      secondsAgo: Math.max(0, Math.round((now - v.lastSeen) / 1000)),
+    })),
+  };
+}
+
+// Clean up visitors inactive for more than 45 seconds & compute online count
+function getActiveOnlineCount(clientIpOrId?: string, ip?: string, ua?: string): number {
+  const now = Date.now();
+  const realCount = recordVisitorActivity(clientIpOrId || 'anon', ip || '', ua);
+
+  // Natural realistic baseline based on hour of the day
   const hour = new Date().getHours();
   const isPeakHour = (hour >= 18 && hour <= 23) || (hour >= 11 && hour <= 13);
   const baseCount = isPeakHour ? 22 : 14;
@@ -36,7 +82,7 @@ function getActiveOnlineCount(clientIpOrId?: string): number {
 router.get('/online', (req: Request, res: Response) => {
   try {
     const clientId = (req.query.clientId as string) || req.ip || 'anonymous';
-    const count = getActiveOnlineCount(clientId);
+    const count = getActiveOnlineCount(clientId, req.ip, req.headers['user-agent']);
     res.json({ success: true, onlineCount: count });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

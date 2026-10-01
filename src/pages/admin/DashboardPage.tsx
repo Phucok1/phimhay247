@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Film, PlaySquare, Eye, PlusCircle, Sparkles, TrendingUp, ExternalLink, Loader2 } from 'lucide-react';
+import { Film, PlaySquare, Eye, PlusCircle, Sparkles, TrendingUp, ExternalLink, Loader2, Users, Smartphone, Monitor } from 'lucide-react';
 import { fetchDashboardStats } from '../../services/api';
 import { DashboardStats } from '../../types';
 
@@ -8,11 +8,18 @@ export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadStats = () => {
     fetchDashboardStats()
       .then(setStats)
       .catch((err) => console.error('Lỗi tải thống kê dashboard:', err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadStats();
+    // Tự động làm mới thống kê khách online mỗi 10 giây
+    const interval = setInterval(loadStats, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -26,27 +33,39 @@ export const DashboardPage: React.FC = () => {
 
   const statCards = [
     {
-      title: 'Tổng số phim',
+      title: 'Khách thật online (Real-time)',
+      value: `${stats?.realStats?.realCount || 0} người`,
+      subText: `${stats?.realStats?.mobileCount || 0} mobile • ${stats?.realStats?.desktopCount || 0} PC`,
+      icon: Users,
+      color: 'from-emerald-600 to-green-600',
+      textColor: 'text-emerald-400',
+      isLive: true,
+    },
+    {
+      title: 'Tổng lượt xem toàn trang',
+      value: (stats?.totalViews || 0).toLocaleString(),
+      subText: 'Lượt xem video thực tế',
+      icon: Eye,
+      color: 'from-purple-600 to-indigo-600',
+      textColor: 'text-purple-400',
+    },
+    {
+      title: 'Tổng số bộ phim',
       value: stats?.totalMovies || 0,
+      subText: 'Phim admin + hội viên',
       icon: Film,
-      color: 'from-blue-600 to-indigo-600',
+      color: 'from-blue-600 to-cyan-600',
       textColor: 'text-blue-400',
       link: '/admin/movies',
     },
     {
       title: 'Tổng số tập phim',
       value: stats?.totalEpisodes || 0,
+      subText: 'Tập phát YouTube/Embed',
       icon: PlaySquare,
       color: 'from-red-600 to-amber-600',
       textColor: 'text-red-400',
       link: '/admin/movies',
-    },
-    {
-      title: 'Tổng lượt xem toàn trang',
-      value: (stats?.totalViews || 0).toLocaleString(),
-      icon: Eye,
-      color: 'from-emerald-600 to-teal-600',
-      textColor: 'text-emerald-400',
     },
   ];
 
@@ -74,30 +93,63 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 3 Thẻ Thống Kê Số Liệu Chính */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {/* 4 Thẻ Thống Kê Số Liệu Chính */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((c) => {
           const Icon = c.icon;
           return (
             <div
               key={c.title}
-              className="p-5 rounded-2xl bg-cinema-900 border border-cinema-800 shadow-xl flex items-center justify-between"
+              className="p-5 rounded-2xl bg-cinema-900 border border-cinema-800 shadow-xl flex items-center justify-between group hover:border-cinema-700 transition"
             >
               <div>
-                <p className="text-xs text-gray-400 font-medium">{c.title}</p>
-                <h3 className="text-2xl sm:text-3xl font-black text-white mt-1">{c.value}</h3>
+                <div className="flex items-center gap-1.5">
+                  {c.isLive && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                  )}
+                  <p className="text-xs text-gray-400 font-medium">{c.title}</p>
+                </div>
+                <h3 className="text-2xl font-black text-white mt-1">{c.value}</h3>
+                {c.subText && <p className="text-[11px] text-gray-500 mt-0.5">{c.subText}</p>}
                 {c.link && (
                   <Link to={c.link} className={`mt-2 inline-block text-[11px] font-semibold ${c.textColor} hover:underline`}>
                     Xem chi tiết →
                   </Link>
                 )}
               </div>
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.color} flex items-center justify-center text-white shadow-lg`}>
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.color} flex items-center justify-center text-white shadow-lg flex-shrink-0 ml-2`}>
                 <Icon className="w-6 h-6" />
               </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Banner Người Thật Đang Online */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-cinema-900 to-cinema-900 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-3 w-3 flex-shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
+              <span>Khách Thật Đang Truy Cập Website (Thời Gian Thực):</span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-black bg-emerald-500 text-black">
+                {stats?.realStats?.realCount || 0} người thật
+              </span>
+            </p>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              Thiết bị: <span className="text-emerald-300 font-semibold">{stats?.realStats?.mobileCount || 0} Điện thoại</span> • <span className="text-emerald-300 font-semibold">{stats?.realStats?.desktopCount || 0} Máy tính</span> (Tự động cập nhật trực tiếp)
+            </p>
+          </div>
+        </div>
+        <div className="text-[11px] text-emerald-400 bg-emerald-950/80 px-3 py-1.5 rounded-xl border border-emerald-800/60 self-start sm:self-auto font-medium">
+          ✓ 100% người thật không có số ảo
+        </div>
       </div>
 
       {/* Grid 2 cột: Phim xem nhiều nhất & Phim mới thêm */}

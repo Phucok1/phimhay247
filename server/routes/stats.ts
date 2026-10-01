@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../services/database.js';
+import { getRealVisitorStats } from './chat.js';
 
 const router = Router();
 
@@ -48,7 +49,8 @@ router.post('/view', (req: Request, res: Response) => {
 router.get('/dashboard', (req: Request, res: Response) => {
   try {
     const stats = db.getStats();
-    res.json({ success: true, data: stats });
+    const realStats = getRealVisitorStats();
+    res.json({ success: true, data: { ...stats, realStats } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

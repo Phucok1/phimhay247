@@ -144,4 +144,10 @@ export interface DashboardStats {
   totalViews: number;
   recentMovies: Movie[];
   topMovies: Movie[];
+  realStats?: {
+    realCount: number;
+    mobileCount: number;
+    desktopCount: number;
+    visitors: { device: string; secondsAgo: number }[];
+  };
 }
