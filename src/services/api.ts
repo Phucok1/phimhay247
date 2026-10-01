@@ -208,10 +208,30 @@ export const restoreDatabaseBackup = async (data: any): Promise<{ success: boole
   return res.data;
 };
 
-// --- Live Chat ---
-export const fetchChatMessages = async (limit = 60): Promise<ChatMessage[]> => {
-  const res = await client.get('/chat/messages', { params: { limit } });
-  return res.data.data;
+// --- Live Chat & Số Người Trực Tuyến ---
+export const fetchChatMessages = async (
+  limit = 60
+): Promise<{ messages: ChatMessage[]; onlineCount: number }> => {
+  let clientId = localStorage.getItem('phimhay247_client_id');
+  if (!clientId) {
+    clientId = 'user_' + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem('phimhay247_client_id', clientId);
+  }
+  const res = await client.get('/chat/messages', { params: { limit, clientId } });
+  return {
+    messages: res.data.data || [],
+    onlineCount: res.data.onlineCount || 15,
+  };
+};
+
+export const fetchOnlineCount = async (): Promise<number> => {
+  let clientId = localStorage.getItem('phimhay247_client_id');
+  if (!clientId) {
+    clientId = 'user_' + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem('phimhay247_client_id', clientId);
+  }
+  const res = await client.get('/chat/online', { params: { clientId } });
+  return res.data.onlineCount || 15;
 };
 
 export const sendChatMessage = async (data: {

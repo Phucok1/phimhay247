@@ -12,6 +12,7 @@ import {
   AlertCircle,
   HelpCircle,
   Clock,
+  Users,
 } from 'lucide-react';
 import { fetchChatMessages, sendChatMessage, deleteChatMessage } from '../../services/api';
 import { ChatMessage } from '../../types';
@@ -20,6 +21,7 @@ import { FeedbackModal } from './FeedbackModal';
 export const LiveChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [onlineCount, setOnlineCount] = useState<number>(18);
   const [content, setContent] = useState('');
   const [nickname, setNickname] = useState('');
   const [showNameEdit, setShowNameEdit] = useState(false);
@@ -55,16 +57,19 @@ export const LiveChatWidget: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Load tin nhắn
+  // Load tin nhắn & số người trực tuyến
   const loadMessages = async () => {
     try {
-      const data = await fetchChatMessages(60);
-      setMessages(data);
-
-      if (!isOpen && data.length > lastMsgCountRef.current && lastMsgCountRef.current > 0) {
-        setUnreadCount((prev) => prev + (data.length - lastMsgCountRef.current));
+      const res = await fetchChatMessages(60);
+      setMessages(res.messages);
+      if (res.onlineCount) {
+        setOnlineCount(res.onlineCount);
       }
-      lastMsgCountRef.current = data.length;
+
+      if (!isOpen && res.messages.length > lastMsgCountRef.current && lastMsgCountRef.current > 0) {
+        setUnreadCount((prev) => prev + (res.messages.length - lastMsgCountRef.current));
+      }
+      lastMsgCountRef.current = res.messages.length;
     } catch (err) {
       console.debug('Lỗi tải tin nhắn chat:', err);
     }
@@ -153,6 +158,10 @@ export const LiveChatWidget: React.FC = () => {
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-cinema-900 animate-pulse" />
             </div>
             <span>Kênh Chat</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-black/40 text-green-300 border border-green-500/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
+              {onlineCount} trực tuyến
+            </span>
             {unreadCount > 0 && (
               <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-red-600 rounded-full animate-bounce">
                 +{unreadCount}
@@ -172,9 +181,12 @@ export const LiveChatWidget: React.FC = () => {
                 <MessageCircle className="w-4 h-4 fill-white" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  Kênh Chat Khán Giả
-                  <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-ping" />
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>Kênh Chat Khán Giả</span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-green-950/80 text-green-400 border border-green-500/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    {onlineCount} trực tuyến
+                  </span>
                 </h4>
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
                   <span>Bạn: </span>
