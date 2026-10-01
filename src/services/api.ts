@@ -287,7 +287,8 @@ export const submitMemberMovie = async (data: {
   contributorContact?: string;
   description?: string;
   category?: string[];
-  videoUrl: string;
+  videoUrl?: string;
+  episodes?: { episodeNumber: number; title: string; videoUrl: string }[];
   posterUrl?: string;
 }): Promise<{ success: boolean; message: string; data: MemberMovieSubmission }> => {
   const res = await client.post('/member-movies/submit', data);

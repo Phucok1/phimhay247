@@ -43,6 +43,12 @@ export interface FeedbackItem {
   createdAt: string;
 }
 
+export interface MemberEpisodeItem {
+  episodeNumber: number;
+  title: string;
+  videoUrl: string;
+}
+
 export interface MemberMovieSubmission {
   id: string;
   title: string;
@@ -52,6 +58,7 @@ export interface MemberMovieSubmission {
   description: string;
   category: string[];
   videoUrl: string;
+  episodes?: MemberEpisodeItem[];
   parsedVideoId?: string;
   parsedEmbedUrl?: string;
   parsedPlatform?: string;

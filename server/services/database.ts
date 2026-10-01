@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { parseYouTubeUrl } from './youtubeParser.js';
 
 export interface Movie {
   id: string;
@@ -76,6 +77,12 @@ export interface FeedbackItem {
   createdAt: string;
 }
 
+export interface MemberEpisodeItem {
+  episodeNumber: number;
+  title: string;
+  videoUrl: string;
+}
+
 export interface MemberMovieSubmission {
   id: string;
   title: string;
@@ -85,6 +92,7 @@ export interface MemberMovieSubmission {
   description: string;
   category: string[];
   videoUrl: string;
+  episodes?: MemberEpisodeItem[];
   parsedVideoId?: string;
   parsedEmbedUrl?: string;
   parsedPlatform?: string;
@@ -764,26 +772,35 @@ class DatabaseService {
       hidden: false,
     });
 
-    movie.contributorName = sub.contributorName;
+    const episodesList = sub.episodes && sub.episodes.length > 0
+      ? sub.episodes
+      : [{ episodeNumber: 1, title: 'Tập 1', videoUrl: sub.videoUrl }];
 
-    this.createEpisode({
-      movieId: movie.id,
-      episodeNumber: 1,
-      title: 'Tập 1',
-      youtubeUrl: parsedVideo.watchUrl,
-      youtubeVideoId: parsedVideo.videoId,
-      youtubeEmbedUrl: parsedVideo.embedUrl,
-      thumbnailUrl: parsedVideo.thumbnailUrl,
-      servers: [
-        {
-          id: `srv-${Date.now()}`,
-          name: `Server 1 (${parsedVideo.platformName})`,
-          url: parsedVideo.watchUrl,
-          videoId: parsedVideo.videoId,
-          embedUrl: parsedVideo.embedUrl,
-          platform: parsedVideo.videoType,
-        },
-      ],
+    episodesList.forEach((ep, idx) => {
+      const parsedEp = parseYouTubeUrl(ep.videoUrl);
+      const epData = parsedEp.success ? parsedEp.data : parsedVideo;
+      const epNum = Number(ep.episodeNumber) || (idx + 1);
+      const epTitle = ep.title?.trim() || `Tập ${epNum}`;
+
+      this.createEpisode({
+        movieId: movie.id,
+        episodeNumber: epNum,
+        title: epTitle,
+        youtubeUrl: epData.watchUrl,
+        youtubeVideoId: epData.videoId,
+        youtubeEmbedUrl: epData.embedUrl,
+        thumbnailUrl: epData.thumbnailUrl,
+        servers: [
+          {
+            id: `srv-${Date.now()}-${idx}`,
+            name: `Server 1 (${epData.platformName || 'HD'})`,
+            url: epData.watchUrl,
+            videoId: epData.videoId,
+            embedUrl: epData.embedUrl,
+            platform: epData.videoType || 'youtube',
+          },
+        ],
+      });
     });
 
     sub.status = 'Đã duyệt';

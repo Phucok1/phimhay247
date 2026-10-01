@@ -18,19 +18,39 @@ router.get('/', (req: Request, res: Response) => {
 // POST /api/member-movies/submit - Hội viên gửi đóng góp phim
 router.post('/submit', (req: Request, res: Response) => {
   try {
-    const { title, contributorName, contributorContact, description, category, videoUrl, posterUrl } = req.body;
+    const { title, contributorName, contributorContact, description, category, videoUrl, episodes, posterUrl } = req.body;
 
     if (!title || !title.trim()) {
       return res.status(400).json({ success: false, error: 'Vui lòng nhập tên phim.' });
     }
-    if (!videoUrl || !videoUrl.trim()) {
-      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp link video tập 1 (YouTube, Ok.ru, Facebook Reels, Drive...).' });
+
+    let rawEpisodes = Array.isArray(episodes) && episodes.length > 0 ? episodes : [];
+    if (rawEpisodes.length === 0 && videoUrl && videoUrl.trim()) {
+      rawEpisodes = [{ episodeNumber: 1, title: 'Tập 1', videoUrl: videoUrl.trim() }];
     }
 
-    // Kiểm tra & phân tích link video
-    const parsed = parseYouTubeUrl(videoUrl.trim());
+    if (rawEpisodes.length === 0) {
+      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp ít nhất 1 link video tập phim.' });
+    }
+
+    // Làm sạch và kiểm tra danh sách tập
+    const cleanedEpisodes = rawEpisodes
+      .map((ep: any, index: number) => ({
+        episodeNumber: Number(ep.episodeNumber) || (index + 1),
+        title: ep.title?.trim() || `Tập ${index + 1}`,
+        videoUrl: ep.videoUrl?.trim() || '',
+      }))
+      .filter((ep: any) => Boolean(ep.videoUrl));
+
+    if (cleanedEpisodes.length === 0) {
+      return res.status(400).json({ success: false, error: 'Danh sách tập phim không chứa link video hợp lệ.' });
+    }
+
+    // Link tập 1 để lấy ảnh bìa và platform đại diện
+    const firstUrl = cleanedEpisodes[0].videoUrl;
+    const parsed = parseYouTubeUrl(firstUrl);
     if (!parsed.success) {
-      return res.status(400).json({ success: false, error: parsed.error });
+      return res.status(400).json({ success: false, error: `Link tập 1 không hợp lệ: ${parsed.error}` });
     }
 
     const categories = Array.isArray(category) && category.length > 0 ? category : ['Phim Hội Viên'];
@@ -43,6 +63,7 @@ router.post('/submit', (req: Request, res: Response) => {
       description: description?.trim() || '',
       category: categories,
       videoUrl: parsed.data.watchUrl,
+      episodes: cleanedEpisodes,
       parsedVideoId: parsed.data.videoId,
       parsedEmbedUrl: parsed.data.embedUrl,
       parsedPlatform: parsed.data.platformName,

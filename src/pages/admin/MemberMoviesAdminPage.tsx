@@ -242,22 +242,56 @@ export const MemberMoviesAdminPage: React.FC = () => {
                         )}
                       </td>
 
-                      {/* Nguồn Video */}
+                      {/* Nguồn Video & Danh Sách Tập */}
                       <td className="py-4 px-4">
-                        <div className="flex flex-col gap-1">
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-400">
-                            {item.parsedPlatform || 'Video'}
-                          </span>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-400">
+                              {item.parsedPlatform || 'Video'}
+                            </span>
+                            {item.episodes && item.episodes.length > 1 ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                🎬 {item.episodes.length} tập
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.2 rounded text-[10px] bg-cinema-800 text-gray-400 border border-cinema-700">
+                                1 tập
+                              </span>
+                            )}
+                          </div>
                           <a
                             href={item.videoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-white truncate max-w-[180px]"
+                            className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-white truncate max-w-[190px]"
                             title={item.videoUrl}
                           >
                             <ExternalLink className="w-3 h-3 flex-shrink-0" />
                             <span className="truncate">{item.videoUrl}</span>
                           </a>
+
+                          {/* Danh sách các tập nếu có */}
+                          {item.episodes && item.episodes.length > 1 && (
+                            <div className="flex flex-wrap gap-1 max-w-[220px]">
+                              {item.episodes.slice(0, 6).map((ep) => (
+                                <a
+                                  key={ep.episodeNumber}
+                                  href={ep.videoUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-1.5 py-0.2 rounded text-[9px] bg-cinema-850 hover:bg-cinema-800 text-amber-300/80 border border-cinema-700"
+                                  title={`${ep.title}: ${ep.videoUrl}`}
+                                >
+                                  T{ep.episodeNumber}
+                                </a>
+                              ))}
+                              {item.episodes.length > 6 && (
+                                <span className="text-[9px] text-gray-500 self-center">
+                                  +{item.episodes.length - 6}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </td>
 
