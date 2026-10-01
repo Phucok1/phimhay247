@@ -32,9 +32,35 @@ export const MemberMoviesAdminPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await fetchMemberSubmissions();
-      setSubmissions(data);
+      if (data && data.length > 0) {
+        setSubmissions(data);
+        try {
+          localStorage.setItem('phimhay247_admin_submissions_cache', JSON.stringify(data));
+        } catch (e) {}
+      } else {
+        const cached = localStorage.getItem('phimhay247_admin_submissions_cache');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setSubmissions(parsed);
+            }
+          } catch (e) {}
+        } else {
+          setSubmissions([]);
+        }
+      }
     } catch (err) {
       console.error('Lỗi tải danh sách phim hội viên:', err);
+      const cached = localStorage.getItem('phimhay247_admin_submissions_cache');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setSubmissions(parsed);
+          }
+        } catch (e) {}
+      }
     } finally {
       setLoading(false);
     }
