@@ -90,17 +90,19 @@ export function parseYouTubeUrl(url: string): { success: true; data: ParsedVideo
     /facebook\.com\/(?:reel|watch|share|videos|\w+\/videos)/i.test(trimmed) ||
     /fb\.watch\//i.test(trimmed)
   ) {
-    const fbReelMatch = trimmed.match(/(?:reel|videos|v=|\/r\/|\/v\/)([0-9]+)/i);
-    const fbId = fbReelMatch ? fbReelMatch[1] : `fb-${Date.now()}`;
+    const fbMatch = trimmed.match(/(?:reel\/|videos\/|watch\/\?v=|v=|\/r\/|\/v\/)([0-9]{8,})/i) ||
+                    trimmed.match(/([0-9]{9,})/);
+    const fbId = fbMatch ? fbMatch[1] : `fb-${Date.now()}`;
+    const normalizedWatchUrl = fbMatch ? `https://www.facebook.com/watch/?v=${fbId}` : trimmed;
     return {
       success: true,
       data: {
         videoId: fbId,
         videoType: 'facebook',
-        platformName: 'Facebook Reel',
-        embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=0&autoplay=1`,
+        platformName: 'Facebook Video',
+        embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(normalizedWatchUrl)}&show_text=0&autoplay=1`,
         thumbnailUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80',
-        watchUrl: trimmed,
+        watchUrl: normalizedWatchUrl,
         originalUrl: trimmed,
       },
     };
