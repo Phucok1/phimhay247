@@ -13,8 +13,8 @@ export const Footer: React.FC = () => {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-amber-500 flex items-center justify-center shadow-md">
                 <Play className="w-4 h-4 text-white fill-white ml-0.5" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">
-                PHIM HAY <span className="text-gradient">247</span>
+              <span className="text-xl font-black tracking-tight text-white">
+                PHIMCONGDONG<span className="text-gradient from-amber-400 via-orange-400 to-red-500">.COM</span>
               </span>
             </Link>
             <p className="text-gray-400 text-xs sm:text-sm leading-relaxed max-w-md">
