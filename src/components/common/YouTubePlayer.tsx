@@ -57,6 +57,11 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
   const isStreamTape = checkUrl.includes('streamtape');
 
+  const isTelegram =
+    checkUrl.includes('t.me') ||
+    checkUrl.includes('telegram.me') ||
+    videoId.startsWith('tg-');
+
   const [useNoCookie, setUseNoCookie] = useState(false);
 
   const isYouTube =
@@ -68,7 +73,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     !isDoodStream &&
     !isStreamWish &&
     !isDailymotion &&
-    !isStreamTape;
+    !isStreamTape &&
+    !isTelegram;
 
   // Chuẩn hóa link Facebook
   let fbWatchUrl = '';
@@ -92,7 +98,9 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       targetUrl
     )}&show_text=0&autoplay=1`;
   } else if (!embedUrl) {
-    if (isOkRu) {
+    if (isTelegram) {
+      embedUrl = customWatchUrl ? (customWatchUrl.includes('?embed=1') ? customWatchUrl : `${customWatchUrl}?embed=1`) : '';
+    } else if (isOkRu) {
       embedUrl = `https://ok.ru/videoembed/${videoId}`;
     } else if (isGDrive) {
       embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
@@ -131,6 +139,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       ? `https://streamwish.to/${videoId}`
       : isDailymotion
       ? `https://www.dailymotion.com/video/${videoId}`
+      : isTelegram
+      ? customWatchUrl || `https://t.me/${videoId.replace('tg-', '').replace('-', '/')}`
       : `https://www.youtube.com/watch?v=${videoId}`);
 
   let platformName = 'YouTube HD Player';
@@ -143,6 +153,11 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     badgeColor = 'bg-amber-500';
     btnColor = 'bg-amber-600 hover:bg-amber-700 shadow-amber-900/40 text-amber-400 border-amber-500/30';
     platformLabel = 'Video Gốc';
+  } else if (isTelegram) {
+    platformName = 'Telegram Video';
+    badgeColor = 'bg-sky-400';
+    btnColor = 'bg-sky-600 hover:bg-sky-700 shadow-sky-900/40 text-sky-300 border-sky-500/30';
+    platformLabel = 'Telegram';
   } else if (isOkRu) {
     platformName = 'Ok.ru (Không Giới Hạn, Tối Đa 32GB)';
     badgeColor = 'bg-orange-500';

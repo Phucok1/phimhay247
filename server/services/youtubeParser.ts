@@ -234,7 +234,26 @@ export function parseYouTubeUrl(url: string): { success: true; data: ParsedVideo
     };
   }
 
-  // 7. Direct MP4 / M3U8 / WebM Link
+  // 7. Telegram Public Channel Video (t.me/channel/123)
+  const tgMatch = trimmed.match(/(?:t\.me|telegram\.me)\/([a-zA-Z0-9_]+)\/([0-9]+)/i);
+  if (tgMatch) {
+    const channelName = tgMatch[1];
+    const postId = tgMatch[2];
+    return {
+      success: true,
+      data: {
+        videoId: `tg-${channelName}-${postId}`,
+        videoType: 'telegram',
+        platformName: `Telegram (@${channelName})`,
+        embedUrl: `https://t.me/${channelName}/${postId}?embed=1`,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=80',
+        watchUrl: `https://t.me/${channelName}/${postId}`,
+        originalUrl: trimmed,
+      },
+    };
+  }
+
+  // 8. Direct MP4 / M3U8 / WebM Link
   if (/\.(mp4|m3u8|webm|ogg)(?:\?.*)?$/i.test(trimmed)) {
     return {
       success: true,
