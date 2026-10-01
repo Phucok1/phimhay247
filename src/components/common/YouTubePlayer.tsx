@@ -62,6 +62,15 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     checkUrl.includes('telegram.me') ||
     videoId.startsWith('tg-');
 
+  const isTeraBox =
+    checkUrl.includes('terabox') ||
+    checkUrl.includes('1024tera') ||
+    checkUrl.includes('terasharelink') ||
+    checkUrl.includes('freeterabox') ||
+    checkUrl.includes('mirrobox') ||
+    checkUrl.includes('nephobox') ||
+    videoId.startsWith('terabox-');
+
   const [useNoCookie, setUseNoCookie] = useState(false);
 
   const isYouTube =
@@ -74,7 +83,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     !isStreamWish &&
     !isDailymotion &&
     !isStreamTape &&
-    !isTelegram;
+    !isTelegram &&
+    !isTeraBox;
 
   // Chuẩn hóa link Facebook
   let fbWatchUrl = '';
@@ -141,6 +151,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       ? `https://www.dailymotion.com/video/${videoId}`
       : isTelegram
       ? customWatchUrl || `https://t.me/${videoId.replace('tg-', '').replace('-', '/')}`
+      : isTeraBox
+      ? customWatchUrl || customEmbedUrl || ''
       : `https://www.youtube.com/watch?v=${videoId}`);
 
   let platformName = 'YouTube HD Player';
@@ -153,6 +165,11 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     badgeColor = 'bg-amber-500';
     btnColor = 'bg-amber-600 hover:bg-amber-700 shadow-amber-900/40 text-amber-400 border-amber-500/30';
     platformLabel = 'Video Gốc';
+  } else if (isTeraBox) {
+    platformName = 'TeraBox Cloud HD';
+    badgeColor = 'bg-cyan-500';
+    btnColor = 'bg-cyan-600 hover:bg-cyan-700 shadow-cyan-900/40 text-cyan-300 border-cyan-500/30';
+    platformLabel = 'TeraBox';
   } else if (isTelegram) {
     platformName = 'Telegram Video';
     badgeColor = 'bg-sky-400';
@@ -220,6 +237,32 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
               className="absolute inset-0 w-full h-full object-contain bg-black"
               onError={() => setHasError(true)}
             />
+          ) : isTeraBox ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-cyan-950/70 via-cinema-950 to-cinema-900 border border-cyan-500/30">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center mb-3 sm:mb-4 shadow-lg shadow-cyan-950/50">
+                <Play className="w-7 h-7 sm:w-8 sm:h-8 text-cyan-400 fill-cyan-400/40 ml-0.5" />
+              </div>
+              <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-bold text-[11px] sm:text-xs border border-cyan-500/30 mb-2">
+                Nguồn phát: TeraBox Cloud HD (1000 GB)
+              </span>
+              <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-2 max-w-lg line-clamp-2 px-2">
+                {title}
+              </h3>
+              <p className="text-gray-300 text-xs sm:text-sm max-w-md mb-5 leading-relaxed px-2">
+                Tập phim này được lưu trữ trên đám mây TeraBox. Bạn có thể mở xem trực tiếp chất lượng cao hoặc lưu về tài khoản.
+              </p>
+              <div className="flex flex-wrap gap-3 items-center justify-center">
+                <a
+                  href={directWatchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold text-xs sm:text-sm transition shadow-lg shadow-cyan-950/60 hover:scale-105"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>Mở Xem Phim Trên TeraBox</span>
+                </a>
+              </div>
+            </div>
           ) : (
             <iframe
               key={`${reloadKey}-${useNoCookie ? 'nocookie' : 'standard'}`}

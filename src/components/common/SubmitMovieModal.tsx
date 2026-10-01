@@ -77,10 +77,12 @@ export const SubmitMovieModal: React.FC<SubmitMovieModalProps> = ({
   const detectPlatform = (url: string) => {
     if (!url) return null;
     const u = url.toLowerCase();
+    if (u.includes('terabox') || u.includes('1024tera') || u.includes('freeterabox') || u.includes('terasharelink')) return 'TeraBox (1TB)';
     if (u.includes('youtube.com') || u.includes('youtu.be')) return 'YouTube';
     if (u.includes('facebook.com') || u.includes('fb.watch')) return 'Facebook Reels';
     if (u.includes('ok.ru')) return 'Ok.ru (32GB)';
     if (u.includes('drive.google.com')) return 'Google Drive';
+    if (u.includes('t.me') || u.includes('telegram.me')) return 'Telegram';
     if (u.includes('dood') || u.includes('ds2play')) return 'DoodStream';
     if (u.includes('streamwish')) return 'StreamWish';
     if (u.includes('.mp4') || u.includes('.m3u8')) return 'Direct MP4/HLS';
@@ -368,7 +370,7 @@ export const SubmitMovieModal: React.FC<SubmitMovieModalProps> = ({
                                 required
                                 value={ep.videoUrl}
                                 onChange={(e) => handleUpdateEpisode(idx, 'videoUrl', e.target.value)}
-                                placeholder="Dán link YouTube, Ok.ru, FB Reels, Drive, MP4..."
+                                placeholder="Dán link TeraBox, YouTube, Ok.ru, FB Reels, Drive..."
                                 className="w-full pl-7 pr-24 py-1.5 bg-cinema-850 border border-cinema-700 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 font-mono"
                               />
                               <LinkIcon className="w-3.5 h-3.5 text-gray-500 absolute left-2 top-2" />
@@ -416,7 +418,7 @@ export const SubmitMovieModal: React.FC<SubmitMovieModalProps> = ({
                       rows={5}
                       value={bulkText}
                       onChange={(e) => setBulkText(e.target.value)}
-                      placeholder={`https://www.youtube.com/watch?v=xxx (Tập 1)\nhttps://www.youtube.com/watch?v=yyy (Tập 2)\nhttps://ok.ru/video/zzz (Tập 3)`}
+                      placeholder={`https://terabox.com/s/xxx (Tập 1)\nhttps://www.youtube.com/watch?v=yyy (Tập 2)\nhttps://ok.ru/video/zzz (Tập 3)`}
                       className="w-full p-3 bg-cinema-850 border border-cinema-700 rounded-xl text-xs text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 font-mono leading-relaxed"
                     />
                     <div className="flex gap-2">
@@ -440,7 +442,7 @@ export const SubmitMovieModal: React.FC<SubmitMovieModalProps> = ({
                 )}
 
                 <div className="pt-1 flex items-center justify-between text-[11px] text-gray-400">
-                  <span>Hỗ trợ: YouTube, Facebook Reels, Ok.ru (32GB), Drive, Direct MP4</span>
+                  <span>Hỗ trợ: TeraBox (1000GB), YouTube, FB Reels, Ok.ru, Telegram, Drive...</span>
                   <span className="text-amber-400 font-semibold flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
                     Không giới hạn số tập

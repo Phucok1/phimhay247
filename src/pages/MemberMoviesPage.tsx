@@ -80,7 +80,7 @@ export const MemberMoviesPage: React.FC = () => {
     <>
       <SEOHead
         title="Góc Phim Hội Viên - Cộng Đồng Chia Sẻ | PHIM HAY 247"
-        description="Khám phá các bộ phim và video đặc sắc do chính các hội viên của Phim Hay 247 đóng góp và chia sẻ. Hỗ trợ Ok.ru, Facebook Reels, YouTube, Google Drive."
+        description="Khám phá các bộ phim và video đặc sắc do chính các hội viên của Phim Hay 247 đóng góp và chia sẻ. Hỗ trợ TeraBox, Ok.ru, Facebook Reels, YouTube, Google Drive."
         keywords="phim hoi vien, chia se phim, dong gop phim, phim hay 247 hoi vien"
       />
 
@@ -101,7 +101,7 @@ export const MemberMoviesPage: React.FC = () => {
               </h1>
               <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
                 Nơi hội viên Phim Hay 247 cùng nhau chia sẻ những bộ phim yêu thích, phim hiếm từ các nguồn lưu trữ miễn phí như{' '}
-                <strong className="text-amber-300">Ok.ru (không giới hạn GB)</strong>, Facebook Reels, YouTube, và Google Drive.
+                <strong className="text-cyan-300">TeraBox (1000 GB)</strong>, <strong className="text-amber-300">Ok.ru (không giới hạn GB)</strong>, Facebook Reels, YouTube, và Google Drive.
               </p>
 
               {/* Badges tính năng */}

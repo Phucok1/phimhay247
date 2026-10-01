@@ -143,12 +143,13 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
 
               <div className="p-3 bg-cinema-950/80 rounded-xl border border-cinema-800/80 text-gray-400 space-y-1">
                 <p className="font-semibold text-gray-300">Hỗ trợ các nền tảng video:</p>
+                <p>• <strong>TeraBox Cloud:</strong> terabox.com, 1024tera.com (1024GB đám mây miễn phí)</p>
                 <p>• <strong>Ok.ru:</strong> Mạng xã hội Nga (Dung lượng không giới hạn, 32GB/file, không bản quyền)</p>
                 <p>• <strong>Google Drive:</strong> drive.google.com (15GB/acc, tốc độ cực nhanh)</p>
+                <p>• <strong>Telegram:</strong> t.me/kênh/id (Video từ kênh công khai)</p>
                 <p>• <strong>YouTube:</strong> watch, youtu.be, shorts, live</p>
                 <p>• <strong>Facebook:</strong> Reels, Watch video, fb.watch</p>
-                <p>• <strong>Archive.org &amp; DoodStream:</strong> archive.org, doodstream.com, streamwish.to</p>
-                <p>• <strong>Khác:</strong> Dailymotion, link trực tiếp .MP4 / .M3U8</p>
+                <p>• <strong>Khác:</strong> DoodStream, StreamWish, Dailymotion, link trực tiếp .MP4 / .M3U8</p>
               </div>
             </div>
           ) : (

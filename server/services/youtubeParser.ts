@@ -253,7 +253,25 @@ export function parseYouTubeUrl(url: string): { success: true; data: ParsedVideo
     };
   }
 
-  // 8. Direct MP4 / M3U8 / WebM Link
+  // 8. TeraBox Cloud (terabox.com, teraboxapp.com, 1024tera.com, freeterabox.com...)
+  if (/(?:terabox|1024tera|terasharelink|freeterabox|mirrobox|nephobox|4funbox)\.(?:com|app|fun)/i.test(trimmed)) {
+    const teraIdMatch = trimmed.match(/\/s\/([a-zA-Z0-9_-]+)/i);
+    const teraId = teraIdMatch ? teraIdMatch[1] : `tb-${Date.now()}`;
+    return {
+      success: true,
+      data: {
+        videoId: `terabox-${teraId}`,
+        videoType: 'terabox',
+        platformName: 'TeraBox Cloud HD',
+        embedUrl: trimmed,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        watchUrl: trimmed,
+        originalUrl: trimmed,
+      },
+    };
+  }
+
+  // 9. Direct MP4 / M3U8 / WebM Link
   if (/\.(mp4|m3u8|webm|ogg)(?:\?.*)?$/i.test(trimmed)) {
     return {
       success: true,

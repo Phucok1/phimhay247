@@ -328,7 +328,7 @@ export const EpisodeListPage: React.FC = () => {
                 required
                 value={epYoutubeUrl}
                 onChange={(e) => handleYoutubeUrlChange(e.target.value)}
-                placeholder="YouTube, Facebook Reels, Ok.ru, Google Drive, DoodStream..."
+                placeholder="TeraBox, YouTube, Facebook Reels, Ok.ru, Google Drive, Telegram..."
                 className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-primary font-mono"
               />
             </div>
@@ -352,7 +352,7 @@ export const EpisodeListPage: React.FC = () => {
                 className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-semibold"
               >
                 <Plus className="w-3.5 h-3.5" />
-                + Thêm Link Phụ (Facebook Reel, Ok.ru, Drive...)
+                + Thêm Link Phụ (TeraBox, Facebook, Ok.ru, Drive...)
               </button>
             </div>
 
@@ -376,7 +376,7 @@ export const EpisodeListPage: React.FC = () => {
                     updated[idx].url = e.target.value;
                     setAddBackupServers(updated);
                   }}
-                  placeholder="Dán link Facebook Reels, Ok.ru, Google Drive, DoodStream..."
+                  placeholder="Dán link TeraBox, Facebook Reels, Ok.ru, Google Drive, Telegram..."
                   className="flex-grow px-3 py-1.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs font-mono"
                 />
                 <button
@@ -693,7 +693,7 @@ export const EpisodeListPage: React.FC = () => {
                           updated[idx].url = e.target.value;
                           setEditServers(updated);
                         }}
-                        placeholder="Dán link Facebook Reels, Ok.ru, YouTube, Google Drive, DoodStream..."
+                        placeholder="Dán link TeraBox, Facebook Reels, Ok.ru, YouTube, Google Drive..."
                         className="w-full px-3 py-1.5 rounded-lg bg-cinema-900 border border-cinema-700 text-white text-xs font-mono placeholder-gray-500 focus:outline-none focus:border-primary"
                       />
                     </div>
