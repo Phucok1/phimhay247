@@ -57,6 +57,19 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
   const isStreamTape = checkUrl.includes('streamtape');
 
+  const [useNoCookie, setUseNoCookie] = useState(false);
+
+  const isYouTube =
+    !isDirect &&
+    !isFacebook &&
+    !isOkRu &&
+    !isGDrive &&
+    !isArchive &&
+    !isDoodStream &&
+    !isStreamWish &&
+    !isDailymotion &&
+    !isStreamTape;
+
   // URL phát video
   let embedUrl = customEmbedUrl;
   if (!embedUrl) {
@@ -79,9 +92,10 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     } else if (isDirect) {
       embedUrl = customWatchUrl || '';
     } else {
-      embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${
+      const ytDomain = useNoCookie ? 'www.youtube-nocookie.com' : 'www.youtube.com';
+      embedUrl = `https://${ytDomain}/embed/${videoId}?autoplay=${
         autoplay ? 1 : 0
-      }&rel=0&modestbranding=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+      }&rel=0&playsinline=1&modestbranding=1`;
     }
   }
 
@@ -178,13 +192,13 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             />
           ) : (
             <iframe
-              key={reloadKey}
+              key={`${reloadKey}-${useNoCookie ? 'nocookie' : 'standard'}`}
               src={embedUrl}
               title={title}
               className="absolute inset-0 w-full h-full border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
-              referrerPolicy="no-referrer"
+              referrerPolicy="strict-origin-when-cross-origin"
               onError={() => setHasError(true)}
             />
           )
@@ -209,6 +223,19 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                 <ExternalLink className="w-4 h-4" />
                 Mở xem trên {platformLabel}
               </a>
+              {isYouTube && (
+                <button
+                  onClick={() => {
+                    setUseNoCookie(!useNoCookie);
+                    setHasError(false);
+                    setReloadKey((prev) => prev + 1);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold transition text-sm shadow-lg shadow-amber-950/40"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Đổi sang {useNoCookie ? 'Server YouTube Chuẩn' : 'Server YouTube Dự Phòng'}</span>
+                </button>
+              )}
               <button
                 onClick={handleReload}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-cinema-800 hover:bg-cinema-700 text-gray-200 transition text-sm"
@@ -226,6 +253,19 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         <div className="flex items-center gap-2">
           <span className={`inline-block w-2.5 h-2.5 rounded-full animate-ping ${badgeColor}`} />
           <span className="font-medium text-gray-300">{platformName}</span>
+          {isYouTube && (
+            <button
+              onClick={() => {
+                setUseNoCookie(!useNoCookie);
+                setReloadKey((prev) => prev + 1);
+              }}
+              className="ml-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] bg-cinema-850 hover:bg-cinema-800 text-amber-300 border border-cinema-700 transition"
+              title="Nhấn để đổi máy chủ phát nếu gặp lỗi"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>{useNoCookie ? 'Đang dùng No-Cookie' : 'Đang dùng YouTube HD'}</span>
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
