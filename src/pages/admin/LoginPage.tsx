@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Lock, ArrowLeft, Key, AlertCircle, Loader2 } from 'lucide-react';
+import { Shield, Lock, ArrowLeft, Key, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { loginAdmin } from '../../services/api';
 import { auth } from '../../services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -8,6 +8,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [useFirebase, setUseFirebase] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,20 +93,22 @@ export const LoginPage: React.FC = () => {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={useFirebase ? 'Nhập mật khẩu...' : 'Mặc định: phucok1234'}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white placeholder-gray-500 focus:outline-none focus:border-primary text-sm"
+                  placeholder="Nhập mật khẩu..."
+                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white placeholder-gray-500 focus:outline-none focus:border-primary text-sm"
                 />
-                <Lock className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition p-1"
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
-              {!useFirebase && (
-                <p className="mt-1.5 text-[11px] text-gray-500">
-                  Mật khẩu mặc định hệ thống: <code className="text-amber-400 bg-black/40 px-1 py-0.5 rounded">phucok1234</code> (có thể đổi trong Cài đặt).
-                </p>
-              )}
             </div>
 
             <button
