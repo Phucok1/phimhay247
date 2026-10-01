@@ -23,9 +23,36 @@ export const MemberMoviesPage: React.FC = () => {
           (m.category && m.category.includes('Phim Hội Viên')) ||
           Boolean(m.contributorName)
       );
-      setMovies(memberList);
+
+      if (memberList.length > 0) {
+        setMovies(memberList);
+        try {
+          localStorage.setItem('phimhay247_member_movies_cache', JSON.stringify(memberList));
+        } catch (e) {}
+      } else {
+        // Nếu server mới redeploy hoặc chưa kịp đồng bộ, lấy từ cache trình duyệt
+        const cached = localStorage.getItem('phimhay247_member_movies_cache');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setMovies(parsed);
+            }
+          } catch (e) {}
+        }
+      }
     } catch (err) {
       console.error('Lỗi tải danh sách phim hội viên:', err);
+      // Fallback cache nếu lỗi mạng
+      const cached = localStorage.getItem('phimhay247_member_movies_cache');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMovies(parsed);
+          }
+        } catch (e) {}
+      }
     } finally {
       setLoading(false);
     }
