@@ -173,6 +173,7 @@ class DatabaseService {
   constructor() {
     this.ensureDataDirectory();
     this.data = this.loadData();
+    this.cleanExpiredChatMessages();
   }
 
   private ensureDataDirectory() {
@@ -605,13 +606,29 @@ class DatabaseService {
     return true;
   }
 
-  // --- CHAT MESSAGES ---
+  // --- CHAT MESSAGES (Tự động xóa sau 7 ngày) ---
+  private cleanExpiredChatMessages(): void {
+    if (!this.data || !this.data.chatMessages) return;
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000; // 7 ngày = 604.800.000 ms
+    const now = Date.now();
+    const originalLength = this.data.chatMessages.length;
+    this.data.chatMessages = this.data.chatMessages.filter((msg) => {
+      const msgTime = new Date(msg.createdAt).getTime();
+      return !isNaN(msgTime) && (now - msgTime < SEVEN_DAYS_MS);
+    });
+    if (this.data.chatMessages.length !== originalLength) {
+      this.save();
+    }
+  }
+
   public getChatMessages(limit = 60): ChatMessage[] {
+    this.cleanExpiredChatMessages();
     const messages = this.data.chatMessages || [];
     return messages.slice(-limit);
   }
 
   public addChatMessage(payload: { senderName: string; content: string; senderBadge?: string; avatarColor?: string }): ChatMessage {
+    this.cleanExpiredChatMessages();
     if (!this.data.chatMessages) this.data.chatMessages = [];
     const msg: ChatMessage = {
       id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -622,9 +639,9 @@ class DatabaseService {
       createdAt: new Date().toISOString(),
     };
     this.data.chatMessages.push(msg);
-    // Giữ tối đa 150 tin nhắn gần nhất
-    if (this.data.chatMessages.length > 150) {
-      this.data.chatMessages = this.data.chatMessages.slice(-150);
+    // Giữ tối đa 300 tin nhắn gần nhất trong vòng 7 ngày
+    if (this.data.chatMessages.length > 300) {
+      this.data.chatMessages = this.data.chatMessages.slice(-300);
     }
     this.save();
     return msg;
