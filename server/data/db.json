@@ -47,13 +47,13 @@
       "keywords": "Cửu thiên trấn áp, phim Cửu thiên trấn áp, xem phim Cửu thiên trấn áp youtube",
       "seoTitle": "Cửu thiên trấn áp - Xem Phim Trọn Bộ",
       "seoDescription": "",
-      "episodeCount": 6,
+      "episodeCount": 7,
       "latestEpisode": 7,
       "viewCount": 0,
       "hidden": false,
       "featured": true,
       "createdAt": "2026-10-01T02:09:32.934Z",
-      "updatedAt": "2026-10-01T02:21:44.310Z",
+      "updatedAt": "2026-10-01T11:01:08.578Z",
       "contributorName": "Hội viên Phim Hay 247"
     },
     {
@@ -239,8 +239,8 @@
       "keywords": "L, phim L, xem phim L youtube",
       "seoTitle": "L - Xem Phim Trọn Bộ",
       "seoDescription": "",
-      "episodeCount": 6,
-      "latestEpisode": 30,
+      "episodeCount": 5,
+      "latestEpisode": 28,
       "viewCount": 1,
       "hidden": false,
       "featured": true,
@@ -759,17 +759,27 @@
       "updatedAt": "2026-10-01T02:20:11.700Z"
     },
     {
-      "id": "ep-1789021056621-ayvfa",
-      "movieId": "mov-1789021018594-1jfha",
-      "episodeNumber": 30,
-      "title": "Tập 30",
-      "youtubeUrl": "https://www.youtube.com/watch?v=qx010r7-l1c",
-      "youtubeVideoId": "qx010r7-l1c",
-      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/qx010r7-l1c?rel=0&modestbranding=1",
-      "thumbnailUrl": "https://i.ytimg.com/vi/qx010r7-l1c/hqdefault.jpg",
-      "viewCount": 1,
-      "createdAt": "2026-09-10T06:17:36.621Z",
-      "updatedAt": "2026-09-10T06:17:36.621Z"
+      "id": "ep-1790851148773-plvc3",
+      "movieId": "mov-1790820572935-ir7ix",
+      "episodeNumber": 2,
+      "title": "Tập 2",
+      "youtubeUrl": "https://playmogo.com/d/f89uqqw791ek",
+      "youtubeVideoId": "embed-1790852468578",
+      "youtubeEmbedUrl": "https://playmogo.com/d/f89uqqw791ek",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790852468578-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://playmogo.com/d/f89uqqw791ek",
+          "videoId": "embed-1790852468578",
+          "embedUrl": "https://playmogo.com/d/f89uqqw791ek",
+          "platform": "embed"
+        }
+      ],
+      "createdAt": "2026-10-01T10:39:08.773Z",
+      "updatedAt": "2026-10-01T11:01:08.578Z"
     }
   ],
   "categories": [
@@ -828,10 +838,14 @@
     "seoKeywords": "phim cong dong, phimcongdong.com, phim hay, phim moi, xem phim 247, phim kiem hiep, phim hoi vien, chia se phim",
     "adminKey": "phucok1234",
     "donateBankName": "Vietcombank",
+    "donateAccountNumber": "",
     "donateAccountName": "NGUYỄN THIỆN PHÚC",
+    "donateMomo": "",
     "donateQrUrl": "/images/donate-qr.png",
     "donateNote": "Ủng hộ duy trì server và phát triển website Phim Cộng Đồng"
   },
+  "chatMessages": [],
+  "feedbacks": [],
   "memberSubmissions": [
     {
       "id": "mmsub-seed-1",
@@ -925,6 +939,5 @@
       "createdAt": "2026-10-01T01:31:31.094Z",
       "updatedAt": "2026-10-01T01:31:41.693Z"
     }
-  ],
-  "feedbacks": []
+  ]
 }
