@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { AdminLayout } from './components/layout/AdminLayout';
+import { LiveChatWidget } from './components/common/LiveChatWidget';
 
 // Public Pages
 import { HomePage } from './pages/HomePage';
@@ -13,6 +14,7 @@ import { MovieDetailPage } from './pages/MovieDetailPage';
 import { WatchPage } from './pages/WatchPage';
 import { CategoryPage } from './pages/CategoryPage';
 import { SearchPage } from './pages/SearchPage';
+import { MemberMoviesPage } from './pages/MemberMoviesPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 // Admin Pages
@@ -22,6 +24,8 @@ import { MovieListPage } from './pages/admin/MovieListPage';
 import { MovieEditPage } from './pages/admin/MovieEditPage';
 import { EpisodeListPage } from './pages/admin/EpisodeListPage';
 import { CategoryManagePage } from './pages/admin/CategoryManagePage';
+import { MemberMoviesAdminPage } from './pages/admin/MemberMoviesAdminPage';
+import { FeedbackAdminPage } from './pages/admin/FeedbackAdminPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 
 // Public Shell
@@ -33,6 +37,8 @@ const PublicLayout: React.FC = () => {
         <Outlet />
       </main>
       <Footer />
+      {/* Kênh Chat Trực Tiếp Cộng Đồng & Báo Lỗi */}
+      <LiveChatWidget />
     </div>
   );
 };
@@ -45,6 +51,7 @@ export const App: React.FC = () => {
           {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/phim-hoi-vien" element={<MemberMoviesPage />} />
             <Route path="/phim/:slug" element={<MovieDetailPage />} />
             {/* Hỗ trợ URL tập dạng /phim/:slug/:episodeNumber (ví dụ /phim/luu-ly-kiem-tong/tap-22) */}
             <Route path="/phim/:slug/:episodeNumber" element={<WatchPage />} />
@@ -63,6 +70,8 @@ export const App: React.FC = () => {
             <Route path="movies/new" element={<MovieEditPage />} />
             <Route path="movies/:id/edit" element={<MovieEditPage />} />
             <Route path="movies/:id/episodes" element={<EpisodeListPage />} />
+            <Route path="member-movies" element={<MemberMoviesAdminPage />} />
+            <Route path="feedback" element={<FeedbackAdminPage />} />
             <Route path="categories" element={<CategoryManagePage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

@@ -16,6 +16,49 @@ export interface Movie {
   viewCount: number;
   hidden?: boolean;
   featured?: boolean;
+  contributorName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderName: string;
+  senderBadge?: string;
+  avatarColor?: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface FeedbackItem {
+  id: string;
+  name: string;
+  contact?: string;
+  type: 'Báo lỗi tập phim' | 'Yêu cầu phim mới' | 'Góp ý tính năng' | 'Khác';
+  movieTitle?: string;
+  episodeNumber?: number;
+  content: string;
+  status: 'Chờ xử lý' | 'Đã xử lý';
+  createdAt: string;
+}
+
+export interface MemberMovieSubmission {
+  id: string;
+  title: string;
+  slug: string;
+  contributorName: string;
+  contributorContact?: string;
+  description: string;
+  category: string[];
+  videoUrl: string;
+  parsedVideoId?: string;
+  parsedEmbedUrl?: string;
+  parsedPlatform?: string;
+  posterUrl?: string;
+  status: 'Chờ duyệt' | 'Đã duyệt' | 'Từ chối';
+  rejectionReason?: string;
+  approvedMovieId?: string;
+  viewCount: number;
   createdAt: string;
   updatedAt: string;
 }

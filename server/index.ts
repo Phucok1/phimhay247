@@ -12,6 +12,9 @@ import categoriesRouter from './routes/categories.js';
 import settingsRouter from './routes/settings.js';
 import statsRouter from './routes/stats.js';
 import sitemapRouter from './routes/sitemap.js';
+import chatRouter from './routes/chat.js';
+import feedbackRouter from './routes/feedback.js';
+import memberMoviesRouter from './routes/memberMovies.js';
 
 dotenv.config();
 
@@ -48,6 +51,9 @@ app.use('/api/playlist', playlistRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/stats', statsRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/feedback', feedbackRouter);
+app.use('/api/member-movies', memberMoviesRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

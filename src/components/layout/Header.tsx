@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown, Crown, MessageSquare } from 'lucide-react';
 import { SearchModal } from '../common/SearchModal';
+import { FeedbackModal } from '../common/FeedbackModal';
 import { fetchCategories } from '../../services/api';
 import { Category } from '../../types';
 
@@ -9,6 +10,7 @@ export const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const location = useLocation();
@@ -38,6 +40,7 @@ export const Header: React.FC = () => {
     { label: 'Trang chủ', path: '/' },
     { label: 'Phim mới', path: '/?sort=newest' },
     { label: 'Phim hoàn thành', path: '/?status=Hoàn thành' },
+    { label: 'Phim Hội Viên', path: '/phim-hoi-vien', isSpecial: true },
   ];
 
   return (
@@ -66,8 +69,25 @@ export const Header: React.FC = () => {
 
             {/* Desktop Navigation Links */}
             <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-              {navLinks.map((link) => {
+              {navLinks.map((link: any) => {
                 const isActive = location.pathname + location.search === link.path;
+                if (link.isSpecial) {
+                  return (
+                    <Link
+                      key={link.label}
+                      to={link.path}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition ${
+                        isActive
+                          ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40 shadow-sm'
+                          : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+                      }`}
+                    >
+                      <Crown className="w-4 h-4 fill-amber-400" />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                }
+
                 return (
                   <Link
                     key={link.label}
@@ -117,15 +137,15 @@ export const Header: React.FC = () => {
                 href="https://www.youtube.com/@phimhay.momtiti"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-400 bg-red-950/40 border border-red-800/40 hover:bg-red-900/40 hover:text-white transition ml-2"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-400 bg-red-950/40 border border-red-800/40 hover:bg-red-900/40 hover:text-white transition ml-1"
               >
                 <Youtube className="w-4 h-4 text-red-500 fill-red-500" />
-                <span>@phimhay.momtiti</span>
+                <span className="hidden lg:inline">@phimhay.momtiti</span>
               </a>
             </nav>
 
-            {/* Right actions: Search + Admin */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Right actions: Search + Feedback + Admin */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
               <button
                 onClick={() => setSearchOpen(true)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-cinema-800/60 hover:bg-cinema-800 text-gray-300 hover:text-white border border-cinema-700/60 transition text-sm shadow-sm"
@@ -133,6 +153,16 @@ export const Header: React.FC = () => {
               >
                 <Search className="w-4 h-4 text-gray-400" />
                 <span className="hidden sm:inline text-xs text-gray-400">Tìm kiếm...</span>
+              </button>
+
+              {/* Nút Góp ý */}
+              <button
+                onClick={() => setFeedbackOpen(true)}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cinema-800/60 hover:bg-cinema-800 text-gray-300 hover:text-amber-400 border border-cinema-700/60 transition text-xs font-medium shadow-sm"
+                title="Góp ý & Báo lỗi phim"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                <span>Góp ý</span>
               </button>
 
               <Link
@@ -159,15 +189,32 @@ export const Header: React.FC = () => {
         {mobileMenuOpen && (
           <div className="md:hidden bg-cinema-900/98 border-b border-cinema-800 px-4 pt-2 pb-6 space-y-3 animate-fadeIn backdrop-blur-xl">
             <div className="space-y-1">
-              {navLinks.map((link) => (
+              {navLinks.map((link: any) => (
                 <Link
                   key={link.label}
                   to={link.path}
-                  className="block px-3 py-2.5 rounded-lg text-base font-medium text-gray-200 hover:bg-cinema-800 hover:text-white"
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-base font-medium transition ${
+                    link.isSpecial
+                      ? 'text-amber-400 bg-amber-500/10 font-bold'
+                      : 'text-gray-200 hover:bg-cinema-800 hover:text-white'
+                  }`}
                 >
-                  {link.label}
+                  <span>{link.label}</span>
+                  {link.isSpecial && <Crown className="w-4 h-4 fill-amber-400 text-amber-400" />}
                 </Link>
               ))}
+
+              {/* Nút Góp ý trên mobile */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setFeedbackOpen(true);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-base font-medium text-amber-400 hover:bg-cinema-800"
+              >
+                <span>Góp ý & Báo lỗi phim</span>
+                <MessageSquare className="w-4 h-4 text-amber-400" />
+              </button>
             </div>
 
             <div className="pt-2 border-t border-cinema-800">
@@ -202,6 +249,9 @@ export const Header: React.FC = () => {
 
       {/* Global Search Modal */}
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Global Feedback Modal */}
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </>
   );
 };

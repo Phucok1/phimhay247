@@ -20,6 +20,7 @@ export interface Movie {
   viewCount: number;
   hidden?: boolean;
   featured?: boolean;
+  contributorName?: string; // Tên hội viên chia sẻ (nếu có)
   createdAt: string;
   updatedAt: string;
 }
@@ -54,6 +55,48 @@ export interface Category {
   slug: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  senderName: string;
+  senderBadge?: string; // 'Hội viên VIP' | 'Quản trị viên' | 'Thành viên'
+  avatarColor?: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface FeedbackItem {
+  id: string;
+  name: string;
+  contact?: string; // SĐT, Email hoặc Zalo
+  type: 'Báo lỗi tập phim' | 'Yêu cầu phim mới' | 'Góp ý tính năng' | 'Khác';
+  movieTitle?: string;
+  episodeNumber?: number;
+  content: string;
+  status: 'Chờ xử lý' | 'Đã xử lý';
+  createdAt: string;
+}
+
+export interface MemberMovieSubmission {
+  id: string;
+  title: string;
+  slug: string;
+  contributorName: string; // Tên hội viên
+  contributorContact?: string;
+  description: string;
+  category: string[];
+  videoUrl: string;
+  parsedVideoId?: string;
+  parsedEmbedUrl?: string;
+  parsedPlatform?: string;
+  posterUrl?: string;
+  status: 'Chờ duyệt' | 'Đã duyệt' | 'Từ chối';
+  rejectionReason?: string;
+  approvedMovieId?: string;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SiteSettings {
   siteName: string;
   channelUrl: string;
@@ -78,6 +121,9 @@ export interface DatabaseSchema {
   episodes: Episode[];
   categories: Category[];
   settings: SiteSettings;
+  chatMessages: ChatMessage[];
+  feedbacks: FeedbackItem[];
+  memberSubmissions: MemberMovieSubmission[];
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -100,6 +146,7 @@ export function generateSlug(text: string): string {
 }
 
 const DEFAULT_CATEGORIES: Category[] = [
+  { id: 'cat-member', name: 'Phim Hội Viên', slug: 'phim-hoi-vien' },
   { id: 'cat-1', name: 'Kiếm Hiệp', slug: 'kiem-hiep' },
   { id: 'cat-2', name: 'Tiên Hiệp', slug: 'tien-hiep' },
   { id: 'cat-3', name: 'Cổ Trang', slug: 'co-trang' },
@@ -144,6 +191,9 @@ class DatabaseService {
           episodes: parsed.episodes || [],
           categories: parsed.categories || DEFAULT_CATEGORIES,
           settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
+          chatMessages: parsed.chatMessages || [],
+          feedbacks: parsed.feedbacks || [],
+          memberSubmissions: parsed.memberSubmissions || [],
         };
       } catch (err) {
         console.error('Lỗi khi đọc file db.json, khởi tạo lại dữ liệu mặc định:', err);
@@ -156,6 +206,9 @@ class DatabaseService {
       episodes: [],
       categories: DEFAULT_CATEGORIES,
       settings: DEFAULT_SETTINGS,
+      chatMessages: [],
+      feedbacks: [],
+      memberSubmissions: [],
     };
     this.saveDataDirect(initialData);
     return initialData;
@@ -544,7 +597,191 @@ class DatabaseService {
       episodes: newData.episodes,
       categories: Array.isArray(newData.categories) ? newData.categories : DEFAULT_CATEGORIES,
       settings: { ...DEFAULT_SETTINGS, ...(newData.settings || {}) },
+      chatMessages: Array.isArray(newData.chatMessages) ? newData.chatMessages : (this.data.chatMessages || []),
+      feedbacks: Array.isArray(newData.feedbacks) ? newData.feedbacks : (this.data.feedbacks || []),
+      memberSubmissions: Array.isArray(newData.memberSubmissions) ? newData.memberSubmissions : (this.data.memberSubmissions || []),
     };
+    this.save();
+    return true;
+  }
+
+  // --- CHAT MESSAGES ---
+  public getChatMessages(limit = 60): ChatMessage[] {
+    const messages = this.data.chatMessages || [];
+    return messages.slice(-limit);
+  }
+
+  public addChatMessage(payload: { senderName: string; content: string; senderBadge?: string; avatarColor?: string }): ChatMessage {
+    if (!this.data.chatMessages) this.data.chatMessages = [];
+    const msg: ChatMessage = {
+      id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      senderName: payload.senderName.trim().slice(0, 30) || 'Thành viên',
+      senderBadge: payload.senderBadge || 'Thành viên',
+      avatarColor: payload.avatarColor || 'from-red-500 to-amber-500',
+      content: payload.content.trim().slice(0, 500),
+      createdAt: new Date().toISOString(),
+    };
+    this.data.chatMessages.push(msg);
+    // Giữ tối đa 150 tin nhắn gần nhất
+    if (this.data.chatMessages.length > 150) {
+      this.data.chatMessages = this.data.chatMessages.slice(-150);
+    }
+    this.save();
+    return msg;
+  }
+
+  public deleteChatMessage(id: string): boolean {
+    if (!this.data.chatMessages) return false;
+    const idx = this.data.chatMessages.findIndex(m => m.id === id);
+    if (idx === -1) return false;
+    this.data.chatMessages.splice(idx, 1);
+    this.save();
+    return true;
+  }
+
+  // --- FEEDBACK & BUG REPORT ---
+  public getFeedbacks(): FeedbackItem[] {
+    return (this.data.feedbacks || []).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  public createFeedback(payload: Omit<FeedbackItem, 'id' | 'status' | 'createdAt'>): FeedbackItem {
+    if (!this.data.feedbacks) this.data.feedbacks = [];
+    const item: FeedbackItem = {
+      id: `fb-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      name: payload.name?.trim() || 'Khán giả ẩn danh',
+      contact: payload.contact?.trim() || '',
+      type: payload.type || 'Góp ý tính năng',
+      movieTitle: payload.movieTitle?.trim() || '',
+      episodeNumber: payload.episodeNumber ? Number(payload.episodeNumber) : undefined,
+      content: payload.content.trim(),
+      status: 'Chờ xử lý',
+      createdAt: new Date().toISOString(),
+    };
+    this.data.feedbacks.unshift(item);
+    this.save();
+    return item;
+  }
+
+  public updateFeedbackStatus(id: string, status: 'Chờ xử lý' | 'Đã xử lý'): boolean {
+    if (!this.data.feedbacks) return false;
+    const item = this.data.feedbacks.find(f => f.id === id);
+    if (!item) return false;
+    item.status = status;
+    this.save();
+    return true;
+  }
+
+  public deleteFeedback(id: string): boolean {
+    if (!this.data.feedbacks) return false;
+    const idx = this.data.feedbacks.findIndex(f => f.id === id);
+    if (idx === -1) return false;
+    this.data.feedbacks.splice(idx, 1);
+    this.save();
+    return true;
+  }
+
+  // --- MEMBER MOVIE SUBMISSIONS ---
+  public getMemberSubmissions(status?: string): MemberMovieSubmission[] {
+    let list = this.data.memberSubmissions || [];
+    if (status) {
+      list = list.filter(s => s.status === status);
+    }
+    return list.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  public createMemberSubmission(payload: Omit<MemberMovieSubmission, 'id' | 'status' | 'viewCount' | 'createdAt' | 'updatedAt'>): MemberMovieSubmission {
+    if (!this.data.memberSubmissions) this.data.memberSubmissions = [];
+    const now = new Date().toISOString();
+    const submission: MemberMovieSubmission = {
+      ...payload,
+      id: `mmsub-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      title: payload.title.trim(),
+      slug: generateSlug(payload.title),
+      contributorName: payload.contributorName?.trim() || 'Hội viên ẩn danh',
+      status: 'Chờ duyệt',
+      viewCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.data.memberSubmissions.unshift(submission);
+    this.save();
+    return submission;
+  }
+
+  public approveMemberSubmission(id: string, parsedVideo: any): { success: boolean; movie?: Movie; error?: string } {
+    if (!this.data.memberSubmissions) return { success: false, error: 'Không tìm thấy dữ liệu đóng góp.' };
+    const sub = this.data.memberSubmissions.find(s => s.id === id);
+    if (!sub) return { success: false, error: 'Không tìm thấy phim đóng góp này.' };
+
+    const categories = Array.from(new Set(['Phim Hội Viên', ...(sub.category || [])]));
+    const movie = this.createMovie({
+      title: sub.title,
+      slug: sub.slug,
+      description: `${sub.description || ''}\n\n[ Phim do Hội viên "${sub.contributorName}" đóng góp cho cộng đồng PHIM HAY 247 ]`,
+      posterUrl: sub.posterUrl || parsedVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+      bannerUrl: sub.posterUrl || parsedVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200',
+      category: categories,
+      year: new Date().getFullYear(),
+      status: 'Hoàn thành',
+      keywords: `${sub.title}, phim hoi vien, ${sub.contributorName}`,
+      seoTitle: `${sub.title} - Phim Hội Viên Đóng Góp`,
+      seoDescription: sub.description || `${sub.title} do thành viên ${sub.contributorName} chia sẻ trên PHIM HAY 247.`,
+      featured: true,
+      hidden: false,
+    });
+
+    movie.contributorName = sub.contributorName;
+
+    this.createEpisode({
+      movieId: movie.id,
+      episodeNumber: 1,
+      title: 'Tập 1',
+      youtubeUrl: parsedVideo.watchUrl,
+      youtubeVideoId: parsedVideo.videoId,
+      youtubeEmbedUrl: parsedVideo.embedUrl,
+      thumbnailUrl: parsedVideo.thumbnailUrl,
+      servers: [
+        {
+          id: `srv-${Date.now()}`,
+          name: `Server 1 (${parsedVideo.platformName})`,
+          url: parsedVideo.watchUrl,
+          videoId: parsedVideo.videoId,
+          embedUrl: parsedVideo.embedUrl,
+          platform: parsedVideo.videoType,
+        },
+      ],
+    });
+
+    sub.status = 'Đã duyệt';
+    sub.approvedMovieId = movie.id;
+    sub.updatedAt = new Date().toISOString();
+    this.save();
+
+    return { success: true, movie };
+  }
+
+  public rejectMemberSubmission(id: string, reason?: string): boolean {
+    if (!this.data.memberSubmissions) return false;
+    const sub = this.data.memberSubmissions.find(s => s.id === id);
+    if (!sub) return false;
+    sub.status = 'Từ chối';
+    if (reason) {
+      sub.rejectionReason = reason;
+    }
+    sub.updatedAt = new Date().toISOString();
+    this.save();
+    return true;
+  }
+
+  public deleteMemberSubmission(id: string): boolean {
+    if (!this.data.memberSubmissions) return false;
+    const idx = this.data.memberSubmissions.findIndex(s => s.id === id);
+    if (idx === -1) return false;
+    this.data.memberSubmissions.splice(idx, 1);
     this.save();
     return true;
   }

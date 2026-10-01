@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Play, Eye, Film } from 'lucide-react';
+import { Play, Eye, Film, Crown } from 'lucide-react';
 import { Movie } from '../../types';
 
 interface MovieCardProps {
@@ -46,7 +46,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, showCategory = fals
           <span className="px-2 py-0.5 text-xs font-bold text-white rounded bg-red-600/90 backdrop-blur-md shadow-md">
             {episodeBadgeText}
           </span>
-          {movie.year && (
+          {movie.contributorName && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-amber-300 rounded bg-black/80 border border-amber-500/40 backdrop-blur-md shadow">
+              <Crown className="w-3 h-3 text-amber-400" />
+              <span className="truncate max-w-[85px]">{movie.contributorName}</span>
+            </span>
+          )}
+          {movie.year && !movie.contributorName && (
             <span className="px-1.5 py-0.5 text-[10px] font-semibold text-gray-300 rounded bg-black/60 backdrop-blur-sm self-start">
               {movie.year}
             </span>

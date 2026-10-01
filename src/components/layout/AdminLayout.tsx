@@ -12,6 +12,8 @@ import {
   Play,
   Shield,
   ExternalLink,
+  Crown,
+  MessageSquare,
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -35,6 +37,8 @@ export const AdminLayout: React.FC = () => {
   const navItems = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { label: 'Quản lý Phim', path: '/admin/movies', icon: Film },
+    { label: 'Phim Hội Viên', path: '/admin/member-movies', icon: Crown },
+    { label: 'Góp ý & Báo lỗi', path: '/admin/feedback', icon: MessageSquare },
     { label: 'Thể loại', path: '/admin/categories', icon: FolderTree },
     { label: 'Cài đặt & API', path: '/admin/settings', icon: Settings },
   ];

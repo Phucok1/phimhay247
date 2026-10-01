@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Movie, Episode, Category, SiteSettings, DashboardStats } from '../types';
+import { Movie, Episode, Category, SiteSettings, DashboardStats, ChatMessage, FeedbackItem, MemberMovieSubmission } from '../types';
 
 const API_BASE = '/api';
 
@@ -206,5 +206,84 @@ export const downloadDatabaseBackup = async (): Promise<any> => {
 export const restoreDatabaseBackup = async (data: any): Promise<{ success: boolean; message: string }> => {
   const res = await client.post('/settings/import-db', data);
   return res.data;
+};
+
+// --- Live Chat ---
+export const fetchChatMessages = async (limit = 60): Promise<ChatMessage[]> => {
+  const res = await client.get('/chat/messages', { params: { limit } });
+  return res.data.data;
+};
+
+export const sendChatMessage = async (data: {
+  senderName: string;
+  content: string;
+  senderBadge?: string;
+  avatarColor?: string;
+}): Promise<ChatMessage> => {
+  const res = await client.post('/chat/messages', data);
+  return res.data.data;
+};
+
+export const deleteChatMessage = async (id: string): Promise<void> => {
+  await client.delete(`/chat/messages/${id}`);
+};
+
+// --- Feedback & Bug Reports ---
+export const sendFeedback = async (data: {
+  name?: string;
+  contact?: string;
+  type: string;
+  movieTitle?: string;
+  episodeNumber?: number;
+  content: string;
+}): Promise<{ success: boolean; message: string }> => {
+  const res = await client.post('/feedback', data);
+  return res.data;
+};
+
+export const fetchFeedbacks = async (): Promise<FeedbackItem[]> => {
+  const res = await client.get('/feedback');
+  return res.data.data;
+};
+
+export const updateFeedbackStatus = async (id: string, status: 'Chờ xử lý' | 'Đã xử lý'): Promise<void> => {
+  await client.put(`/feedback/${id}/status`, { status });
+};
+
+export const deleteFeedback = async (id: string): Promise<void> => {
+  await client.delete(`/feedback/${id}`);
+};
+
+// --- Member Movies Submissions ---
+export const fetchMemberSubmissions = async (status?: string): Promise<MemberMovieSubmission[]> => {
+  const res = await client.get('/member-movies', { params: { status } });
+  return res.data.data;
+};
+
+export const submitMemberMovie = async (data: {
+  title: string;
+  contributorName: string;
+  contributorContact?: string;
+  description?: string;
+  category?: string[];
+  videoUrl: string;
+  posterUrl?: string;
+}): Promise<{ success: boolean; message: string; data: MemberMovieSubmission }> => {
+  const res = await client.post('/member-movies/submit', data);
+  return res.data;
+};
+
+export const approveMemberMovie = async (id: string): Promise<{ success: boolean; message: string; movie: Movie }> => {
+  const res = await client.post(`/member-movies/${id}/approve`);
+  return res.data;
+};
+
+export const rejectMemberMovie = async (id: string, reason?: string): Promise<{ success: boolean; message: string }> => {
+  const res = await client.post(`/member-movies/${id}/reject`, { reason });
+  return res.data;
+};
+
+export const deleteMemberSubmission = async (id: string): Promise<void> => {
+  await client.delete(`/member-movies/${id}`);
 };
 
