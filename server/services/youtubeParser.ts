@@ -1,15 +1,23 @@
 /**
- * Bộ bóc tách YouTube Video ID chuẩn xác hỗ trợ:
- * - youtube.com/watch?v=VIDEO_ID
- * - youtu.be/VIDEO_ID
- * - youtube.com/shorts/VIDEO_ID
- * - youtube.com/embed/VIDEO_ID
- * - youtube.com/live/VIDEO_ID
- * Bỏ qua query params dư thừa (?t=, &si=, &feature=, ...)
+ * Bộ bóc tách Video URL hỗ trợ cả YouTube & Facebook Reels / Facebook Video:
+ * 1. YouTube:
+ *    - youtube.com/watch?v=VIDEO_ID
+ *    - youtu.be/VIDEO_ID
+ *    - youtube.com/shorts/VIDEO_ID
+ *    - youtube.com/embed/VIDEO_ID
+ *    - youtube.com/live/VIDEO_ID
+ * 2. Facebook:
+ *    - facebook.com/reel/ID
+ *    - facebook.com/watch/?v=ID
+ *    - fb.watch/ID
+ *    - facebook.com/share/r/ID
+ *    - facebook.com/share/v/ID
+ *    - facebook.com/.../videos/ID
  */
 
-export interface ParsedYouTubeInfo {
+export interface ParsedVideoInfo {
   videoId: string;
+  videoType: 'youtube' | 'facebook';
   embedUrl: string;
   thumbnailUrl: string;
   watchUrl: string;
@@ -20,24 +28,16 @@ export function extractYouTubeVideoId(url: string): string | null {
   if (!url || typeof url !== 'string') return null;
   const trimmed = url.trim();
 
-  // Kiểm tra nếu người dùng chỉ nhập trực tiếp 11 ký tự Video ID (ví dụ dQw4w9WgXcQ)
   if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
     return trimmed;
   }
 
-  // Regex toàn diện cho tất cả các định dạng YouTube
   const patterns = [
-    // Standard watch URL: youtube.com/watch?v=ID hoặc youtube.com/watch?feature=...&v=ID
     /(?:https?:\/\/)?(?:www\.|m\.)?youtube\.com\/watch\?(?:.*&)?v=([a-zA-Z0-9_-]{11})/i,
-    // Short URL: youtu.be/ID
     /(?:https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})/i,
-    // Shorts: youtube.com/shorts/ID
     /(?:https?:\/\/)?(?:www\.|m\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/i,
-    // Embed: youtube.com/embed/ID
     /(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube|youtube-nocookie)\.com\/embed\/([a-zA-Z0-9_-]{11})/i,
-    // Live: youtube.com/live/ID
     /(?:https?:\/\/)?(?:www\.|m\.)?youtube\.com\/live\/([a-zA-Z0-9_-]{11})/i,
-    // Generic v/ path: youtube.com/v/ID
     /(?:https?:\/\/)?(?:www\.|m\.)?youtube\.com\/v\/([a-zA-Z0-9_-]{11})/i,
   ];
 
@@ -51,12 +51,48 @@ export function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
-export function parseYouTubeUrl(url: string): { success: true; data: ParsedYouTubeInfo } | { success: false; error: string } {
-  const videoId = extractYouTubeVideoId(url);
+export function isFacebookVideoUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  return (
+    /facebook\.com\/(?:reel|watch|share|videos|\w+\/videos)/i.test(trimmed) ||
+    /fb\.watch\//i.test(trimmed)
+  );
+}
+
+export function parseYouTubeUrl(url: string): { success: true; data: ParsedVideoInfo } | { success: false; error: string } {
+  if (!url || typeof url !== 'string') {
+    return { success: false, error: 'Đường dẫn video không được để trống.' };
+  }
+
+  const trimmed = url.trim();
+
+  // 1. Kiểm tra nếu là Facebook Reel hoặc Facebook Video
+  if (isFacebookVideoUrl(trimmed)) {
+    // Trích xuất ID nếu có
+    const fbReelMatch = trimmed.match(/(?:reel|videos|v=|\/r\/|\/v\/)([0-9]+)/i);
+    const fbId = fbReelMatch ? fbReelMatch[1] : `fb-${Date.now()}`;
+    const cleanFbUrl = trimmed.split('?')[0];
+
+    return {
+      success: true,
+      data: {
+        videoId: fbId,
+        videoType: 'facebook',
+        embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=0&autoplay=1`,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80',
+        watchUrl: trimmed,
+        originalUrl: trimmed,
+      },
+    };
+  }
+
+  // 2. Kiểm tra nếu là YouTube Video
+  const videoId = extractYouTubeVideoId(trimmed);
   if (!videoId) {
     return {
       success: false,
-      error: 'Link YouTube không hợp lệ. Vui lòng kiểm tra lại định dạng link (watch, youtu.be, shorts, live hoặc embed).',
+      error: 'Link video không hợp lệ. Hệ thống hỗ trợ link YouTube (watch, youtu.be, shorts) và link Facebook Reels / Video.',
     };
   }
 
@@ -64,19 +100,15 @@ export function parseYouTubeUrl(url: string): { success: true; data: ParsedYouTu
     success: true,
     data: {
       videoId,
-      // Sử dụng miền youtube-nocookie để tăng cường quyền riêng tư theo yêu cầu
+      videoType: 'youtube',
       embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`,
       thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
       watchUrl: `https://www.youtube.com/watch?v=${videoId}`,
-      originalUrl: url.trim(),
+      originalUrl: trimmed,
     },
   };
 }
 
-/**
- * Trích xuất Playlist ID từ URL
- * Ví dụ: https://www.youtube.com/playlist?list=PL1234567890
- */
 export function extractYouTubePlaylistId(url: string): string | null {
   if (!url || typeof url !== 'string') return null;
   const trimmed = url.trim();

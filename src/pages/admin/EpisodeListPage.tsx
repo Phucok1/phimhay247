@@ -276,17 +276,17 @@ export const EpisodeListPage: React.FC = () => {
               />
             </div>
 
-            {/* Link YouTube */}
+            {/* Link YouTube / Facebook */}
             <div className="sm:col-span-6">
               <label className="block text-xs font-semibold text-gray-300 mb-1">
-                Link YouTube của tập <span className="text-red-500">*</span>
+                Link YouTube hoặc Facebook Reel <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={epYoutubeUrl}
                 onChange={(e) => handleYoutubeUrlChange(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=... hoặc youtu.be/..."
+                placeholder="YouTube (watch, youtu.be, shorts) hoặc Facebook (reel, watch)"
                 className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-primary font-mono"
               />
             </div>

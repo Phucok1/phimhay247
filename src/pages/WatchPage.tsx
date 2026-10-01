@@ -144,10 +144,12 @@ export const WatchPage: React.FC = () => {
           <span className="text-red-400 font-semibold whitespace-nowrap">Tập {currentEpNum}</span>
         </div>
 
-        {/* 1. YouTube Player 16:9 */}
+        {/* 1. Video Player 16:9 (Hỗ trợ YouTube & Facebook Reels) */}
         <div className="mb-6">
           <YouTubePlayer
             videoId={currentEpisode.youtubeVideoId}
+            embedUrl={currentEpisode.youtubeEmbedUrl}
+            watchUrl={currentEpisode.youtubeUrl}
             title={`${movie.title} - ${currentEpisode.title}`}
           />
         </div>
