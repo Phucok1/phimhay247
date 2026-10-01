@@ -212,14 +212,14 @@ export const LiveChatWidget: React.FC = () => {
             </div>
           </div>
 
-          {/* Thông báo tự động lưu trong 7 ngày */}
+          {/* Thông báo mỗi tin nhắn tự động xóa sau 7 ngày */}
           <div className="px-3.5 py-1.5 bg-cinema-950/90 border-b border-cinema-800 text-[10px] text-gray-400 flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-gray-400">
               <Clock className="w-3 h-3 text-amber-400 flex-shrink-0" />
-              <span>Tin nhắn tự động làm mới sau 7 ngày</span>
+              <span>Mỗi tin nhắn tự động biến mất sau 7 ngày kể từ lúc gửi</span>
             </span>
             <span className="text-[9px] text-amber-400 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-              7 Ngày
+              7 Ngày / tin
             </span>
           </div>
 
