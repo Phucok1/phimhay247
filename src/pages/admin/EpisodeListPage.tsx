@@ -54,8 +54,12 @@ export const EpisodeListPage: React.FC = () => {
   const [parseError, setParseError] = useState<string | null>(null);
   const [savingEp, setSavingEp] = useState(false);
 
+  // State thêm link phụ / server dự phòng
+  const [addBackupServers, setAddBackupServers] = useState<Array<{ name: string; url: string }>>([]);
+
   // State sửa tập
   const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null);
+  const [editServers, setEditServers] = useState<Array<{ name: string; url: string }>>([]);
 
   const loadData = async () => {
     if (!id) return;
@@ -105,7 +109,7 @@ export const EpisodeListPage: React.FC = () => {
       setParseError(null);
     } catch (err: any) {
       setParsedPreview(null);
-      setParseError(err.response?.data?.error || 'Link YouTube không hợp lệ.');
+      setParseError(err.response?.data?.error || 'Link video không hợp lệ.');
     } finally {
       setParsing(false);
     }
@@ -117,16 +121,28 @@ export const EpisodeListPage: React.FC = () => {
 
     setSavingEp(true);
     try {
+      const allServers = [
+        { name: 'Server 1 (Chính)', url: epYoutubeUrl.trim() },
+        ...addBackupServers
+          .filter((s) => s.url && s.url.trim())
+          .map((s, i) => ({
+            name: s.name?.trim() || `Server ${i + 2} (Dự phòng)`,
+            url: s.url.trim(),
+          })),
+      ];
+
       await createEpisode({
         movieId: id,
         episodeNumber: epNum,
         title: epTitle.trim() || `Tập ${epNum}`,
         youtubeUrl: epYoutubeUrl.trim(),
         customThumbnail: customThumbnail.trim() || undefined,
+        servers: allServers,
       });
 
-      // Reset form và gợi ý tập tiếp theo để admin thêm liên tiếp chỉ mất vài giây
+      // Reset form và gợi ý tập tiếp theo
       setEpYoutubeUrl('');
+      setAddBackupServers([]);
       setParsedPreview(null);
       setCustomThumbnail('');
       const nextNum = epNum + 1;
@@ -152,15 +168,41 @@ export const EpisodeListPage: React.FC = () => {
     }
   };
 
+  const startEditEpisode = (ep: Episode) => {
+    setEditingEpisode(ep);
+    if (ep.servers && ep.servers.length > 0) {
+      setEditServers(
+        ep.servers.map((s, idx) => ({
+          name: s.name || (idx === 0 ? 'Server 1 (Chính)' : `Server ${idx + 1} (Dự phòng)`),
+          url: s.url,
+        }))
+      );
+    } else {
+      setEditServers([
+        { name: 'Server 1 (Chính)', url: ep.youtubeUrl },
+      ]);
+    }
+  };
+
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingEpisode) return;
+
+    const validServers = editServers.filter((s) => s.url && s.url.trim());
+    if (validServers.length === 0) {
+      alert('Vui lòng nhập ít nhất 1 link video.');
+      return;
+    }
 
     try {
       await updateEpisode(editingEpisode.id, {
         episodeNumber: editingEpisode.episodeNumber,
         title: editingEpisode.title,
-        youtubeUrl: editingEpisode.youtubeUrl,
+        youtubeUrl: validServers[0].url.trim(),
+        servers: validServers.map((s, idx) => ({
+          name: s.name?.trim() || (idx === 0 ? 'Server 1 (Chính)' : `Server ${idx + 1} (Dự phòng)`),
+          url: s.url.trim(),
+        })) as any,
       });
       setEditingEpisode(null);
       await loadData();
@@ -276,20 +318,76 @@ export const EpisodeListPage: React.FC = () => {
               />
             </div>
 
-            {/* Link YouTube / Facebook / DoodStream / MP4 */}
+            {/* Link Video Chính */}
             <div className="sm:col-span-6">
               <label className="block text-xs font-semibold text-gray-300 mb-1">
-                Link Video (YouTube, FB Reels, DoodStream, StreamWish, Dailymotion, MP4...) <span className="text-red-500">*</span>
+                Link Chính (Server 1) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={epYoutubeUrl}
                 onChange={(e) => handleYoutubeUrlChange(e.target.value)}
-                placeholder="YouTube, Facebook Reels, DoodStream, StreamWish, Dailymotion hoặc link trực tiếp MP4..."
+                placeholder="YouTube, Facebook Reels, Ok.ru, Google Drive, DoodStream..."
                 className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-primary font-mono"
               />
             </div>
+          </div>
+
+          {/* Danh sách link phụ / server dự phòng khi tạo tập */}
+          <div className="pt-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                Link Phụ / Server Dự Phòng ({addBackupServers.length})
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setAddBackupServers([
+                    ...addBackupServers,
+                    { name: `Server ${addBackupServers.length + 2} (Dự phòng)`, url: '' },
+                  ])
+                }
+                className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-semibold"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                + Thêm Link Phụ (Facebook Reel, Ok.ru, Drive...)
+              </button>
+            </div>
+
+            {addBackupServers.map((srv, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={srv.name}
+                  onChange={(e) => {
+                    const updated = [...addBackupServers];
+                    updated[idx].name = e.target.value;
+                    setAddBackupServers(updated);
+                  }}
+                  className="w-44 px-3 py-1.5 rounded-xl bg-cinema-850 border border-cinema-700 text-amber-400 text-xs font-semibold"
+                />
+                <input
+                  type="text"
+                  value={srv.url}
+                  onChange={(e) => {
+                    const updated = [...addBackupServers];
+                    updated[idx].url = e.target.value;
+                    setAddBackupServers(updated);
+                  }}
+                  placeholder="Dán link Facebook Reels, Ok.ru, Google Drive, DoodStream..."
+                  className="flex-grow px-3 py-1.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setAddBackupServers(addBackupServers.filter((_, i) => i !== idx))}
+                  className="p-2 rounded-xl bg-cinema-800 text-gray-400 hover:text-red-400"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* Trạng thái parse link */}
@@ -424,9 +522,27 @@ export const EpisodeListPage: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Video ID */}
-                    <td className="py-3 px-4 font-mono text-[11px] text-amber-400">
-                      {ep.youtubeVideoId}
+                    {/* Server / Video ID */}
+                    <td className="py-3 px-4">
+                      <div className="space-y-1">
+                        <div className="font-mono text-[11px] text-amber-400">
+                          {ep.youtubeVideoId}
+                        </div>
+                        {ep.servers && ep.servers.length > 1 ? (
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">
+                              {ep.servers.length} Servers
+                            </span>
+                            {ep.servers.map((s, i) => (
+                              <span key={i} className="text-[9px] px-1 py-0.5 rounded bg-cinema-800 text-gray-300">
+                                {s.platform || `S${i + 1}`}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-gray-500">1 Server</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Lượt xem */}
@@ -450,9 +566,9 @@ export const EpisodeListPage: React.FC = () => {
                         </Link>
 
                         <button
-                          onClick={() => setEditingEpisode(ep)}
+                          onClick={() => startEditEpisode(ep)}
                           className="p-1.5 rounded-lg bg-cinema-800 hover:bg-cinema-700 text-gray-300 hover:text-white transition"
-                          title="Chỉnh sửa tập"
+                          title="Chỉnh sửa tập & link dự phòng"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
@@ -474,15 +590,15 @@ export const EpisodeListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Modal Sửa Tập */}
+      {/* Modal Sửa Tập (Hỗ Trợ Thêm Nhiều Link Phụ / Dự Phòng) */}
       {editingEpisode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
           <form
             onSubmit={handleSaveEdit}
-            className="bg-cinema-900 border border-cinema-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl"
+            className="bg-cinema-900 border border-cinema-800 rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] flex flex-col"
           >
-            <div className="flex items-center justify-between pb-2 border-b border-cinema-800">
-              <h3 className="font-bold text-white text-sm">Chỉnh sửa tập phim</h3>
+            <div className="flex items-center justify-between pb-2 border-b border-cinema-800 flex-shrink-0">
+              <h3 className="font-bold text-white text-sm">Chỉnh sửa tập phim &amp; Link dự phòng</h3>
               <button
                 type="button"
                 onClick={() => setEditingEpisode(null)}
@@ -492,43 +608,101 @@ export const EpisodeListPage: React.FC = () => {
               </button>
             </div>
 
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Số tập</label>
-              <input
-                type="number"
-                value={editingEpisode.episodeNumber}
-                onChange={(e) =>
-                  setEditingEpisode({ ...editingEpisode, episodeNumber: Number(e.target.value) })
-                }
-                className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs font-bold"
-              />
+            <div className="overflow-y-auto space-y-4 pr-1 flex-grow">
+              <div className="grid grid-cols-12 gap-3">
+                <div className="col-span-4">
+                  <label className="block text-xs text-gray-400 mb-1">Số tập</label>
+                  <input
+                    type="number"
+                    value={editingEpisode.episodeNumber}
+                    onChange={(e) =>
+                      setEditingEpisode({ ...editingEpisode, episodeNumber: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs font-bold text-center"
+                  />
+                </div>
+
+                <div className="col-span-8">
+                  <label className="block text-xs text-gray-400 mb-1">Tiêu đề</label>
+                  <input
+                    type="text"
+                    value={editingEpisode.title}
+                    onChange={(e) =>
+                      setEditingEpisode({ ...editingEpisode, title: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Danh Sách Link Các Server */}
+              <div className="space-y-3 pt-2 border-t border-cinema-800">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-gray-200">
+                    Nguồn Phát / Server ({editServers.length})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditServers([
+                        ...editServers,
+                        { name: `Server ${editServers.length + 1} (Dự phòng)`, url: '' },
+                      ])
+                    }
+                    className="inline-flex items-center gap-1 text-[11px] text-red-400 hover:text-red-300 font-semibold"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    + Thêm Link Phụ (Dự Phòng)
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {editServers.map((srv, idx) => (
+                    <div key={idx} className="p-3 rounded-xl bg-cinema-850 border border-cinema-700/80 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <input
+                          type="text"
+                          value={srv.name}
+                          onChange={(e) => {
+                            const updated = [...editServers];
+                            updated[idx].name = e.target.value;
+                            setEditServers(updated);
+                          }}
+                          placeholder={`Tên Server (VD: Server ${idx + 1})`}
+                          className="px-2.5 py-1 rounded-lg bg-cinema-900 border border-cinema-700 text-amber-400 font-semibold text-[11px] w-48 focus:outline-none"
+                        />
+                        {editServers.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditServers(editServers.filter((_, i) => i !== idx));
+                            }}
+                            className="p-1 rounded text-gray-500 hover:text-red-400 transition"
+                            title="Xóa server này"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        required={idx === 0}
+                        value={srv.url}
+                        onChange={(e) => {
+                          const updated = [...editServers];
+                          updated[idx].url = e.target.value;
+                          setEditServers(updated);
+                        }}
+                        placeholder="Dán link Facebook Reels, Ok.ru, YouTube, Google Drive, DoodStream..."
+                        className="w-full px-3 py-1.5 rounded-lg bg-cinema-900 border border-cinema-700 text-white text-xs font-mono placeholder-gray-500 focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Tiêu đề</label>
-              <input
-                type="text"
-                value={editingEpisode.title}
-                onChange={(e) =>
-                  setEditingEpisode({ ...editingEpisode, title: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Link YouTube</label>
-              <input
-                type="text"
-                value={editingEpisode.youtubeUrl}
-                onChange={(e) =>
-                  setEditingEpisode({ ...editingEpisode, youtubeUrl: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-xl bg-cinema-850 border border-cinema-700 text-white text-xs font-mono"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2 border-t border-cinema-800 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setEditingEpisode(null)}
@@ -538,9 +712,9 @@ export const EpisodeListPage: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-red-950"
               >
-                Lưu thay đổi
+                Lưu thay đổi ({editServers.filter(s => s.url.trim()).length} link)
               </button>
             </div>
           </form>

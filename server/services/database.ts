@@ -24,6 +24,15 @@ export interface Movie {
   updatedAt: string;
 }
 
+export interface EpisodeServer {
+  id: string;
+  name: string; // Tên hiển thị: "Server 1 (YouTube)", "Server 2 (Facebook)", v.v.
+  url: string;
+  videoId: string;
+  embedUrl: string;
+  platform?: string;
+}
+
 export interface Episode {
   id: string;
   movieId: string;
@@ -34,6 +43,7 @@ export interface Episode {
   youtubeEmbedUrl: string;
   thumbnailUrl: string;
   viewCount: number;
+  servers?: EpisodeServer[];
   createdAt: string;
   updatedAt: string;
 }
@@ -349,6 +359,7 @@ class DatabaseService {
       youtubeEmbedUrl: payload.youtubeEmbedUrl.trim(),
       thumbnailUrl: payload.thumbnailUrl.trim() || `https://i.ytimg.com/vi/${payload.youtubeVideoId.trim()}/hqdefault.jpg`,
       viewCount: 0,
+      servers: Array.isArray(payload.servers) ? payload.servers : [],
       createdAt: now,
       updatedAt: now,
     };

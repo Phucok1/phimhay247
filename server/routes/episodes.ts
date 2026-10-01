@@ -72,31 +72,82 @@ router.get('/:movieId/:episodeNumber', (req: Request, res: Response) => {
   }
 });
 
+// Helper bóc tách danh sách server đa nguồn
+function processEpisodeServers(rawServers: any[], defaultMainUrl?: string) {
+  const result: any[] = [];
+  if (Array.isArray(rawServers) && rawServers.length > 0) {
+    for (let i = 0; i < rawServers.length; i++) {
+      const s = rawServers[i];
+      const url = (typeof s === 'string' ? s : s?.url)?.trim();
+      if (!url) continue;
+      const parsed = parseYouTubeUrl(url);
+      if (parsed.success) {
+        result.push({
+          id: s?.id || `srv-${Date.now()}-${i}`,
+          name: s?.name?.trim() || `Server ${i + 1} (${parsed.data.platformName})`,
+          url: parsed.data.watchUrl,
+          videoId: parsed.data.videoId,
+          embedUrl: parsed.data.embedUrl,
+          platform: parsed.data.videoType,
+        });
+      }
+    }
+  } else if (defaultMainUrl && defaultMainUrl.trim()) {
+    const parsed = parseYouTubeUrl(defaultMainUrl.trim());
+    if (parsed.success) {
+      result.push({
+        id: `srv-${Date.now()}-0`,
+        name: `Server 1 (${parsed.data.platformName})`,
+        url: parsed.data.watchUrl,
+        videoId: parsed.data.videoId,
+        embedUrl: parsed.data.embedUrl,
+        platform: parsed.data.videoType,
+      });
+    }
+  }
+  return result;
+}
+
 // POST /api/episodes (Thêm 1 tập)
 router.post('/', (req: Request, res: Response) => {
   try {
-    const { movieId, episodeNumber, title, youtubeUrl, customThumbnail } = req.body;
+    const { movieId, episodeNumber, title, youtubeUrl, customThumbnail, servers } = req.body;
 
     if (!movieId) {
       return res.status(400).json({ success: false, error: 'Thiếu thông tin bộ phim (movieId).' });
     }
-    if (!youtubeUrl) {
-      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp link video.' });
+
+    const mainUrl = youtubeUrl || (Array.isArray(servers) && servers[0]?.url) || '';
+    if (!mainUrl) {
+      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp ít nhất 1 link video.' });
     }
 
-    const parsed = parseYouTubeUrl(youtubeUrl);
-    if (!parsed.success) {
-      return res.status(400).json({ success: false, error: parsed.error });
+    const parsedMain = parseYouTubeUrl(mainUrl);
+    if (!parsedMain.success) {
+      return res.status(400).json({ success: false, error: parsedMain.error });
+    }
+
+    let processedServers = processEpisodeServers(servers, mainUrl);
+    if (processedServers.length === 0) {
+      processedServers = [{
+        id: `srv-${Date.now()}-0`,
+        name: `Server 1 (${parsedMain.data.platformName})`,
+        url: parsedMain.data.watchUrl,
+        videoId: parsedMain.data.videoId,
+        embedUrl: parsedMain.data.embedUrl,
+        platform: parsedMain.data.videoType,
+      }];
     }
 
     const ep = db.createEpisode({
       movieId,
       episodeNumber: Number(episodeNumber) || 1,
       title: title || `Tập ${episodeNumber || 1}`,
-      youtubeUrl: parsed.data.watchUrl,
-      youtubeVideoId: parsed.data.videoId,
-      youtubeEmbedUrl: parsed.data.embedUrl,
-      thumbnailUrl: customThumbnail || parsed.data.thumbnailUrl,
+      youtubeUrl: processedServers[0].url,
+      youtubeVideoId: processedServers[0].videoId,
+      youtubeEmbedUrl: processedServers[0].embedUrl,
+      thumbnailUrl: customThumbnail || parsedMain.data.thumbnailUrl,
+      servers: processedServers,
     });
 
     res.status(201).json({ success: true, data: ep });
@@ -135,6 +186,16 @@ router.post('/bulk', (req: Request, res: Response) => {
         youtubeVideoId: parsed.data.videoId,
         youtubeEmbedUrl: parsed.data.embedUrl,
         thumbnailUrl: item.thumbnailUrl || parsed.data.thumbnailUrl,
+        servers: [
+          {
+            id: `srv-${Date.now()}-${i}`,
+            name: `Server 1 (${parsed.data.platformName})`,
+            url: parsed.data.watchUrl,
+            videoId: parsed.data.videoId,
+            embedUrl: parsed.data.embedUrl,
+            platform: parsed.data.videoType,
+          }
+        ],
       });
     }
 
@@ -163,14 +224,26 @@ router.post('/bulk', (req: Request, res: Response) => {
 router.put('/:id', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { episodeNumber, title, youtubeUrl, customThumbnail } = req.body;
+    const { episodeNumber, title, youtubeUrl, customThumbnail, servers } = req.body;
 
     const payload: any = {};
     if (episodeNumber !== undefined) payload.episodeNumber = Number(episodeNumber);
     if (title !== undefined) payload.title = title;
     if (customThumbnail) payload.thumbnailUrl = customThumbnail;
 
-    if (youtubeUrl) {
+    if (Array.isArray(servers)) {
+      const processed = processEpisodeServers(servers);
+      if (processed.length > 0) {
+        payload.servers = processed;
+        payload.youtubeUrl = processed[0].url;
+        payload.youtubeVideoId = processed[0].videoId;
+        payload.youtubeEmbedUrl = processed[0].embedUrl;
+        if (!customThumbnail) {
+          const p = parseYouTubeUrl(processed[0].url);
+          if (p.success) payload.thumbnailUrl = p.data.thumbnailUrl;
+        }
+      }
+    } else if (youtubeUrl) {
       const parsed = parseYouTubeUrl(youtubeUrl);
       if (!parsed.success) {
         return res.status(400).json({ success: false, error: parsed.error });
@@ -181,6 +254,14 @@ router.put('/:id', (req: Request, res: Response) => {
       if (!customThumbnail) {
         payload.thumbnailUrl = parsed.data.thumbnailUrl;
       }
+      payload.servers = [{
+        id: `srv-${Date.now()}-0`,
+        name: `Server 1 (${parsed.data.platformName})`,
+        url: parsed.data.watchUrl,
+        videoId: parsed.data.videoId,
+        embedUrl: parsed.data.embedUrl,
+        platform: parsed.data.videoType,
+      }];
     }
 
     const updated = db.updateEpisode(id, payload);

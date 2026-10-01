@@ -20,6 +20,15 @@ export interface Movie {
   updatedAt: string;
 }
 
+export interface EpisodeServer {
+  id: string;
+  name: string; // Tên hiển thị server, ví dụ "Server 1 (YouTube)", "Server 2 (Facebook)"
+  url: string;
+  videoId: string;
+  embedUrl: string;
+  platform?: string;
+}
+
 export interface Episode {
   id: string;
   movieId: string;
@@ -30,6 +39,7 @@ export interface Episode {
   youtubeEmbedUrl: string;
   thumbnailUrl: string;
   viewCount: number;
+  servers?: EpisodeServer[];
   createdAt: string;
   updatedAt: string;
 }

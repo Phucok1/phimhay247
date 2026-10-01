@@ -93,6 +93,7 @@ export const createEpisode = async (data: {
   title: string;
   youtubeUrl: string;
   customThumbnail?: string;
+  servers?: Array<{ id?: string; name?: string; url: string }>;
 }): Promise<Episode> => {
   const res = await client.post('/episodes', data);
   return res.data.data;

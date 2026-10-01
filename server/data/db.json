@@ -1,6 +1,145 @@
 {
   "movies": [
     {
+      "id": "mov-1790821188225-0dbdg",
+      "title": "Xuyên Không Thức Tỉnh Thông Thiên Nhãn",
+      "slug": "xuyen-khong-thuc-tinh-thong-thien-nhan",
+      "description": "",
+      "posterUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/831493320_2119668478925774_4762799652964815001_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=102&_nc_ohc=VZFMOcS1_d4Q7kNvwE7IZzN&sdl=0&ccb=14-4&oh=00_AQMnNVOQHg60RkUm5XUzyQhhp4HllIn3gSTiujgfAFSEBw&oe=6AC37B32&_nc_sid=a21977",
+      "bannerUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/831493320_2119668478925774_4762799652964815001_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=102&_nc_ohc=VZFMOcS1_d4Q7kNvwE7IZzN&sdl=0&ccb=14-4&oh=00_AQMnNVOQHg60RkUm5XUzyQhhp4HllIn3gSTiujgfAFSEBw&oe=6AC37B32&_nc_sid=a21977",
+      "category": [
+        "Kiếm Hiệp",
+        "Tiên Hiệp",
+        "Cổ Trang",
+        "Huyền Huyễn",
+        "Xuyên Không",
+        "Hoạt Hình 3D"
+      ],
+      "year": 2026,
+      "status": "Đang cập nhật",
+      "keywords": "X, phim X, xem phim X youtube",
+      "seoTitle": "X - Xem Phim Trọn Bộ",
+      "seoDescription": "",
+      "episodeCount": 2,
+      "latestEpisode": 2,
+      "viewCount": 0,
+      "hidden": false,
+      "featured": false,
+      "createdAt": "2026-10-01T02:19:48.225Z",
+      "updatedAt": "2026-10-01T02:20:11.700Z"
+    },
+    {
+      "id": "mov-1790820572935-ir7ix",
+      "title": "Cửu thiên trấn áp",
+      "slug": "cuu-thien-tran-ap",
+      "description": "",
+      "posterUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829648438_29620841160838991_7462206183017290725_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=111&_nc_ohc=GOEz7aiB8PAQ7kNvwHSvXZ_&sdl=0&ccb=14-4&oh=00_AQNY-09dLFN7009OI9G91XjESFktZOEWwG53mrgwl9VSog&oe=6AC37837&_nc_sid=a21977",
+      "bannerUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829648438_29620841160838991_7462206183017290725_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=111&_nc_ohc=GOEz7aiB8PAQ7kNvwHSvXZ_&sdl=0&ccb=14-4&oh=00_AQNY-09dLFN7009OI9G91XjESFktZOEWwG53mrgwl9VSog&oe=6AC37837&_nc_sid=a21977",
+      "category": [
+        "Kiếm Hiệp",
+        "Tiên Hiệp",
+        "Cổ Trang",
+        "Hành Động"
+      ],
+      "year": 2026,
+      "status": "Hoàn thành",
+      "keywords": "Cửu thiên trấn áp, phim Cửu thiên trấn áp, xem phim Cửu thiên trấn áp youtube",
+      "seoTitle": "Cửu thiên trấn áp - Xem Phim Trọn Bộ",
+      "seoDescription": "",
+      "episodeCount": 6,
+      "latestEpisode": 7,
+      "viewCount": 0,
+      "hidden": false,
+      "featured": false,
+      "createdAt": "2026-10-01T02:09:32.934Z",
+      "updatedAt": "2026-10-01T02:11:10.256Z"
+    },
+    {
+      "id": "mov-1790820308007-lnloa",
+      "title": "Đội Đặc Nhiệm Xuyên Không",
+      "slug": "doi-dac-nhiem-xuyen-khong",
+      "description": "",
+      "posterUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829518345_1623712839345752_6104036838212182971_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=108&_nc_ohc=kMFByke52XcQ7kNvwEez6X4&sdl=0&ccb=14-4&oh=00_AQPFeS6Bwa_zXrUUH6ZKHymPHG34qoLIVZ6uI940yHPFBA&oe=6AC3840D&_nc_sid=a21977",
+      "bannerUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829518345_1623712839345752_6104036838212182971_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=108&_nc_ohc=kMFByke52XcQ7kNvwEez6X4&sdl=0&ccb=14-4&oh=00_AQPFeS6Bwa_zXrUUH6ZKHymPHG34qoLIVZ6uI940yHPFBA&oe=6AC3840D&_nc_sid=a21977",
+      "category": [
+        "Kiếm Hiệp",
+        "Tiên Hiệp",
+        "Cổ Trang",
+        "Hành Động",
+        "Huyền Huyễn",
+        "Xuyên Không",
+        "Hoạt Hình 3D"
+      ],
+      "year": 2026,
+      "status": "Đang cập nhật",
+      "keywords": "D, phim D, xem phim D youtube",
+      "seoTitle": "D - Xem Phim Trọn Bộ",
+      "seoDescription": "",
+      "episodeCount": 2,
+      "latestEpisode": 2,
+      "viewCount": 0,
+      "hidden": false,
+      "featured": false,
+      "createdAt": "2026-10-01T02:05:08.007Z",
+      "updatedAt": "2026-10-01T02:05:31.479Z"
+    },
+    {
+      "id": "mov-1790819968727-xrh3m",
+      "title": "THAY NGƯỜI VIẾT THƯ TÌNH",
+      "slug": "thay-nguoi-viet-thu-tinh",
+      "description": "",
+      "posterUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829736148_1386285326819790_7520146933946615543_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=106&_nc_ohc=ZOYdDh_2yLAQ7kNvwHtwu6b&sdl=0&ccb=14-4&oh=00_AQN57GV-VQPTUhPPDoetWcZu6Ev0yK_WVMOx3fw0Y8QYHw&oe=6AC37A10&_nc_sid=a21977",
+      "bannerUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829736148_1386285326819790_7520146933946615543_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=106&_nc_ohc=ZOYdDh_2yLAQ7kNvwHtwu6b&sdl=0&ccb=14-4&oh=00_AQN57GV-VQPTUhPPDoetWcZu6Ev0yK_WVMOx3fw0Y8QYHw&oe=6AC37A10&_nc_sid=a21977",
+      "category": [
+        "Tiên Hiệp",
+        "Cổ Trang",
+        "Hành Động",
+        "Ngôn Tình",
+        "Huyền Huyễn",
+        "Kiếm Hiệp"
+      ],
+      "year": 2026,
+      "status": "Đang cập nhật",
+      "keywords": "THAY NGƯỜI VIẾT THƯ TÌNH, phim  THAY NGƯỜI VIẾT THƯ TÌNH, xem phim  THAY NGƯỜI VIẾT THƯ TÌNH youtube",
+      "seoTitle": "THAY NGƯỜI VIẾT THƯ TÌNH - Xem Phim Trọn Bộ",
+      "seoDescription": "",
+      "episodeCount": 3,
+      "latestEpisode": 3,
+      "viewCount": 0,
+      "hidden": false,
+      "featured": false,
+      "createdAt": "2026-10-01T01:59:28.727Z",
+      "updatedAt": "2026-10-01T02:02:39.880Z"
+    },
+    {
+      "id": "mov-1790819553380-ufsc7",
+      "title": "Sơn Hà Độc Chước",
+      "slug": "son-ha-doc-chuoc",
+      "description": "",
+      "posterUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829263373_2230185074221801_3152626909618657494_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=101&_nc_ohc=12BgBs2l6V0Q7kNvwHvUrhp&sdl=0&ccb=14-4&oh=00_AQMzfAFal8VgZAouJuOMfFG7ZKv05QpMyv1TOtxLOFVHcg&oe=6AC3830A&_nc_sid=a21977",
+      "bannerUrl": "https://scontent.xx.fbcdn.net/v/t39.105495-1/829263373_2230185074221801_3152626909618657494_n.webp?_nc_ht=scontent.xx.fbcdn.net&_nc_cat=101&_nc_ohc=12BgBs2l6V0Q7kNvwHvUrhp&sdl=0&ccb=14-4&oh=00_AQMzfAFal8VgZAouJuOMfFG7ZKv05QpMyv1TOtxLOFVHcg&oe=6AC3830A&_nc_sid=a21977",
+      "category": [
+        "Kiếm Hiệp",
+        "Tiên Hiệp",
+        "Cổ Trang",
+        "Huyền Huyễn",
+        "Ngôn Tình",
+        "Hoạt Hình 3D"
+      ],
+      "year": 2026,
+      "status": "Đang cập nhật",
+      "keywords": "https://www.facebook.com/reel/1509676664263720, phim https://www.facebook.com/reel/1509676664263720, xem phim https://www.facebook.com/reel/1509676664263720 youtube",
+      "seoTitle": "https://www.facebook.com/reel/1509676664263720 - Xem Phim Trọn Bộ",
+      "seoDescription": "",
+      "episodeCount": 2,
+      "latestEpisode": 2,
+      "viewCount": 0,
+      "hidden": false,
+      "featured": false,
+      "createdAt": "2026-10-01T01:52:33.380Z",
+      "updatedAt": "2026-10-01T01:53:16.514Z"
+    },
+    {
       "id": "mov-1790818469323-a1lk4",
       "title": "Vừa trúng số liền bị xuyên không",
       "slug": "vua-trung-so-lien-bi-xuyen-khong",
@@ -257,6 +396,359 @@
       "viewCount": 0,
       "createdAt": "2026-10-01T01:39:36.069Z",
       "updatedAt": "2026-10-01T01:39:36.069Z"
+    },
+    {
+      "id": "ep-1790819579945-usy1t",
+      "movieId": "mov-1790819553380-ufsc7",
+      "episodeNumber": 1,
+      "title": "Tập 1, 2, 3, 4",
+      "youtubeUrl": "https://www.facebook.com/reel/1509676664263720",
+      "youtubeVideoId": "fb-1790819579944",
+      "youtubeEmbedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1509676664263720&show_text=0&autoplay=1",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790819579944-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.facebook.com/reel/1509676664263720",
+          "videoId": "fb-1790819579944",
+          "embedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1509676664263720&show_text=0&autoplay=1",
+          "platform": "facebook"
+        }
+      ],
+      "createdAt": "2026-10-01T01:52:59.945Z",
+      "updatedAt": "2026-10-01T01:52:59.945Z"
+    },
+    {
+      "id": "ep-1790819596514-j0o4w",
+      "movieId": "mov-1790819553380-ufsc7",
+      "episodeNumber": 2,
+      "title": "Tập 5",
+      "youtubeUrl": "https://www.facebook.com/reel/1590848735752363",
+      "youtubeVideoId": "fb-1790819596513",
+      "youtubeEmbedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1590848735752363&show_text=0&autoplay=1",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790819596513-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.facebook.com/reel/1590848735752363",
+          "videoId": "fb-1790819596513",
+          "embedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1590848735752363&show_text=0&autoplay=1",
+          "platform": "facebook"
+        }
+      ],
+      "createdAt": "2026-10-01T01:53:16.513Z",
+      "updatedAt": "2026-10-01T01:53:16.513Z"
+    },
+    {
+      "id": "ep-1790820147998-1d3eg",
+      "movieId": "mov-1790819968727-xrh3m",
+      "episodeNumber": 1,
+      "title": "Tập 1",
+      "youtubeUrl": "https://www.youtube.com/watch?v=n3PL4X-ZfWc",
+      "youtubeVideoId": "n3PL4X-ZfWc",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/n3PL4X-ZfWc?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/n3PL4X-ZfWc/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820147998-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=n3PL4X-ZfWc",
+          "videoId": "n3PL4X-ZfWc",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/n3PL4X-ZfWc?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:02:27.998Z",
+      "updatedAt": "2026-10-01T02:02:27.998Z"
+    },
+    {
+      "id": "ep-1790820154193-86bdr",
+      "movieId": "mov-1790819968727-xrh3m",
+      "episodeNumber": 2,
+      "title": "Tập 2",
+      "youtubeUrl": "https://www.youtube.com/watch?v=bgp78EzgkvA",
+      "youtubeVideoId": "bgp78EzgkvA",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/bgp78EzgkvA?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/bgp78EzgkvA/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820154193-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=bgp78EzgkvA",
+          "videoId": "bgp78EzgkvA",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/bgp78EzgkvA?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:02:34.193Z",
+      "updatedAt": "2026-10-01T02:02:34.193Z"
+    },
+    {
+      "id": "ep-1790820159880-8wsyx",
+      "movieId": "mov-1790819968727-xrh3m",
+      "episodeNumber": 3,
+      "title": "Tập 3",
+      "youtubeUrl": "https://www.youtube.com/watch?v=8jX9CdvXWkY",
+      "youtubeVideoId": "8jX9CdvXWkY",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/8jX9CdvXWkY?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/8jX9CdvXWkY/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820159880-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=8jX9CdvXWkY",
+          "videoId": "8jX9CdvXWkY",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/8jX9CdvXWkY?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:02:39.880Z",
+      "updatedAt": "2026-10-01T02:02:39.880Z"
+    },
+    {
+      "id": "ep-1790820321182-gjf5p",
+      "movieId": "mov-1790820308007-lnloa",
+      "episodeNumber": 1,
+      "title": "Tập 1, 2",
+      "youtubeUrl": "https://www.youtube.com/watch?v=XjLMMKkG3QA",
+      "youtubeVideoId": "XjLMMKkG3QA",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/XjLMMKkG3QA?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/XjLMMKkG3QA/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820321182-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=XjLMMKkG3QA",
+          "videoId": "XjLMMKkG3QA",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/XjLMMKkG3QA?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:05:21.182Z",
+      "updatedAt": "2026-10-01T02:05:21.182Z"
+    },
+    {
+      "id": "ep-1790820331479-5fcui",
+      "movieId": "mov-1790820308007-lnloa",
+      "episodeNumber": 2,
+      "title": "Tập 3",
+      "youtubeUrl": "https://www.youtube.com/watch?v=XUuT8FrnfWs",
+      "youtubeVideoId": "XUuT8FrnfWs",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/XUuT8FrnfWs?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/XUuT8FrnfWs/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820331479-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=XUuT8FrnfWs",
+          "videoId": "XUuT8FrnfWs",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/XUuT8FrnfWs?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:05:31.479Z",
+      "updatedAt": "2026-10-01T02:05:31.479Z"
+    },
+    {
+      "id": "ep-1790820585416-5pvm1",
+      "movieId": "mov-1790820572935-ir7ix",
+      "episodeNumber": 1,
+      "title": "Tập 1",
+      "youtubeUrl": "https://www.youtube.com/watch?v=yjn_FsWxjS0",
+      "youtubeVideoId": "yjn_FsWxjS0",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/yjn_FsWxjS0?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/yjn_FsWxjS0/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820670252-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=yjn_FsWxjS0",
+          "videoId": "yjn_FsWxjS0",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/yjn_FsWxjS0?rel=0&modestbranding=1",
+          "platform": "youtube"
+        },
+        {
+          "id": "srv-1790820670253-1",
+          "name": "Server 2 (Dự phòng)",
+          "url": "https://www.facebook.com/reel/1805088880928471",
+          "videoId": "fb-1790820670253",
+          "embedUrl": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1805088880928471&show_text=0&autoplay=1",
+          "platform": "facebook"
+        }
+      ],
+      "createdAt": "2026-10-01T02:09:45.416Z",
+      "updatedAt": "2026-10-01T02:11:10.254Z"
+    },
+    {
+      "id": "ep-1790820593537-lxnkp",
+      "movieId": "mov-1790820572935-ir7ix",
+      "episodeNumber": 3,
+      "title": "Tập 3",
+      "youtubeUrl": "https://www.youtube.com/watch?v=QKDaqQ4T7EQ",
+      "youtubeVideoId": "QKDaqQ4T7EQ",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/QKDaqQ4T7EQ?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/QKDaqQ4T7EQ/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820593537-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=QKDaqQ4T7EQ",
+          "videoId": "QKDaqQ4T7EQ",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/QKDaqQ4T7EQ?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:09:53.537Z",
+      "updatedAt": "2026-10-01T02:09:53.537Z"
+    },
+    {
+      "id": "ep-1790820603693-7op0c",
+      "movieId": "mov-1790820572935-ir7ix",
+      "episodeNumber": 4,
+      "title": "Tập 4",
+      "youtubeUrl": "https://www.youtube.com/watch?v=U2vCL6cn8KY",
+      "youtubeVideoId": "U2vCL6cn8KY",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/U2vCL6cn8KY?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/U2vCL6cn8KY/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820603693-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=U2vCL6cn8KY",
+          "videoId": "U2vCL6cn8KY",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/U2vCL6cn8KY?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:10:03.693Z",
+      "updatedAt": "2026-10-01T02:10:03.693Z"
+    },
+    {
+      "id": "ep-1790820613140-trpb1",
+      "movieId": "mov-1790820572935-ir7ix",
+      "episodeNumber": 5,
+      "title": "Tập 5",
+      "youtubeUrl": "https://www.youtube.com/watch?v=IYM5PaPCHUM",
+      "youtubeVideoId": "IYM5PaPCHUM",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/IYM5PaPCHUM?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/IYM5PaPCHUM/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820613135-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=IYM5PaPCHUM",
+          "videoId": "IYM5PaPCHUM",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/IYM5PaPCHUM?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:10:13.136Z",
+      "updatedAt": "2026-10-01T02:10:13.136Z"
+    },
+    {
+      "id": "ep-1790820618623-bbn47",
+      "movieId": "mov-1790820572935-ir7ix",
+      "episodeNumber": 6,
+      "title": "Tập 6",
+      "youtubeUrl": "https://www.youtube.com/watch?v=eEdjJdhGIto",
+      "youtubeVideoId": "eEdjJdhGIto",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/eEdjJdhGIto?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/eEdjJdhGIto/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820618623-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=eEdjJdhGIto",
+          "videoId": "eEdjJdhGIto",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/eEdjJdhGIto?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:10:18.623Z",
+      "updatedAt": "2026-10-01T02:10:18.623Z"
+    },
+    {
+      "id": "ep-1790820624051-oh2px",
+      "movieId": "mov-1790820572935-ir7ix",
+      "episodeNumber": 7,
+      "title": "Tập 7",
+      "youtubeUrl": "https://www.youtube.com/watch?v=71nLfJuutNI",
+      "youtubeVideoId": "71nLfJuutNI",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/71nLfJuutNI?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/71nLfJuutNI/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790820624051-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=71nLfJuutNI",
+          "videoId": "71nLfJuutNI",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/71nLfJuutNI?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:10:24.051Z",
+      "updatedAt": "2026-10-01T02:10:24.051Z"
+    },
+    {
+      "id": "ep-1790821206021-z0etg",
+      "movieId": "mov-1790821188225-0dbdg",
+      "episodeNumber": 1,
+      "title": "Tập 1",
+      "youtubeUrl": "https://www.youtube.com/watch?v=3idEQ3qEv6M",
+      "youtubeVideoId": "3idEQ3qEv6M",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/3idEQ3qEv6M?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/3idEQ3qEv6M/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790821206020-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=3idEQ3qEv6M",
+          "videoId": "3idEQ3qEv6M",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/3idEQ3qEv6M?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:20:06.020Z",
+      "updatedAt": "2026-10-01T02:20:06.020Z"
+    },
+    {
+      "id": "ep-1790821211700-0ixp9",
+      "movieId": "mov-1790821188225-0dbdg",
+      "episodeNumber": 2,
+      "title": "Tập 2",
+      "youtubeUrl": "https://www.youtube.com/watch?v=RjGzqyzpYj4",
+      "youtubeVideoId": "RjGzqyzpYj4",
+      "youtubeEmbedUrl": "https://www.youtube-nocookie.com/embed/RjGzqyzpYj4?rel=0&modestbranding=1",
+      "thumbnailUrl": "https://i.ytimg.com/vi/RjGzqyzpYj4/hqdefault.jpg",
+      "viewCount": 0,
+      "servers": [
+        {
+          "id": "srv-1790821211700-0",
+          "name": "Server 1 (Chính)",
+          "url": "https://www.youtube.com/watch?v=RjGzqyzpYj4",
+          "videoId": "RjGzqyzpYj4",
+          "embedUrl": "https://www.youtube-nocookie.com/embed/RjGzqyzpYj4?rel=0&modestbranding=1",
+          "platform": "youtube"
+        }
+      ],
+      "createdAt": "2026-10-01T02:20:11.700Z",
+      "updatedAt": "2026-10-01T02:20:11.700Z"
     }
   ],
   "categories": [

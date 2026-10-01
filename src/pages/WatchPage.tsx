@@ -28,8 +28,13 @@ export const WatchPage: React.FC = () => {
 
   const [movie, setMovie] = useState<(Movie & { episodes: Episode[]; related: Movie[] }) | null>(null);
   const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null);
+  const [selectedServerIdx, setSelectedServerIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedServerIdx(0);
+  }, [slug, currentEpNum]);
 
   useEffect(() => {
     if (!slug) return;
@@ -144,15 +149,63 @@ export const WatchPage: React.FC = () => {
           <span className="text-red-400 font-semibold whitespace-nowrap">Tập {currentEpNum}</span>
         </div>
 
-        {/* 1. Video Player 16:9 (Hỗ trợ YouTube & Facebook Reels) */}
-        <div className="mb-6">
-          <YouTubePlayer
-            videoId={currentEpisode.youtubeVideoId}
-            embedUrl={currentEpisode.youtubeEmbedUrl}
-            watchUrl={currentEpisode.youtubeUrl}
-            title={`${movie.title} - ${currentEpisode.title}`}
-          />
-        </div>
+        {/* Nguồn Phát / Server (Nếu có link phụ từ nguồn khác) */}
+        {(() => {
+          const episodeServers = (currentEpisode.servers && currentEpisode.servers.length > 0)
+            ? currentEpisode.servers
+            : [
+                {
+                  id: 'srv-main',
+                  name: 'Server 1 (Chính)',
+                  url: currentEpisode.youtubeUrl,
+                  videoId: currentEpisode.youtubeVideoId,
+                  embedUrl: currentEpisode.youtubeEmbedUrl,
+                }
+              ];
+          const activeServer = episodeServers[selectedServerIdx] || episodeServers[0];
+
+          return (
+            <>
+              {episodeServers.length > 1 && (
+                <div className="mb-3.5 p-3 rounded-xl bg-cinema-900 border border-cinema-800 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Đổi Nguồn Phát (Server Dự Phòng):</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {episodeServers.map((srv, idx) => {
+                      const isActive = idx === selectedServerIdx;
+                      return (
+                        <button
+                          key={srv.id || idx}
+                          onClick={() => setSelectedServerIdx(idx)}
+                          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                            isActive
+                              ? 'bg-red-600 text-white shadow-md shadow-red-950 scale-105'
+                              : 'bg-cinema-850 hover:bg-cinema-800 text-gray-300 hover:text-white border border-cinema-700/60'
+                          }`}
+                        >
+                          <span>{srv.name || `Server ${idx + 1}`}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* 1. Video Player 16:9 (Đa Server: YouTube, Facebook, Ok.ru, Drive...) */}
+              <div className="mb-6">
+                <YouTubePlayer
+                  key={`${currentEpisode.id}-${selectedServerIdx}-${activeServer.url}`}
+                  videoId={activeServer.videoId || currentEpisode.youtubeVideoId}
+                  embedUrl={activeServer.embedUrl || currentEpisode.youtubeEmbedUrl}
+                  watchUrl={activeServer.url || currentEpisode.youtubeUrl}
+                  title={`${movie.title} - ${currentEpisode.title} (${activeServer.name || 'Server ' + (selectedServerIdx + 1)})`}
+                />
+              </div>
+            </>
+          );
+        })()}
 
         {/* 2. Controls & Episode Navigation Bar */}
         <div className="p-4 rounded-2xl bg-cinema-900 border border-cinema-800 flex flex-wrap items-center justify-between gap-4 mb-6">
