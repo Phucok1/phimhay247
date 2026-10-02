@@ -28,6 +28,7 @@ import {
   importChapters,
   deleteChapter,
   crawlWebnovelStory,
+  importNovelsBackup,
 } from '../../services/api';
 import { Novel, Chapter } from '../../types';
 
@@ -370,6 +371,20 @@ export const NovelManagePage: React.FC = () => {
     }
   };
 
+  const handleImportNovels = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const res = await importNovelsBackup(json);
+      alert(res.message || 'Khôi phục truyện thành công!');
+      loadData();
+    } catch (err: any) {
+      alert('File JSON không hợp lệ: ' + (err.message || 'Lỗi'));
+    }
+  };
+
   const filteredNovels = novels.filter(
     (n) =>
       n.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -391,6 +406,32 @@ export const NovelManagePage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Nút Sao lưu truyện */}
+          <a
+            href="/api/novels/admin/export"
+            download
+            className="px-3.5 py-2.5 rounded-xl bg-cinema-850 hover:bg-cinema-800 text-gray-200 border border-cinema-700 font-bold text-xs transition flex items-center gap-2"
+            title="Tải toàn bộ danh sách truyện và các chương về máy tính"
+          >
+            <DownloadCloud className="w-4 h-4 text-emerald-400" />
+            <span>Sao Lưu Truyện (.json)</span>
+          </a>
+
+          {/* Nút Khôi phục truyện */}
+          <label
+            className="px-3.5 py-2.5 rounded-xl bg-cinema-850 hover:bg-cinema-800 text-gray-200 border border-cinema-700 font-bold text-xs transition flex items-center gap-2 cursor-pointer"
+            title="Khôi phục dữ liệu truyện từ file backup JSON"
+          >
+            <Upload className="w-4 h-4 text-amber-400" />
+            <span>Khôi Phục Truyện</span>
+            <input
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={handleImportNovels}
+            />
+          </label>
+
           <button
             type="button"
             onClick={() => {

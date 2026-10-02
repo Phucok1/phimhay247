@@ -888,6 +888,9 @@ class DatabaseService {
 
   // --- BACKUP & RESTORE ---
   public exportDatabase(): DatabaseSchema {
+    if (!this.data.novels || this.data.novels.length === 0) {
+      this.data.novels = DEFAULT_NOVELS;
+    }
     return this.data;
   }
 
@@ -903,7 +906,21 @@ class DatabaseService {
       chatMessages: Array.isArray(newData.chatMessages) ? newData.chatMessages : (this.data.chatMessages || []),
       feedbacks: Array.isArray(newData.feedbacks) ? newData.feedbacks : (this.data.feedbacks || []),
       memberSubmissions: Array.isArray(newData.memberSubmissions) ? newData.memberSubmissions : (this.data.memberSubmissions || []),
+      novels: Array.isArray(newData.novels) && newData.novels.length > 0 ? newData.novels : (this.data.novels || DEFAULT_NOVELS),
     };
+    this.save();
+    return true;
+  }
+
+  public importNovels(novels: Novel[]): boolean {
+    if (!Array.isArray(novels)) return false;
+    if (!this.data.novels) this.data.novels = [];
+
+    const novelMap = new Map<string, Novel>();
+    this.data.novels.forEach((n) => novelMap.set(n.slug || n.id, n));
+    novels.forEach((n) => novelMap.set(n.slug || n.id, n));
+
+    this.data.novels = Array.from(novelMap.values());
     this.save();
     return true;
   }

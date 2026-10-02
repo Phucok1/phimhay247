@@ -418,7 +418,7 @@ export const SettingsPage: React.FC = () => {
 
           <div className="space-y-4 text-xs">
             <p className="text-gray-300 leading-relaxed">
-              Trên các nền tảng Cloud miễn phí như Render, bộ nhớ đĩa là tạm thời (sẽ khôi phục về trạng thái GitHub khi server khởi động lại). Hãy sử dụng công cụ dưới đây để không bao giờ bị mất danh sách phim:
+              Trên các nền tảng Cloud miễn phí như Render, bộ nhớ đĩa là tạm thời (sẽ khôi phục về trạng thái GitHub khi server khởi động lại). Hãy sử dụng công cụ dưới đây để lưu trữ vĩnh viễn toàn bộ phim, tập phim và truyện chữ:
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -429,13 +429,13 @@ export const SettingsPage: React.FC = () => {
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition shadow-lg shadow-emerald-950"
               >
                 <Save className="w-4 h-4" />
-                Tải Về Bản Sao Lưu Database (.json)
+                Tải Về Bản Sao Lưu Toàn Bộ Database (.json)
               </a>
 
               {/* Nút khôi phục backup */}
               <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cinema-800 hover:bg-cinema-700 text-gray-200 font-semibold cursor-pointer transition border border-cinema-700">
                 <CheckCircle className="w-4 h-4 text-primary" />
-                <span>Khôi Phục Dữ Liệu Từ File Backup</span>
+                <span>Khôi Phục Toàn Bộ (Phim & Truyện) Từ File Backup</span>
                 <input
                   type="file"
                   accept=".json"
@@ -453,7 +453,7 @@ export const SettingsPage: React.FC = () => {
                       });
                       const result = await res.json();
                       if (result.success) {
-                        alert('Khôi phục database thành công! Trang web sẽ được tải lại.');
+                        alert('Khôi phục database (phim, tập và truyện) thành công! Trang web sẽ được tải lại.');
                         window.location.reload();
                       } else {
                         alert(result.error || 'Lỗi khi khôi phục.');
@@ -467,9 +467,9 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             <div className="p-3 bg-cinema-950/80 rounded-xl border border-cinema-800 text-gray-400 space-y-1">
-              <p className="font-semibold text-gray-200">Mẹo lưu phim vĩnh viễn không bao giờ mất:</p>
-              <p>• <strong>Cách 1:</strong> Sau khi thêm phim trên web, bấm nút <strong className="text-emerald-400">"Tải Về Bản Sao Lưu Database"</strong> cất vào máy tính.</p>
-              <p>• <strong>Cách 2 (Khuyên dùng):</strong> Bấm đúp vào file <strong className="text-amber-400">"DAY_CODE_LEN_GITHUB.bat"</strong> trên màn hình Desktop máy tính để đẩy toàn bộ phim lên GitHub vĩnh viễn!</p>
+              <p className="font-semibold text-gray-200">Mẹo lưu dữ liệu vĩnh viễn không bao giờ mất:</p>
+              <p>• <strong>Cách 1:</strong> Sau khi thêm phim hoặc cào truyện trên web, bấm nút <strong className="text-emerald-400">"Tải Về Bản Sao Lưu Toàn Bộ Database"</strong> cất vào máy tính.</p>
+              <p>• <strong>Cách 2 (Khuyên dùng):</strong> Bấm đúp vào file <strong className="text-amber-400">"DAY_CODE_LEN_GITHUB.bat"</strong> trên màn hình Desktop máy tính để đẩy toàn bộ phim và truyện lên GitHub vĩnh viễn!</p>
             </div>
           </div>
         </div>

@@ -385,3 +385,8 @@ export const crawlWebnovelStory = async (
   return res.data;
 };
 
+export const importNovelsBackup = async (novels: any): Promise<{ success: boolean; message: string }> => {
+  const res = await client.post('/novels/admin/import', { novels });
+  return res.data;
+};
+

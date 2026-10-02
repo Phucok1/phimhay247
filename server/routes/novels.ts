@@ -731,6 +731,49 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
+// GET /api/novels/admin/export - Tải toàn bộ truyện và chương về file JSON
+router.get('/admin/export', authenticateAdmin, (req: Request, res: Response) => {
+  try {
+    const novels = db.getNovels();
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=phimhay247_truyen_${new Date().toISOString().slice(0, 10)}.json`
+    );
+    res.send(JSON.stringify(novels));
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/novels/admin/import - Khôi phục toàn bộ truyện từ file JSON
+router.post('/admin/import', authenticateAdmin, (req: Request, res: Response) => {
+  try {
+    const list = Array.isArray(req.body.novels)
+      ? req.body.novels
+      : Array.isArray(req.body)
+      ? req.body
+      : null;
+
+    if (!list) {
+      return res.status(400).json({
+        success: false,
+        error: 'File JSON không đúng định dạng danh sách truyện.',
+      });
+    }
+
+    const ok = db.importNovels(list);
+    if (!ok) {
+      return res.status(400).json({ success: false, error: 'Lỗi khi nhập dữ liệu truyện.' });
+    }
+
+    res.json({
+      success: true,
+      message: `Đã khôi phục thành công ${list.length} bộ truyện kèm đầy đủ các chương!`,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 export default router;
