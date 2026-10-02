@@ -731,6 +731,8 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
 // GET /api/novels/admin/export - Tải toàn bộ truyện và chương về file JSON
 router.get('/admin/export', authenticateAdmin, (req: Request, res: Response) => {
   try {
