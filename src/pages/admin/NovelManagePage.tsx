@@ -36,10 +36,11 @@ export const NovelManagePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  // Modal Cào Truyện Tự Động Webnovel.vn
+  // Modal Cào Truyện Tự Động Webnovel.vn & MeTruyenHot
   const [crawlModalOpen, setCrawlModalOpen] = useState(false);
   const [crawlUrl, setCrawlUrl] = useState('');
-  const [crawlLimit, setCrawlLimit] = useState(20);
+  const [crawlLimit, setCrawlLimit] = useState<number | 'all'>('all');
+  const [crawlStartChapter, setCrawlStartChapter] = useState(1);
   const [crawling, setCrawling] = useState(false);
   const [crawlError, setCrawlError] = useState<string | null>(null);
 
@@ -286,7 +287,7 @@ export const NovelManagePage: React.FC = () => {
     }
   };
 
-  // Cào truyện tự động từ Webnovel.vn
+  // Cào truyện tự động từ Webnovel.vn & MeTruyenHot
   const handleStartCrawl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!crawlUrl.trim()) return;
@@ -295,7 +296,7 @@ export const NovelManagePage: React.FC = () => {
     setCrawlError(null);
 
     try {
-      const res = await crawlWebnovelStory(crawlUrl.trim(), crawlLimit);
+      const res = await crawlWebnovelStory(crawlUrl.trim(), crawlLimit, crawlStartChapter);
       alert(res.message || `Đã cào thành công ${res.chapterCount} chương!`);
       setCrawlModalOpen(false);
       setCrawlUrl('');
@@ -890,28 +891,70 @@ export const NovelManagePage: React.FC = () => {
 
               <div>
                 <label className="block text-gray-300 font-semibold mb-1.5">
-                  Số lượng chương muốn lấy (Tối đa 100 chương)
+                  Số lượng chương muốn lấy
                 </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[10, 20, 50, 100].map((num) => (
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCrawlLimit('all')}
+                    className={`col-span-3 py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                      crawlLimit === 'all'
+                        ? 'bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-400 border-amber-300 text-cinema-950 shadow-lg shadow-amber-500/20'
+                        : 'bg-cinema-850 border-amber-500/40 text-amber-300 hover:bg-cinema-800'
+                    }`}
+                  >
+                    <Zap className="w-4 h-4 fill-current" />
+                    <span>🔥 Full bộ (Cào tất cả chương đến khi hết truyện)</span>
+                  </button>
+                  {[
+                    { num: 20, label: '20 chương (Mẫu)' },
+                    { num: 50, label: '50 chương' },
+                    { num: 100, label: '100 chương' },
+                    { num: 200, label: '200 chương' },
+                    { num: 500, label: '500 chương' },
+                    { num: 1000, label: '1000 chương' },
+                  ].map((item) => (
                     <button
-                      key={num}
+                      key={item.num}
                       type="button"
-                      onClick={() => setCrawlLimit(num)}
+                      onClick={() => setCrawlLimit(item.num)}
                       className={`py-2 rounded-xl border text-xs font-bold transition ${
-                        crawlLimit === num
+                        crawlLimit === item.num
                           ? 'bg-emerald-600 border-emerald-500 text-white'
                           : 'bg-cinema-850 border-cinema-700 text-gray-300 hover:bg-cinema-800'
                       }`}
                     >
-                      {num} chương {num === 20 && '(Chuẩn)'}
+                      {item.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 text-[11px] text-amber-300/90 leading-relaxed">
-                💡 <strong>Gợi ý:</strong> Trang <strong>metruyenhotvn.com</strong> có kho truyện ngôn tình, tiên hiệp, xuyên không khổng lồ và 100% các chương đều miễn phí không bị khóa VIP. Bạn có thể chọn lấy 20, 50 hoặc 100 chương tùy ý!
+              <div>
+                <label className="block text-gray-300 font-semibold mb-1.5">
+                  Bắt đầu cào từ chương số
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    value={crawlStartChapter}
+                    onChange={(e) => setCrawlStartChapter(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    className="w-28 px-3 py-2 bg-cinema-850 border border-cinema-700 rounded-xl text-white font-bold text-center focus:outline-none focus:border-emerald-500"
+                  />
+                  <span className="text-[11px] text-gray-400">
+                    (Mặc định 1. Nếu cào tiếp truyện cũ, điền chương tiếp theo để cào nối)
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 text-[11px] text-amber-300/90 leading-relaxed space-y-1">
+                <p>
+                  💡 <strong>Cào Full bộ siêu tốc:</strong> Hệ thống tự động tải song song nhiều chương cùng lúc. Kho truyện trên <strong>metruyenhotvn.com</strong> không có VIP, cào được 100% full bộ!
+                </p>
+                <p>
+                  🔄 <strong>Tự động ghép nối:</strong> Nếu bộ truyện này đã có trong danh sách, hệ thống sẽ tự động ghép thêm các chương mới mà không làm mất các chương cũ.
+                </p>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-cinema-800">
@@ -931,7 +974,7 @@ export const NovelManagePage: React.FC = () => {
                   {crawling ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Đang tải nội dung từ webnovel.vn...</span>
+                      <span>Đang cào truyện... (vui lòng chờ trong giây lát)</span>
                     </>
                   ) : (
                     <>
