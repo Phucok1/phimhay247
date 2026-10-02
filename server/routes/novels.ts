@@ -277,20 +277,83 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
 }
 
-// Helper cào từng chương MeTruyenHot
-async function extractMetruyenhotChapter(cleanUrl: string, ch: number): Promise<Chapter | null> {
+// Helper fetch có tự động Retry nếu mạng chập chờn
+function fetchHtmlWithRetry(
+  url: string,
+  retries = 3,
+  delayMs = 300
+): Promise<{ statusCode: number; html: string }> {
+  return new Promise((resolve) => {
+    const attempt = (n: number) => {
+      const req = https.get(
+        url,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36',
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'vi,en;q=0.9',
+          },
+          timeout: 12000,
+        },
+        (res) => {
+          let data = '';
+          res.on('data', (chunk) => (data += chunk));
+          res.on('end', () => {
+            resolve({ statusCode: res.statusCode || 200, html: data });
+          });
+        }
+      );
+
+      req.on('timeout', () => {
+        req.destroy();
+        if (n > 1) {
+          setTimeout(() => attempt(n - 1), delayMs);
+        } else {
+          resolve({ statusCode: 408, html: '' });
+        }
+      });
+
+      req.on('error', () => {
+        if (n > 1) {
+          setTimeout(() => attempt(n - 1), delayMs);
+        } else {
+          resolve({ statusCode: 500, html: '' });
+        }
+      });
+    };
+
+    attempt(retries);
+  });
+}
+
+// Helper cào từng chương MeTruyenHot (có retry và kiểm tra 404 chuẩn xác)
+async function extractMetruyenhotChapter(
+  cleanUrl: string,
+  ch: number
+): Promise<{ chapter: Chapter | null; is404: boolean }> {
   const chUrl = `${cleanUrl}chuong-${ch}/`;
   try {
-    const chHtml = await fetchHtml(chUrl);
-    if (!chHtml) return null;
+    const res = await fetchHtmlWithRetry(chUrl, 3, 300);
+    if (res.statusCode === 404) {
+      return { chapter: null, is404: true };
+    }
+    if (!res.html) {
+      return { chapter: null, is404: false };
+    }
 
+    const chHtml = res.html;
     const chapterTag = 'class="book-list full-story content chapter-c"';
     const startIdx = chHtml.indexOf(chapterTag);
-    if (startIdx === -1) return null;
+    if (startIdx === -1) {
+      return { chapter: null, is404: false };
+    }
 
     const contentStart = chHtml.indexOf('>', startIdx) + 1;
     const endIdx = chHtml.indexOf('</div>', contentStart);
-    if (endIdx === -1) return null;
+    if (endIdx === -1) {
+      return { chapter: null, is404: false };
+    }
 
     let raw = chHtml.substring(contentStart, endIdx);
 
@@ -309,7 +372,9 @@ async function extractMetruyenhotChapter(cleanUrl: string, ch: number): Promise<
       clean += '\n\n' + attrSentences.map((s) => decodeHtmlEntities(s.trim())).join('\n\n');
     }
     clean = clean.trim();
-    if (clean.length < 150) return null;
+    if (clean.length < 100) {
+      return { chapter: null, is404: false };
+    }
 
     const chTitleMatch = chHtml.match(
       /<div class=rv-chapt-title><h2><a[^>]*>([^<]+)<\/a><\/h2><\/div>/i
@@ -317,37 +382,55 @@ async function extractMetruyenhotChapter(cleanUrl: string, ch: number): Promise<
     const chTitle = chTitleMatch ? chTitleMatch[1].trim() : `Chương ${ch}`;
 
     return {
-      chapterNumber: ch,
-      title: chTitle,
-      content: clean,
-      createdAt: new Date().toISOString(),
+      chapter: {
+        chapterNumber: ch,
+        title: chTitle,
+        content: clean,
+        createdAt: new Date().toISOString(),
+      },
+      is404: false,
     };
   } catch (err) {
-    return null;
+    return { chapter: null, is404: false };
   }
 }
 
 // Helper cào từng chương Webnovel
-async function extractWebnovelChapter(cleanUrl: string, ch: number): Promise<Chapter | null> {
+async function extractWebnovelChapter(
+  cleanUrl: string,
+  ch: number
+): Promise<{ chapter: Chapter | null; is404: boolean; isLocked: boolean }> {
   const chUrl = `${cleanUrl}chuong-${ch}/`;
   try {
-    const chHtml = await fetchHtml(chUrl);
-    if (!chHtml) return null;
+    const res = await fetchHtmlWithRetry(chUrl, 3, 300);
+    if (res.statusCode === 404) {
+      return { chapter: null, is404: true, isLocked: false };
+    }
+    if (!res.html) {
+      return { chapter: null, is404: false, isLocked: false };
+    }
 
+    const chHtml = res.html;
     const startTag = '<div id="chapter-c">';
     const startIdx = chHtml.indexOf(startTag);
-    if (startIdx === -1) return null;
+    if (startIdx === -1) {
+      return { chapter: null, is404: false, isLocked: false };
+    }
 
     const endIdx = chHtml.indexOf('</div>', startIdx);
-    if (endIdx === -1) return null;
+    if (endIdx === -1) {
+      return { chapter: null, is404: false, isLocked: false };
+    }
 
     const rawText = chHtml.substring(startIdx + startTag.length, endIdx);
     if (rawText.includes('unlock__full') || rawText.includes('Mở chương')) {
-      return null;
+      return { chapter: null, is404: false, isLocked: true };
     }
 
     const content = cleanHtmlText(rawText);
-    if (content.length < 200) return null;
+    if (content.length < 150) {
+      return { chapter: null, is404: false, isLocked: false };
+    }
 
     const chTitleMatch =
       chHtml.match(/<h[12][^>]*class="[^"]*chapter-title[^"]*"[^>]*>([^<]+)<\/h[12]>/i) ||
@@ -356,13 +439,17 @@ async function extractWebnovelChapter(cleanUrl: string, ch: number): Promise<Cha
     chTitle = chTitle.replace(/ - [^|]+$/i, '').replace(/ \| Webnovel.*$/i, '').trim();
 
     return {
-      chapterNumber: ch,
-      title: chTitle,
-      content,
-      createdAt: new Date().toISOString(),
+      chapter: {
+        chapterNumber: ch,
+        title: chTitle,
+        content,
+        createdAt: new Date().toISOString(),
+      },
+      is404: false,
+      isLocked: false,
     };
   } catch (err) {
-    return null;
+    return { chapter: null, is404: false, isLocked: false };
   }
 }
 
@@ -390,12 +477,11 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     let cleanUrl = url.trim().split('#')[0].split('?')[0];
     if (!cleanUrl.endsWith('/')) cleanUrl += '/';
 
-    const isFull = maxChapters === 'all' || maxChapters === 'full' || parseInt(maxChapters, 10) >= 999;
-    const start = Math.max(parseInt(startChapter, 10) || 1, 1);
-    const limit = isFull ? 2000 : Math.min(Math.max(parseInt(maxChapters, 10) || 20, 1), 2000);
-    const targetEnd = start + limit - 1;
-
     const mainHtml = await fetchHtml(cleanUrl);
+
+    // Tự động nhận diện số chương lớn nhất tìm thấy trên trang chính
+    const allNums = [...mainHtml.matchAll(/chuong-(\d+)/g)].map((m) => parseInt(m[1], 10));
+    const detectedMax = allNums.length > 0 ? Math.max(...allNums) : 0;
 
     let title = '';
     let author = 'Đang cập nhật';
@@ -432,32 +518,6 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
         m[1].trim()
       );
       category = catMatches.length > 0 ? catMatches : ['Ngôn Tình', 'Đô Thị', 'Xuyên Không'];
-
-      // 6. Crawl chapters song song theo từng batch (4 request đồng thời)
-      const concurrency = 4;
-      let reachedEnd = false;
-      let currentCh = start;
-
-      while (!reachedEnd && currentCh <= targetEnd) {
-        const batchNums: number[] = [];
-        for (let i = 0; i < concurrency && currentCh + i <= targetEnd; i++) {
-          batchNums.push(currentCh + i);
-        }
-
-        const results = await Promise.all(
-          batchNums.map((num) => extractMetruyenhotChapter(cleanUrl, num))
-        );
-
-        for (const r of results) {
-          if (!r) {
-            reachedEnd = true;
-            break;
-          }
-          chapters.push(r);
-        }
-
-        currentCh += concurrency;
-      }
     } else {
       // 1. Title
       const ogTitleMatch = mainHtml.match(/<meta property="og:title" content="([^"]+)"/i);
@@ -499,11 +559,85 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       ];
       category = catMatches.map((m) => m[2].trim());
       if (category.length === 0) category = ['Xuyên Không', 'Tiên Hiệp'];
+    }
 
-      // 6. Crawl chapters song song (3 request đồng thời)
+    // Kiểm tra truyện đã có trong DB chưa
+    const slug = generateSlug(title);
+    const existingNovels = db.getNovels();
+    const existingNovel = existingNovels.find(
+      (n) => (slug && n.slug === slug) || (title && n.title.toLowerCase().trim() === title.toLowerCase().trim())
+    );
+
+    const isFull = maxChapters === 'all' || maxChapters === 'full' || parseInt(maxChapters, 10) >= 999;
+    let start = Math.max(parseInt(startChapter, 10) || 1, 1);
+
+    // Nếu truyện đã có một số chương và người dùng chọn Full bộ (hoặc không nhập startChapter cụ thể > 1)
+    // Tự động bắt đầu từ chương tiếp theo để cào bổ sung cực nhanh!
+    if (
+      isFull &&
+      (!req.body.startChapter || parseInt(req.body.startChapter, 10) === 1) &&
+      existingNovel &&
+      existingNovel.chapters &&
+      existingNovel.chapters.length > 0
+    ) {
+      const maxExisting = existingNovel.chapters.reduce((max, c) => Math.max(max, c.chapterNumber), 0);
+      if (maxExisting > 0) {
+        start = maxExisting + 1;
+      }
+    }
+
+    const limit = isFull ? 2000 : Math.min(Math.max(parseInt(maxChapters, 10) || 20, 1), 2000);
+    const targetEnd = isFull ? (detectedMax > 0 ? detectedMax : 2000) : start + limit - 1;
+
+    // Nếu truyện đã cào đủ hết các chương
+    if (detectedMax > 0 && start > detectedMax && existingNovel && existingNovel.chapters && existingNovel.chapters.length >= detectedMax) {
+      return res.json({
+        success: true,
+        message: `Bộ truyện "${title}" đã có đủ toàn bộ ${existingNovel.chapters.length} chương!`,
+        data: existingNovel,
+        chapterCount: 0,
+        totalChapters: existingNovel.chapters.length,
+      });
+    }
+
+    if (isMetruyenhot) {
+      // Crawl MeTruyenHot theo batches đồng thời 6 request
+      const concurrency = 6;
+      let reachedEnd = false;
+      let currentCh = start;
+      let consecutive404Count = 0;
+
+      while (!reachedEnd && currentCh <= targetEnd) {
+        const batchNums: number[] = [];
+        for (let i = 0; i < concurrency && currentCh + i <= targetEnd; i++) {
+          batchNums.push(currentCh + i);
+        }
+
+        const results = await Promise.all(
+          batchNums.map((num) => extractMetruyenhotChapter(cleanUrl, num))
+        );
+
+        for (const r of results) {
+          if (r.chapter) {
+            chapters.push(r.chapter);
+            consecutive404Count = 0;
+          } else if (r.is404) {
+            consecutive404Count++;
+            if ((detectedMax > 0 && currentCh >= detectedMax) || consecutive404Count >= 2) {
+              reachedEnd = true;
+              break;
+            }
+          }
+        }
+
+        currentCh += concurrency;
+      }
+    } else {
+      // Crawl Webnovel.vn theo batches đồng thời 3 request
       const concurrency = 3;
       let reachedEnd = false;
       let currentCh = start;
+      let consecutive404Count = 0;
 
       while (!reachedEnd && currentCh <= targetEnd) {
         const batchNums: number[] = [];
@@ -516,30 +650,31 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
         );
 
         for (const r of results) {
-          if (!r) {
+          if (r.chapter) {
+            chapters.push(r.chapter);
+            consecutive404Count = 0;
+          } else if (r.isLocked) {
             reachedEnd = true;
             break;
+          } else if (r.is404) {
+            consecutive404Count++;
+            if (consecutive404Count >= 2) {
+              reachedEnd = true;
+              break;
+            }
           }
-          chapters.push(r);
         }
 
         currentCh += concurrency;
       }
     }
 
-    if (chapters.length === 0) {
+    if (chapters.length === 0 && (!existingNovel || !existingNovel.chapters || existingNovel.chapters.length === 0)) {
       return res.status(400).json({
         success: false,
         error: 'Không thể cào chương từ đường link này hoặc truyện đã bị khóa.',
       });
     }
-
-    // Kiểm tra xem truyện đã tồn tại trong database chưa (theo slug hoặc tiêu đề)
-    const slug = generateSlug(title);
-    const existingNovels = db.getNovels();
-    const existingNovel = existingNovels.find(
-      (n) => n.slug === slug || n.title.toLowerCase().trim() === title.toLowerCase().trim()
-    );
 
     let novel;
     if (existingNovel) {
@@ -577,7 +712,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     res.json({
       success: true,
       message: existingNovel
-        ? `Đã cập nhật thêm ${chapters.length} chương mới cho bộ "${title}"! (Hiện có tổng cộng: ${totalCount} chương)`
+        ? `Đã cào bổ sung thêm ${chapters.length} chương mới cho bộ "${title}"! (Hiện có tổng cộng: ${totalCount} chương)`
         : `Đã cào thành công trọn bộ "${title}" với ${chapters.length} chương!`,
       data: novel,
       chapterCount: chapters.length,
