@@ -12,8 +12,9 @@ import {
   Sparkles,
   Share2,
   MessageSquare,
+  BookOpen,
 } from 'lucide-react';
-import { fetchMovieBySlug, recordView } from '../services/api';
+import { fetchMovieBySlug, recordView, fetchPublicSettings } from '../services/api';
 import { saveWatchHistory } from '../services/history';
 import { Movie, Episode } from '../types';
 import { YouTubePlayer } from '../components/common/YouTubePlayer';
@@ -34,6 +35,13 @@ export const WatchPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [safeMode, setSafeMode] = useState(false);
+
+  useEffect(() => {
+    fetchPublicSettings()
+      .then((s) => setSafeMode(Boolean(s.adSenseSafeMode)))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setSelectedServerIdx(0);
@@ -160,63 +168,117 @@ export const WatchPage: React.FC = () => {
           <span className="text-red-400 font-semibold whitespace-nowrap">Tập {currentEpNum}</span>
         </div>
 
-        {/* Nguồn Phát / Server (Nếu có link phụ từ nguồn khác) */}
-        {(() => {
-          const episodeServers = (currentEpisode.servers && currentEpisode.servers.length > 0)
-            ? currentEpisode.servers
-            : [
-                {
-                  id: 'srv-main',
-                  name: 'Server 1 (Chính)',
-                  url: currentEpisode.youtubeUrl,
-                  videoId: currentEpisode.youtubeVideoId,
-                  embedUrl: currentEpisode.youtubeEmbedUrl,
-                }
-              ];
-          const activeServer = episodeServers[selectedServerIdx] || episodeServers[0];
+        {/* Nguồn Phát / Server (Nếu có link phụ từ nguồn khác) hoặc Safe Mode Review */}
+        {safeMode ? (
+          <div className="mb-6 p-6 sm:p-8 rounded-2xl bg-cinema-900 border border-cinema-800 text-left shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> Chuyên Mục Tóm Tắt & Phân Tích Diễn Biến
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-cinema-800 text-gray-400 text-xs font-medium">
+                Hồi / Tập {currentEpNum}
+              </span>
+            </div>
 
-          return (
-            <>
-              {episodeServers.length > 1 && (
-                <div className="mb-3.5 p-3 rounded-xl bg-cinema-900 border border-cinema-800 flex flex-wrap items-center justify-between gap-3 shadow-lg">
-                  <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Đổi Nguồn Phát (Server Dự Phòng):</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {episodeServers.map((srv, idx) => {
-                      const isActive = idx === selectedServerIdx;
-                      return (
-                        <button
-                          key={srv.id || idx}
-                          onClick={() => setSelectedServerIdx(idx)}
-                          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                            isActive
-                              ? 'bg-red-600 text-white shadow-md shadow-red-950 scale-105'
-                              : 'bg-cinema-850 hover:bg-cinema-800 text-gray-300 hover:text-white border border-cinema-700/60'
-                          }`}
-                        >
-                          <span>{srv.name || `Server ${idx + 1}`}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">
+              {movie.title} - Phân tích diễn biến {currentEpisode.title || `Tập ${currentEpNum}`}
+            </h2>
+
+            <div className="text-gray-300 text-sm sm:text-base leading-relaxed space-y-4 mb-6">
+              <p>
+                {movie.description || 'Bộ phim chuyển thể từ danh tác văn học nổi tiếng, khắc họa những ân oán giang hồ và hành trình tu luyện đầy gian nan.'}
+              </p>
+              <p className="text-gray-400 text-xs sm:text-sm italic border-l-2 border-primary/60 pl-3">
+                "Phân đoạn này tập trung vào các tình tiết mấu chốt, bước ngoặt tư tưởng của nhân vật và những biến cố lớn tác động đến cục diện toàn bộ câu chuyện. Mời bạn đọc khám phá đầy đủ bản dịch nguyên tác chữ để nắm bắt trọn vẹn từng chi tiết tâm lý nhân vật."
+              </p>
+            </div>
+
+            {/* Banner kêu gọi đọc tiểu thuyết nguyên tác */}
+            <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-red-950/40 via-cinema-850 to-cinema-900 border border-red-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-left w-full sm:w-auto">
+                <div className="w-10 h-10 rounded-xl bg-red-600/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+                  <BookOpen className="w-5 h-5" />
                 </div>
-              )}
-
-              {/* 1. Video Player 16:9 (Đa Server: YouTube, Facebook, Ok.ru, Drive...) */}
-              <div className="mb-6">
-                <YouTubePlayer
-                  key={`${currentEpisode.id}-${selectedServerIdx}-${activeServer.url}`}
-                  videoId={activeServer.videoId || currentEpisode.youtubeVideoId}
-                  embedUrl={activeServer.embedUrl || currentEpisode.youtubeEmbedUrl}
-                  watchUrl={activeServer.url || currentEpisode.youtubeUrl}
-                  title={`${movie.title} - ${currentEpisode.title} (${activeServer.name || 'Server ' + (selectedServerIdx + 1)})`}
-                />
+                <div>
+                  <h4 className="text-sm font-bold text-white">Đọc Tiểu Thuyết Nguyên Tác Chữ</h4>
+                  <p className="text-xs text-gray-400">Xem đầy đủ từng chương, chi tiết không bị cắt gọt</p>
+                </div>
               </div>
-            </>
-          );
-        })()}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Link
+                  to={`/truyen/${movie.slug}`}
+                  className="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-md shadow-red-950"
+                >
+                  Đọc truyện tác phẩm này →
+                </Link>
+                <Link
+                  to="/truyen"
+                  className="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-cinema-800 hover:bg-cinema-700 text-gray-300 text-xs font-semibold transition border border-cinema-700"
+                >
+                  Tủ Sách Truyện Chữ
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          (() => {
+            const episodeServers = (currentEpisode.servers && currentEpisode.servers.length > 0)
+              ? currentEpisode.servers
+              : [
+                  {
+                    id: 'srv-main',
+                    name: 'Server 1 (Chính)',
+                    url: currentEpisode.youtubeUrl,
+                    videoId: currentEpisode.youtubeVideoId,
+                    embedUrl: currentEpisode.youtubeEmbedUrl,
+                  }
+                ];
+            const activeServer = episodeServers[selectedServerIdx] || episodeServers[0];
+
+            return (
+              <>
+                {episodeServers.length > 1 && (
+                  <div className="mb-3.5 p-3 rounded-xl bg-cinema-900 border border-cinema-800 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+                    <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Đổi Nguồn Phát (Server Dự Phòng):</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {episodeServers.map((srv, idx) => {
+                        const isActive = idx === selectedServerIdx;
+                        return (
+                          <button
+                            key={srv.id || idx}
+                            onClick={() => setSelectedServerIdx(idx)}
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                              isActive
+                                ? 'bg-red-600 text-white shadow-md shadow-red-950 scale-105'
+                                : 'bg-cinema-850 hover:bg-cinema-800 text-gray-300 hover:text-white border border-cinema-700/60'
+                            }`}
+                          >
+                            <span>{srv.name || `Server ${idx + 1}`}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 1. Video Player 16:9 (Đa Server: YouTube, Facebook, Ok.ru, Drive...) */}
+                <div className="mb-6">
+                  <YouTubePlayer
+                    key={`${currentEpisode.id}-${selectedServerIdx}-${activeServer.url}`}
+                    videoId={activeServer.videoId || currentEpisode.youtubeVideoId}
+                    embedUrl={activeServer.embedUrl || currentEpisode.youtubeEmbedUrl}
+                    watchUrl={activeServer.url || currentEpisode.youtubeUrl}
+                    title={`${movie.title} - ${currentEpisode.title} (${activeServer.name || 'Server ' + (selectedServerIdx + 1)})`}
+                  />
+                </div>
+              </>
+            );
+          })()
+        )}
 
         {/* 2. Controls & Episode Navigation Bar */}
         <div className="p-4 rounded-2xl bg-cinema-900 border border-cinema-800 flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -234,18 +296,35 @@ export const WatchPage: React.FC = () => {
                 <Eye className="w-3.5 h-3.5" />
                 {(currentEpisode.viewCount || 0).toLocaleString()} lượt xem
               </span>
+              <Link
+                to={`/truyen/${movie.slug}`}
+                className="hidden sm:inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-medium ml-2"
+                title="Đọc truyện chữ nguyên tác"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                Đọc Truyện Chữ
+              </Link>
             </div>
           </div>
 
           {/* Nút điều hướng [ ← Tập trước ] [ Tập tiếp → ] & Báo lỗi tập này */}
           <div className="flex items-center gap-2">
+            <Link
+              to={`/truyen/${movie.slug}`}
+              className="inline-flex sm:hidden items-center gap-1.5 px-3 py-2 rounded-xl bg-red-950/60 hover:bg-red-900 text-red-300 text-xs font-semibold transition border border-red-800/40"
+              title="Đọc bản truyện chữ nguyên tác"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Đọc truyện</span>
+            </Link>
+
             <button
               onClick={() => setFeedbackOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cinema-800/80 hover:bg-cinema-700 text-gray-300 hover:text-amber-400 text-xs font-semibold transition border border-cinema-700/60"
               title="Báo lỗi nếu video không xem được hoặc mất tiếng"
             >
               <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Báo lỗi tập này</span>
+              <span className="hidden sm:inline">Báo lỗi</span>
             </button>
 
             {prevEpisode ? (

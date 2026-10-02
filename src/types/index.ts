@@ -126,6 +126,33 @@ export interface SiteSettings {
   donateMomo?: string;
   donateQrUrl?: string;
   donateNote?: string;
+  adSenseSafeMode?: boolean;
+}
+
+export interface Chapter {
+  chapterNumber: number;
+  title: string;
+  content?: string;
+  createdAt?: string;
+}
+
+export interface Novel {
+  id: string;
+  title: string;
+  slug: string;
+  author: string;
+  category: string[];
+  coverUrl: string;
+  description: string;
+  status: 'Đang ra' | 'Hoàn thành';
+  viewCount: number;
+  linkedMovieSlug?: string;
+  totalChapters?: number;
+  latestChapter?: number;
+  latestChapterTitle?: string;
+  chapters?: Chapter[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface WatchHistoryItem {

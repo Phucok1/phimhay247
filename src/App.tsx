@@ -17,6 +17,14 @@ import { CategoryPage } from './pages/CategoryPage';
 import { SearchPage } from './pages/SearchPage';
 import { MemberMoviesPage } from './pages/MemberMoviesPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { NovelListPage } from './pages/NovelListPage';
+import { NovelDetailPage } from './pages/NovelDetailPage';
+import { ChapterReadingPage } from './pages/ChapterReadingPage';
+import { AboutPage } from './pages/AboutPage';
+import { ContactPage } from './pages/ContactPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsPage } from './pages/TermsPage';
+import { DMCAPage } from './pages/DMCAPage';
 
 // Admin Pages
 import { LoginPage } from './pages/admin/LoginPage';
@@ -28,6 +36,7 @@ import { CategoryManagePage } from './pages/admin/CategoryManagePage';
 import { MemberMoviesAdminPage } from './pages/admin/MemberMoviesAdminPage';
 import { FeedbackAdminPage } from './pages/admin/FeedbackAdminPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
+import { NovelManagePage } from './pages/admin/NovelManagePage';
 
 // Public Shell
 const PublicLayout: React.FC = () => {
@@ -60,6 +69,19 @@ export const App: React.FC = () => {
             <Route path="/phim/:slug/:episodeNumber" element={<WatchPage />} />
             <Route path="/the-loai/:slug" element={<CategoryPage />} />
             <Route path="/tim-kiem" element={<SearchPage />} />
+
+            {/* Mục Truyện Chữ (Novel) */}
+            <Route path="/truyen" element={<NovelListPage />} />
+            <Route path="/truyen/:slug" element={<NovelDetailPage />} />
+            <Route path="/truyen/:slug/chuong-:chapterNumber" element={<ChapterReadingPage />} />
+
+            {/* Các trang chính sách chuẩn Google AdSense */}
+            <Route path="/gioi-thieu" element={<AboutPage />} />
+            <Route path="/lien-he" element={<ContactPage />} />
+            <Route path="/chinh-sach-bao-mat" element={<PrivacyPolicyPage />} />
+            <Route path="/dieu-khoan" element={<TermsPage />} />
+            <Route path="/dmca" element={<DMCAPage />} />
+
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
@@ -73,6 +95,7 @@ export const App: React.FC = () => {
             <Route path="movies/new" element={<MovieEditPage />} />
             <Route path="movies/:id/edit" element={<MovieEditPage />} />
             <Route path="movies/:id/episodes" element={<EpisodeListPage />} />
+            <Route path="novels" element={<NovelManagePage />} />
             <Route path="member-movies" element={<MemberMoviesAdminPage />} />
             <Route path="feedback" element={<FeedbackAdminPage />} />
             <Route path="categories" element={<CategoryManagePage />} />

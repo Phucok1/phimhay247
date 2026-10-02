@@ -43,34 +43,55 @@ export const Footer: React.FC = () => {
                 <Link to="/" className="hover:text-white transition">Trang chủ</Link>
               </li>
               <li>
+                <Link to="/truyen" className="text-amber-400 hover:text-amber-300 font-bold transition">📖 Tủ Sách Truyện Chữ</Link>
+              </li>
+              <li>
+                <Link to="/phim-hoi-vien" className="hover:text-white transition">Phim Hội Viên</Link>
+              </li>
+              <li>
                 <Link to="/?sort=newest" className="hover:text-white transition">Phim mới cập nhật</Link>
               </li>
               <li>
                 <Link to="/?status=Hoàn thành" className="hover:text-white transition">Phim trọn bộ</Link>
               </li>
+            </ul>
+          </div>
+
+          {/* Cột 3: Về chúng tôi & Hỗ trợ */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Về Chúng Tôi</h4>
+            <ul className="space-y-2 text-xs">
               <li>
-                <Link to="/the-loai/kiem-hiep" className="hover:text-white transition">Phim Kiếm Hiệp</Link>
+                <Link to="/gioi-thieu" className="hover:text-white transition">Giới thiệu về chúng tôi</Link>
               </li>
               <li>
-                <Link to="/the-loai/co-trang" className="hover:text-white transition">Phim Cổ Trang</Link>
+                <Link to="/lien-he" className="hover:text-white transition">Liên hệ & Hợp tác</Link>
+              </li>
+              <li>
+                <Link to="/chinh-sach-bao-mat" className="hover:text-white transition">Chính sách bảo mật</Link>
+              </li>
+              <li>
+                <Link to="/dieu-khoan" className="hover:text-white transition">Điều khoản dịch vụ</Link>
+              </li>
+              <li>
+                <Link to="/dmca" className="hover:text-white transition">Chính sách bản quyền DMCA</Link>
               </li>
             </ul>
           </div>
 
-          {/* Cột 3: Tuyên bố bản quyền & YouTube Player */}
+          {/* Cột 4: Tuyên bố bản quyền & Quản trị */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Chính Sách & Bản Quyền</h4>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Tất cả video trên website được phát thông qua trình phát nhúng <strong>YouTube IFrame Embed API</strong> hợp pháp.
-              Website KHÔNG lưu trữ, không tải về và không can thiệp vào mã nguồn video của YouTube.
+            <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Bản Quyền & Quyền Riêng Tư</h4>
+            <p className="text-[11px] text-gray-400 leading-relaxed">
+              Mọi nội dung video được phát thông qua trình phát nhúng hợp pháp từ các nhà cung cấp bên thứ ba. Website tuân thủ nghiêm ngặt chuẩn mực bảo mật và bản quyền số DMCA.
             </p>
-            <div className="pt-2">
+            <div className="pt-1">
               <Link
                 to="/admin"
-                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition"
+                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-amber-300 transition"
               >
-                <Shield className="w-3.5 h-3.5 text-gold" />
-                <span>Trang Quản Trị Admin</span>
+                <Shield className="w-3.5 h-3.5 text-amber-400" />
+                <span>Trang Quản Trị Hệ Thống</span>
               </Link>
             </div>
           </div>

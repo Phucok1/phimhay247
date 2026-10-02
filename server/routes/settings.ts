@@ -23,6 +23,7 @@ router.get('/', (req: Request, res: Response) => {
       donateMomo: s.donateMomo || '',
       donateQrUrl: s.donateQrUrl || '/images/donate-qr.png',
       donateNote: s.donateNote || 'Ủng hộ duy trì server và phát triển kênh Phim Hay 247',
+      adSenseSafeMode: Boolean(s.adSenseSafeMode),
     };
     res.json({ success: true, data: publicSettings });
   } catch (error: any) {

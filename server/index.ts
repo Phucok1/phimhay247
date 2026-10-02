@@ -15,6 +15,7 @@ import sitemapRouter from './routes/sitemap.js';
 import chatRouter from './routes/chat.js';
 import feedbackRouter from './routes/feedback.js';
 import memberMoviesRouter from './routes/memberMovies.js';
+import novelsRouter from './routes/novels.js';
 
 dotenv.config();
 
@@ -54,6 +55,7 @@ app.use('/api/stats', statsRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/member-movies', memberMoviesRouter);
+app.use('/api/novels', novelsRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

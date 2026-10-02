@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Movie, Episode, Category, SiteSettings, DashboardStats, ChatMessage, FeedbackItem, MemberMovieSubmission } from '../types';
+import { Movie, Episode, Category, SiteSettings, DashboardStats, ChatMessage, FeedbackItem, MemberMovieSubmission, Novel, Chapter } from '../types';
 
 const API_BASE = '/api';
 
@@ -307,5 +307,62 @@ export const rejectMemberMovie = async (id: string, reason?: string): Promise<{ 
 
 export const deleteMemberSubmission = async (id: string): Promise<void> => {
   await client.delete(`/member-movies/${id}`);
+};
+
+// --- Novels & Chapters (Truyện Chữ) ---
+export const fetchNovels = async (params?: { category?: string; q?: string }): Promise<Novel[]> => {
+  const res = await client.get('/novels', { params });
+  return res.data.data;
+};
+
+export const fetchNovelBySlug = async (slug: string): Promise<Novel> => {
+  const res = await client.get(`/novels/${slug}`);
+  return res.data.data;
+};
+
+export const fetchChapter = async (
+  slug: string,
+  chapterNumber: number | string
+): Promise<{
+  novel: Partial<Novel>;
+  chapter: Chapter;
+  prevChapter: number | null;
+  nextChapter: number | null;
+}> => {
+  const res = await client.get(`/novels/${slug}/chapters/${chapterNumber}`);
+  return res.data.data;
+};
+
+export const createNovel = async (data: Partial<Novel>): Promise<Novel> => {
+  const res = await client.post('/novels/admin', data);
+  return res.data.data;
+};
+
+export const updateNovel = async (id: string, data: Partial<Novel>): Promise<Novel> => {
+  const res = await client.put(`/novels/admin/${id}`, data);
+  return res.data.data;
+};
+
+export const deleteNovel = async (id: string): Promise<void> => {
+  await client.delete(`/novels/admin/${id}`);
+};
+
+export const addChapter = async (
+  novelId: string,
+  data: { chapterNumber: number; title: string; content: string }
+): Promise<void> => {
+  await client.post(`/novels/admin/${novelId}/chapters`, data);
+};
+
+export const importChapters = async (
+  novelId: string,
+  chapters: Chapter[]
+): Promise<{ success: boolean; message: string }> => {
+  const res = await client.post(`/novels/admin/${novelId}/chapters`, { chapters });
+  return res.data;
+};
+
+export const deleteChapter = async (novelId: string, chapterNumber: number): Promise<void> => {
+  await client.delete(`/novels/admin/${novelId}/chapters/${chapterNumber}`);
 };
 

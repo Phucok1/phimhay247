@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Play, Eye, Calendar, Film, Search, ArrowRight, Share2, Sparkles, AlertCircle } from 'lucide-react';
-import { fetchMovieBySlug } from '../services/api';
+import { Play, Eye, Calendar, Film, Search, ArrowRight, Share2, Sparkles, AlertCircle, BookOpen } from 'lucide-react';
+import { fetchMovieBySlug, fetchPublicSettings } from '../services/api';
 import { Movie, Episode } from '../types';
 import { SEOHead } from '../components/common/SEOHead';
 import { MovieCard } from '../components/common/MovieCard';
@@ -13,12 +13,19 @@ export const MovieDetailPage: React.FC = () => {
   const [movie, setMovie] = useState<(Movie & { episodes: Episode[]; related: Movie[] }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [safeMode, setSafeMode] = useState(false);
 
   // Search & Pagination cho danh sách tập
   const [episodeSearch, setEpisodeSearch] = useState('');
   const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
 
   const EPISODES_PER_GROUP = 50;
+
+  useEffect(() => {
+    fetchPublicSettings()
+      .then((s) => setSafeMode(Boolean(s.adSenseSafeMode)))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -154,13 +161,22 @@ export const MovieDetailPage: React.FC = () => {
 
               {/* Action Buttons dưới poster */}
               <div className="w-full mt-5 space-y-2.5">
+                {/* Nút Đọc Truyện Chữ Nguyên Tác */}
+                <Link
+                  to={`/truyen/${movie.slug}`}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-red-700/80 to-amber-700/80 hover:from-red-600 hover:to-amber-600 text-gold hover:text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md border border-gold/30 hover:scale-[1.02]"
+                >
+                  <BookOpen className="w-4 h-4 text-gold" />
+                  Đọc Truyện Chữ Nguyên Tác
+                </Link>
+
                 {sortedEpisodes.length > 0 ? (
                   <Link
                     to={`/phim/${movie.slug}/tap-${latestEpisodeNum}`}
                     className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-extrabold text-sm uppercase tracking-wider transition-all shadow-lg shadow-red-950 hover:scale-[1.02]"
                   >
                     <Play className="w-5 h-5 fill-white" />
-                    XEM TẬP MỚI NHẤT ({latestEpisodeNum})
+                    {safeMode ? `Xem Phân Tích (Tập ${latestEpisodeNum})` : `XEM TẬP MỚI NHẤT (${latestEpisodeNum})`}
                   </Link>
                 ) : (
                   <div className="w-full py-3 text-center rounded-xl bg-cinema-800 text-gray-400 text-xs">
@@ -173,7 +189,7 @@ export const MovieDetailPage: React.FC = () => {
                     to={`/phim/${movie.slug}/tap-${firstEpisodeNum}`}
                     className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-cinema-800/80 hover:bg-cinema-700 text-gray-200 font-semibold text-xs transition border border-cinema-700/60"
                   >
-                    Xem từ tập {firstEpisodeNum}
+                    {safeMode ? `Xem từ phân đoạn ${firstEpisodeNum}` : `Xem từ tập ${firstEpisodeNum}`}
                   </Link>
                 )}
               </div>
@@ -244,7 +260,7 @@ export const MovieDetailPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Film className="w-5 h-5 text-red-500" />
                     <h3 className="text-lg font-bold text-white tracking-wide">
-                      DANH SÁCH TẬP ({episodes.length})
+                      {safeMode ? `DANH MỤC HỒI / PHÂN ĐOẠN (${episodes.length})` : `DANH SÁCH TẬP (${episodes.length})`}
                     </h3>
                   </div>
 

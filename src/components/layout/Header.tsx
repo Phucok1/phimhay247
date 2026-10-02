@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown, Crown, MessageSquare, Heart } from 'lucide-react';
+import { Search, Menu, X, Play, Youtube, Film, Shield, ChevronDown, Crown, MessageSquare, Heart, BookOpen } from 'lucide-react';
 import { SearchModal } from '../common/SearchModal';
 import { FeedbackModal } from '../common/FeedbackModal';
 import { DonateModal } from '../common/DonateModal';
@@ -42,6 +42,7 @@ export const Header: React.FC = () => {
     { label: 'Trang chủ', path: '/' },
     { label: 'Phim mới', path: '/?sort=newest' },
     { label: 'Phim hoàn thành', path: '/?status=Hoàn thành' },
+    { label: 'Truyện Chữ', path: '/truyen', isNovel: true },
     { label: 'Phim Hội Viên', path: '/phim-hoi-vien', isSpecial: true },
   ];
 
@@ -75,6 +76,22 @@ export const Header: React.FC = () => {
             <nav className="hidden md:flex items-center gap-1 lg:gap-2">
               {navLinks.map((link: any) => {
                 const isActive = location.pathname + location.search === link.path;
+                if (link.isNovel) {
+                  return (
+                    <Link
+                      key={link.label}
+                      to={link.path}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition ${
+                        location.pathname.startsWith('/truyen')
+                          ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40 shadow-sm'
+                          : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4 text-amber-400" />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                }
                 if (link.isSpecial) {
                   return (
                     <Link
@@ -198,13 +215,14 @@ export const Header: React.FC = () => {
                   key={link.label}
                   to={link.path}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-base font-medium transition ${
-                    link.isSpecial
+                    link.isSpecial || link.isNovel
                       ? 'text-amber-400 bg-amber-500/10 font-bold'
                       : 'text-gray-200 hover:bg-cinema-800 hover:text-white'
                   }`}
                 >
                   <span>{link.label}</span>
                   {link.isSpecial && <Crown className="w-4 h-4 fill-amber-400 text-amber-400" />}
+                  {link.isNovel && <BookOpen className="w-4 h-4 text-amber-400" />}
                 </Link>
               ))}
 

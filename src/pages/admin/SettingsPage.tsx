@@ -39,6 +39,7 @@ export const SettingsPage: React.FC = () => {
   const [donateAccountName, setDonateAccountName] = useState('NGUYỄN THIỆN PHÚC');
   const [donateMomo, setDonateMomo] = useState('');
   const [donateQrUrl, setDonateQrUrl] = useState('/images/donate-qr.png');
+  const [adSenseSafeMode, setAdSenseSafeMode] = useState(false);
 
   useEffect(() => {
     fetchAdminSettings()
@@ -57,6 +58,7 @@ export const SettingsPage: React.FC = () => {
         setDonateAccountName(data.donateAccountName || 'NGUYỄN THIỆN PHÚC');
         setDonateMomo(data.donateMomo || '');
         setDonateQrUrl(data.donateQrUrl || '/images/donate-qr.png');
+        setAdSenseSafeMode(Boolean(data.adSenseSafeMode));
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -83,6 +85,7 @@ export const SettingsPage: React.FC = () => {
         donateAccountName: donateAccountName.trim(),
         donateMomo: donateMomo.trim(),
         donateQrUrl: donateQrUrl.trim() || '/images/donate-qr.png',
+        adSenseSafeMode,
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
@@ -131,6 +134,45 @@ export const SettingsPage: React.FC = () => {
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
+        {/* KHỐI ĐẶC BIỆT: CHẾ ĐỘ DUYỆT GOOGLE ADSENSE (SAFE MODE) */}
+        <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-cinema-900 to-emerald-950/60 border border-emerald-500/40 shadow-2xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[11px] border border-emerald-500/30">
+                  CHIẾN THUẬT ADSENSE
+                </span>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  🛡️ Chế Độ Duyệt An Toàn Google AdSense (Safe Mode)
+                </h3>
+              </div>
+              <p className="text-xs text-emerald-200/80 leading-relaxed max-w-2xl">
+                <strong>BẬT</strong> khi bạn chuẩn bị gửi trang web cho Google AdSense xét duyệt. Hệ thống sẽ tạm thời ẩn các đường link xem video lậu, biến website thành <em>Cổng Thông Tin Đánh Giá Điện Ảnh &amp; Đọc Truyện Chữ Sạch Sẽ 100%</em> (tuân thủ bản quyền DMCA tuyệt đối). Sau khi Google duyệt cấp mã thành công, bạn chỉ cần <strong>TẮT</strong> công tắc này để phim hiện lại bình thường cho khán giả!
+              </p>
+            </div>
+
+            {/* Toggle Switch */}
+            <div className="flex items-center gap-3 shrink-0">
+              <span className={`text-xs font-bold ${adSenseSafeMode ? 'text-emerald-400' : 'text-gray-400'}`}>
+                {adSenseSafeMode ? 'ĐANG BẬT (Đã Ẩn Phim Lậu)' : 'ĐANG TẮT (Hiện Phim Bình Thường)'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setAdSenseSafeMode(!adSenseSafeMode)}
+                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  adSenseSafeMode ? 'bg-emerald-500' : 'bg-cinema-800'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    adSenseSafeMode ? 'translate-x-7' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Khối 1: Kênh YouTube & Thương hiệu */}
         <div className="p-6 rounded-2xl bg-cinema-900 border border-cinema-800 shadow-xl space-y-4">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-cinema-800 pb-3 flex items-center gap-2">
