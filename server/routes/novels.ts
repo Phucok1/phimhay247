@@ -701,12 +701,14 @@ async function extractWebnovelChapter(
       return { chapter: null, is404: false, isLocked: false };
     }
 
-    const endIdx = chHtml.indexOf('</div>', startIdx);
+    const contentStart = startIdx + startTag.length;
+    const navMatch = chHtml.slice(contentStart).match(/<(?:div|hr|section)[^>]+(?:chapter-nav|chapter-actions|comment)/i);
+    let endIdx = navMatch && navMatch.index !== undefined ? contentStart + navMatch.index : chHtml.indexOf('</div>', contentStart);
     if (endIdx === -1) {
-      return { chapter: null, is404: false, isLocked: false };
+      endIdx = chHtml.length;
     }
 
-    const rawText = chHtml.substring(startIdx + startTag.length, endIdx);
+    const rawText = chHtml.substring(contentStart, endIdx);
     if (rawText.includes('unlock__full') || rawText.includes('Mở chương')) {
       return { chapter: null, is404: false, isLocked: true };
     }
@@ -761,8 +763,17 @@ async function extractTruyenfullmoiChapter(
     }
 
     const contentStart = chHtml.indexOf('>', startIdx) + 1;
-    let endIdx = chHtml.indexOf('</div>', contentStart);
-    if (endIdx === -1) {
+
+    // Không dùng indexOf('</div>') vì trong nội dung truyện có chứa các thẻ quảng cáo lồng nhau <div class="ads">...</div>
+    // làm ngắt ngang nội dung giữa chừng. Dùng điểm mốc kết thúc chương (native-stories, chapter-end, chapter-nav).
+    const navMatch = chHtml
+      .slice(contentStart)
+      .match(/<(?:div|hr)[^>]+(?:native-stories|chapter-end|chapter-nav)/i);
+
+    let endIdx = -1;
+    if (navMatch && navMatch.index !== undefined) {
+      endIdx = contentStart + navMatch.index;
+    } else {
       endIdx = chHtml.length;
     }
 
@@ -773,6 +784,7 @@ async function extractTruyenfullmoiChapter(
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<ins[\s\S]*?<\/ins>/gi, '')
       .replace(/<div class="ads[\s\S]*?<\/div>/gi, '')
+      .replace(/<div class="native-stories[\s\S]*?<\/div>/gi, '')
       .replace(/<\/(?:p|div|h\d)>/gi, '\n\n')
       .replace(/<br\s*[\/]?>/gi, '\n')
       .replace(/<[^>]+>/g, '');
@@ -787,8 +799,12 @@ async function extractTruyenfullmoiChapter(
         if (!p) return false;
         const lower = p.toLowerCase();
         if (lower.includes('adsbygoogle') || lower.includes('google-auto-placed')) return false;
-        if (lower.includes('truyenfullmoi') || lower.includes('bạn đang đọc truyện')) return false;
+        if (lower.includes('truyenfullmoi') || lower.includes('truyenfulmoil')) return false;
+        if (lower.includes('truyenfullvn') || lower.includes('truyenfulllive')) return false;
+        if (lower === 'truyen full, truyenfull, truyenfullvn, truyenfulllive') return false;
+        if (lower.includes('bạn đang đọc truyện')) return false;
         if (lower === 'trước' || lower === 'sau' || lower === 'đọc tiếp' || lower === 'về đầu trang') return false;
+        if (lower === '<div' || lower === '</div>') return false;
         return true;
       });
 
