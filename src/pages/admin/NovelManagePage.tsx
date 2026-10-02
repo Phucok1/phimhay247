@@ -462,7 +462,7 @@ export const NovelManagePage: React.FC = () => {
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm transition shadow-lg shadow-emerald-950/40 flex items-center gap-2"
           >
             <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
-            <span>⚡ Cào Webnovel & MeTruyenHot</span>
+            <span>⚡ Cào Truyện Tự Động</span>
           </button>
 
           <button
@@ -974,8 +974,8 @@ export const NovelManagePage: React.FC = () => {
                   <Zap className="w-5 h-5 fill-amber-300 text-amber-300" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Cào Truyện Từ Webnovel.vn & MeTruyenHot</h3>
-                  <p className="text-[11px] text-gray-400">Tự động lấy tên truyện, ảnh bìa, tác giả và nội dung các chương tiếng Việt</p>
+                  <h3 className="text-base font-bold text-white">Cào Truyện Tự Động</h3>
+                  <p className="text-[11px] text-gray-400">Tự động lấy tên truyện, ảnh bìa, tác giả và nội dung các chương từ TruyenFullMoi, MeTruyenHot, Webnovel</p>
                 </div>
               </div>
               <button
@@ -997,18 +997,18 @@ export const NovelManagePage: React.FC = () => {
 
               <div>
                 <label className="block text-gray-300 font-semibold mb-1.5">
-                  Đường dẫn truyện (Webnovel.vn hoặc MeTruyenHotvn.com) <span className="text-red-400">*</span>
+                  Đường dẫn truyện (TruyenFullMoi, MeTruyenHot hoặc Webnovel) <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="url"
                   required
                   value={crawlUrl}
                   onChange={(e) => setCrawlUrl(e.target.value)}
-                  placeholder="VD: https://metruyenhotvn.com/huyen-lenh-de-su/ hoặc webnovel.vn"
+                  placeholder="VD: https://truyenfullmoi.net/chang-re-bac-si.1147/ hoặc https://metruyenhotvn.com/..."
                   className="w-full px-3.5 py-2.5 bg-cinema-850 border border-cinema-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                 />
                 <p className="text-[11px] text-gray-500 mt-1">
-                  Hỗ trợ link truyện từ <a href="https://metruyenhotvn.com/" target="_blank" rel="noreferrer" className="text-emerald-400 underline">metruyenhotvn.com</a> và <a href="https://webnovel.vn/xuyen-khong/" target="_blank" rel="noreferrer" className="text-emerald-400 underline">webnovel.vn</a>
+                  Hỗ trợ link từ <a href="https://truyenfullmoi.net/" target="_blank" rel="noreferrer" className="text-emerald-400 underline font-medium">truyenfullmoi.net</a>, <a href="https://metruyenhotvn.com/" target="_blank" rel="noreferrer" className="text-emerald-400 underline font-medium">metruyenhotvn.com</a> và <a href="https://webnovel.vn/" target="_blank" rel="noreferrer" className="text-emerald-400 underline font-medium">webnovel.vn</a>
                 </p>
               </div>
 

@@ -741,7 +741,89 @@ async function extractWebnovelChapter(
   }
 }
 
-// POST /api/novels/admin/crawl-webnovel - Tự động cào truyện từ Webnovel.vn và MeTruyenHot
+// Helper cào từng chương TruyenFullMoi
+async function extractTruyenfullmoiChapter(
+  chapterBaseUrl: string,
+  ch: number
+): Promise<{ chapter: Chapter | null; is404: boolean }> {
+  const chUrl = `${chapterBaseUrl}/chuong-${ch}.html`;
+  try {
+    const res = await fetchHtmlWithRetry(chUrl, 3, 300);
+    if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 404 || !res.html) {
+      return { chapter: null, is404: true };
+    }
+
+    const chHtml = res.html;
+    const startTag = '<div id="chapter-c"';
+    const startIdx = chHtml.indexOf(startTag);
+    if (startIdx === -1) {
+      return { chapter: null, is404: true };
+    }
+
+    const contentStart = chHtml.indexOf('>', startIdx) + 1;
+    let endIdx = chHtml.indexOf('</div>', contentStart);
+    if (endIdx === -1) {
+      endIdx = chHtml.length;
+    }
+
+    let raw = chHtml.substring(contentStart, endIdx);
+
+    // Lọc bỏ mã quảng cáo, script và định dạng lại văn bản
+    raw = raw
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<ins[\s\S]*?<\/ins>/gi, '')
+      .replace(/<div class="ads[\s\S]*?<\/div>/gi, '')
+      .replace(/<\/(?:p|div|h\d)>/gi, '\n\n')
+      .replace(/<br\s*[\/]?>/gi, '\n')
+      .replace(/<[^>]+>/g, '');
+
+    let text = decodeHtmlEntities(raw);
+    if (text.includes('&')) text = decodeHtmlEntities(text);
+
+    const paragraphs = text
+      .split('\n')
+      .map((p) => p.trim())
+      .filter((p) => {
+        if (!p) return false;
+        const lower = p.toLowerCase();
+        if (lower.includes('adsbygoogle') || lower.includes('google-auto-placed')) return false;
+        if (lower.includes('truyenfullmoi') || lower.includes('bạn đang đọc truyện')) return false;
+        if (lower === 'trước' || lower === 'sau' || lower === 'đọc tiếp' || lower === 'về đầu trang') return false;
+        return true;
+      });
+
+    const content = paragraphs.join('\n\n');
+    if (content.length < 50) {
+      return { chapter: null, is404: true };
+    }
+
+    const chTitleMatch =
+      chHtml.match(/<span class="chapter-text"[^>]*>([^<]+)<\/span>/i) ||
+      chHtml.match(/<a class="chapter-title"[^>]*title="([^"]+)"/i) ||
+      chHtml.match(/<title>([^<]+)<\/title>/i);
+
+    let chTitle = chTitleMatch ? chTitleMatch[1].trim() : `Chương ${ch}`;
+    chTitle = chTitle.replace(/^.*?-\s*(Chương\s+\d+.*)$/i, '$1').replace(/\s*-\s*Truyện.*$/i, '').trim();
+
+    // Tách riêng chuỗi độc lập để V8 giải phóng toàn bộ chHtml gốc khỏi heap
+    const cleanTitle = (' ' + chTitle).slice(1);
+    const cleanContent = (' ' + content).slice(1);
+
+    return {
+      chapter: {
+        chapterNumber: ch,
+        title: cleanTitle,
+        content: cleanContent,
+        createdAt: new Date().toISOString(),
+      },
+      is404: false,
+    };
+  } catch (err) {
+    return { chapter: null, is404: false };
+  }
+}
+
+// POST /api/novels/admin/crawl-webnovel - Tự động cào truyện từ TruyenFullMoi, MeTruyenHot và Webnovel
 router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res: Response) => {
   try {
     const { url, maxChapters, startChapter = 1, isFull: isFullFlag, overwrite } = req.body;
@@ -754,31 +836,111 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
 
     const isWebnovel = url.includes('webnovel.vn');
     const isMetruyenhot = url.includes('metruyenhot');
+    const isTruyenfullmoi = url.includes('truyenfullmoi');
 
-    if (!isWebnovel && !isMetruyenhot) {
+    if (!isWebnovel && !isMetruyenhot && !isTruyenfullmoi) {
       return res.status(400).json({
         success: false,
-        error: 'Hệ thống hiện hỗ trợ cào từ webnovel.vn và metruyenhotvn.com.',
+        error: 'Hệ thống hiện hỗ trợ cào từ truyenfullmoi.net, metruyenhotvn.com và webnovel.vn.',
       });
     }
 
     let cleanUrl = url.trim().split('#')[0].split('?')[0];
-    if (!cleanUrl.endsWith('/')) cleanUrl += '/';
+    let chapterBaseUrl = '';
+
+    if (isTruyenfullmoi) {
+      if (cleanUrl.includes('/chuong-')) {
+        chapterBaseUrl = cleanUrl.replace(/\/chuong-[\s\S]*$/, '');
+      } else {
+        chapterBaseUrl = cleanUrl.replace(/\/+$/, '').replace(/\.\d+$/, '');
+      }
+
+      // Nếu URL chưa có phần .[id] (ví dụ link chương), tự động lấy URL truyện đầy đủ
+      if (!/\.\d+\/?$/.test(cleanUrl)) {
+        const sampleChUrl = `${chapterBaseUrl}/chuong-1.html`;
+        const chHtml = await fetchHtml(sampleChUrl);
+        const matchStory = chHtml.match(/href="([^"]+\.\d+\/?)"/i);
+        if (matchStory) {
+          cleanUrl = matchStory[1];
+        }
+      }
+      if (!cleanUrl.endsWith('/')) cleanUrl += '/';
+    } else {
+      if (!cleanUrl.endsWith('/')) cleanUrl += '/';
+    }
 
     const mainHtml = await fetchHtml(cleanUrl);
 
-    // Tự động nhận diện số chương lớn nhất tìm thấy trên trang chính
-    const allNums = [...mainHtml.matchAll(/chuong-(\d+)/g)].map((m) => parseInt(m[1], 10));
-    const detectedMax = allNums.length > 0 ? Math.max(...allNums) : 0;
-
+    let detectedMax = 0;
     let title = '';
     let author = 'Đang cập nhật';
     let coverUrl = '';
     let description = '';
     let category: string[] = [];
+    let novelStatus: 'Đang ra' | 'Hoàn thành' = 'Đang ra';
     const chapters: Chapter[] = [];
 
-    if (isMetruyenhot) {
+    if (isTruyenfullmoi) {
+      // 1. Title
+      const titleMatch =
+        mainHtml.match(/<h3 class="title" itemprop="name">([^<]+)<\/h3>/i) ||
+        mainHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i) ||
+        mainHtml.match(/<meta property="og:title" content="([^"]+)"/i);
+      title = titleMatch ? titleMatch[1].trim() : 'Truyện TruyenFullMoi';
+      title = title.replace(/\s*\(FULL\)$/i, '').replace(/\s*-\s*Truyện.*$/i, '').trim();
+
+      // 2. Author
+      const authorMatch =
+        mainHtml.match(/itemprop="author"[^>]*>([^<]+)<\/a>/i) ||
+        mainHtml.match(/itemprop="author"[^>]*>([^<]+)<\/span>/i) ||
+        mainHtml.match(/href="[^"]*\/tac-gia\/[^"]*"[^>]*>([^<]+)<\/a>/i);
+      if (authorMatch) author = authorMatch[1].trim();
+
+      // 3. Cover
+      const imgMatch =
+        mainHtml.match(/<div class="book">\s*<img[^>]+src="([^"]+)"/i) ||
+        mainHtml.match(/<meta property="og:image" content="([^"]+)"/i);
+      coverUrl = imgMatch ? imgMatch[1].trim() : '';
+
+      // 4. Description
+      const descMatch =
+        mainHtml.match(/<div class="desc-text[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
+        mainHtml.match(/<meta property="og:description" content="([^"]+)"/i);
+      if (descMatch) {
+        description = descMatch[1]
+          .replace(/<[^>]+>/g, '\n')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/\n\s*\n/g, '\n')
+          .trim();
+        description = decodeHtmlEntities(description);
+      }
+
+      // 5. Category
+      const genreBlockMatch = mainHtml.match(/<h3>Thể loại:<\/h3>([\s\S]*?)<\/div>/i);
+      if (genreBlockMatch) {
+        const catList = [...genreBlockMatch[1].matchAll(/<a[^>]*>([^<]+)<\/a>/gi)].map((m) => m[1].trim());
+        if (catList.length > 0) category = Array.from(new Set(catList));
+      }
+      if (category.length === 0) category = ['Ngôn Tình', 'Đô Thị', 'Tiên Hiệp'];
+
+      // 6. Trạng thái truyện
+      const statusMatch = mainHtml.match(/<h3>Trạng thái:<\/h3>\s*<span[^>]*>([^<]+)<\/span>/i);
+      if (statusMatch && (statusMatch[1].toLowerCase().includes('full') || statusMatch[1].toLowerCase().includes('hoàn'))) {
+        novelStatus = 'Hoàn thành';
+      }
+
+      // 7. Nhận diện số chương lớn nhất
+      const pageMatches = [...mainHtml.matchAll(/\/trang-(\d+)\/#chapter-list/g)].map((m) => parseInt(m[1], 10));
+      const maxPage = pageMatches.length > 0 ? Math.max(...pageMatches) : 1;
+      const detectedMaxFromPages = maxPage > 1 ? maxPage * 50 : 0;
+      const allNums = [...mainHtml.matchAll(/chuong-(\d+)/g)].map((m) => parseInt(m[1], 10));
+      const detectedMaxFromLinks = allNums.length > 0 ? Math.max(...allNums) : 0;
+      detectedMax = Math.max(detectedMaxFromPages, detectedMaxFromLinks);
+    } else if (isMetruyenhot) {
+      // Tự động nhận diện số chương lớn nhất tìm thấy trên trang chính
+      const allNums = [...mainHtml.matchAll(/chuong-(\d+)/g)].map((m) => parseInt(m[1], 10));
+      detectedMax = allNums.length > 0 ? Math.max(...allNums) : 0;
+
       // 1. Title
       const titleMatch =
         mainHtml.match(/<h1 class=title><a[^>]*>([^<]+)<\/a><\/h1>/i) ||
@@ -806,7 +968,15 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
         m[1].trim()
       );
       category = catMatches.length > 0 ? catMatches : ['Ngôn Tình', 'Đô Thị', 'Xuyên Không'];
+
+      if (mainHtml.includes('(FULL)') || mainHtml.includes('Trạng thái: Hoàn thành')) {
+        novelStatus = 'Hoàn thành';
+      }
     } else {
+      // Tự động nhận diện số chương lớn nhất tìm thấy trên trang chính
+      const allNums = [...mainHtml.matchAll(/chuong-(\d+)/g)].map((m) => parseInt(m[1], 10));
+      detectedMax = allNums.length > 0 ? Math.max(...allNums) : 0;
+
       // 1. Title
       const ogTitleMatch = mainHtml.match(/<meta property="og:title" content="([^"]+)"/i);
       title = ogTitleMatch ? ogTitleMatch[1] : '';
@@ -880,7 +1050,38 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
 
     let reachedEnd = false;
 
-    if (isMetruyenhot) {
+    if (isTruyenfullmoi) {
+      // Crawl Truyenfullmoi theo batches đồng thời 4 request
+      const concurrency = 4;
+      let currentCh = start;
+      let consecutive404Count = 0;
+
+      while (!reachedEnd && currentCh <= targetEnd) {
+        const batchNums: number[] = [];
+        for (let i = 0; i < concurrency && currentCh + i <= targetEnd; i++) {
+          batchNums.push(currentCh + i);
+        }
+
+        const results = await Promise.all(
+          batchNums.map((num) => extractTruyenfullmoiChapter(chapterBaseUrl, num))
+        );
+
+        for (const r of results) {
+          if (r.chapter) {
+            chapters.push(r.chapter);
+            consecutive404Count = 0;
+          } else if (r.is404) {
+            consecutive404Count++;
+            if (consecutive404Count >= 2) {
+              reachedEnd = true;
+              break;
+            }
+          }
+        }
+
+        currentCh += concurrency;
+      }
+    } else if (isMetruyenhot) {
       // Crawl MeTruyenHot theo batches đồng thời 4 request
       const concurrency = 4;
       let currentCh = start;
@@ -998,7 +1199,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
         coverUrl,
         description,
         sourceUrl: cleanUrl,
-        status: 'Đang ra',
+        status: novelStatus,
         chapters,
       });
     }
