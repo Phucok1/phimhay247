@@ -317,7 +317,7 @@ export const NovelManagePage: React.FC = () => {
       });
 
       while (!isDone && totalFetched < targetLimit) {
-        const chunkSize = Math.min(50, targetLimit - totalFetched);
+        const chunkSize = Math.min(30, targetLimit - totalFetched);
         setCrawlProgress({
           current: totalFetched,
           total: detectedMaxCh || (isFull ? 0 : targetLimit),
@@ -352,8 +352,8 @@ export const NovelManagePage: React.FC = () => {
           break;
         }
 
-        // Nghỉ nhẹ 300ms giữa các đợt để server giải phóng RAM
-        await new Promise((r) => setTimeout(r, 300));
+        // Nghỉ nhẹ 600ms giữa các đợt để server V8 Garbage Collection thu hồi RAM
+        await new Promise((r) => setTimeout(r, 600));
       }
 
       alert(

@@ -381,11 +381,15 @@ async function extractMetruyenhotChapter(
     );
     const chTitle = chTitleMatch ? chTitleMatch[1].trim() : `Chương ${ch}`;
 
+    // Tách riêng chuỗi độc lập để V8 giải phóng toàn bộ chHtml gốc (~150KB) khỏi heap
+    const cleanTitle = (' ' + chTitle).slice(1);
+    const cleanContent = (' ' + clean).slice(1);
+
     return {
       chapter: {
         chapterNumber: ch,
-        title: chTitle,
-        content: clean,
+        title: cleanTitle,
+        content: cleanContent,
         createdAt: new Date().toISOString(),
       },
       is404: false,
@@ -438,11 +442,15 @@ async function extractWebnovelChapter(
     let chTitle = chTitleMatch ? chTitleMatch[1].trim() : `Chương ${ch}`;
     chTitle = chTitle.replace(/ - [^|]+$/i, '').replace(/ \| Webnovel.*$/i, '').trim();
 
+    // Tách riêng chuỗi độc lập để V8 giải phóng toàn bộ chHtml gốc khỏi heap
+    const cleanTitle = (' ' + chTitle).slice(1);
+    const cleanContent = (' ' + content).slice(1);
+
     return {
       chapter: {
         chapterNumber: ch,
-        title: chTitle,
-        content,
+        title: cleanTitle,
+        content: cleanContent,
         createdAt: new Date().toISOString(),
       },
       is404: false,
@@ -594,7 +602,11 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       return res.json({
         success: true,
         message: `Bộ truyện "${title}" đã có đủ toàn bộ ${existingNovel.chapters.length} chương!`,
-        data: existingNovel,
+        data: {
+          id: existingNovel.id,
+          title: existingNovel.title,
+          slug: existingNovel.slug,
+        },
         chapterCount: 0,
         totalChapters: existingNovel.chapters.length,
         detectedMax: detectedMax,
@@ -606,8 +618,8 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     let reachedEnd = false;
 
     if (isMetruyenhot) {
-      // Crawl MeTruyenHot theo batches đồng thời 6 request
-      const concurrency = 6;
+      // Crawl MeTruyenHot theo batches đồng thời 4 request (giảm từ 6 để bảo vệ RAM 512MB)
+      const concurrency = 4;
       let currentCh = start;
       let consecutive404Count = 0;
 
@@ -716,12 +728,23 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       chapters.length < limit ||
       (detectedMax > 0 && totalCount >= detectedMax);
 
+    // Kích hoạt V8 Garbage Collection giải phóng bộ nhớ ngay nếu có flag --expose-gc
+    if ((global as any).gc) {
+      try {
+        (global as any).gc();
+      } catch (e) {}
+    }
+
     res.json({
       success: true,
       message: existingNovel
         ? `Đã cào bổ sung thêm ${chapters.length} chương mới cho bộ "${title}"! (Hiện có tổng cộng: ${totalCount} chương)`
         : `Đã cào thành công "${title}" với ${chapters.length} chương!`,
-      data: novel,
+      data: {
+        id: novel?.id,
+        title: novel?.title,
+        slug: novel?.slug,
+      },
       chapterCount: chapters.length,
       totalChapters: totalCount,
       detectedMax: detectedMax || totalCount,

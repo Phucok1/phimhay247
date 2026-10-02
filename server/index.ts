@@ -92,6 +92,14 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
+// Chặn sập tiến trình khi gặp lỗi mạng bất ngờ hoặc Promise không bắt lỗi
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT_EXCEPTION]', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED_REJECTION]', reason);
+});
+
 app.listen(PORT, () => {
   console.log(`=========================================`);
   console.log(`🎬 PHIM HAY 247 API Server running!`);

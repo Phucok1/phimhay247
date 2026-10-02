@@ -374,7 +374,7 @@ export const crawlWebnovelStory = async (
 ): Promise<{
   success: boolean;
   message: string;
-  data: Novel;
+  data?: { id?: string; title?: string; slug?: string } | Novel;
   chapterCount: number;
   totalChapters: number;
   detectedMax: number;
