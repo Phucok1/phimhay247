@@ -111,7 +111,7 @@ router.get('/:slug', (req: Request, res: Response) => {
 });
 
 // GET /api/novels/:slug/chapters/:chapterNumber - Đọc nội dung 1 chương cụ thể
-router.get('/:slug/chapters/:chapterNumber', (req: Request, res: Response) => {
+router.get('/:slug/chapters/:chapterNumber', async (req: Request, res: Response) => {
   try {
     const { slug, chapterNumber } = req.params;
     const novel = db.getNovelBySlug(slug);
@@ -128,6 +128,34 @@ router.get('/:slug/chapters/:chapterNumber', (req: Request, res: Response) => {
     }
 
     const currentChapter = chapters[chapterIndex];
+
+    // Tự động phục hồi nếu chương trong DB bị ngắn (< 1500 ký tự) hoặc còn dính mã HTML thô do lỗi cào trước đây
+    const sourceUrl = novel.sourceUrl || (novel.slug === 'dac-cong-chi-ton-tan-duong' ? 'https://metruyenhotvn.com/dac-cong-chi-ton/' : '');
+    const currentLen = (currentChapter.content || '').length;
+    if ((currentLen < 1500 || currentChapter.content.includes('&ugrave;') || currentChapter.content.includes('&ocirc;')) && sourceUrl) {
+      try {
+        let repairedChapter: Chapter | null = null;
+        if (sourceUrl.includes('metruyenhot')) {
+          const fetched = await extractMetruyenhotChapter(sourceUrl, cNum);
+          repairedChapter = fetched.chapter;
+        } else if (sourceUrl.includes('webnovel.vn')) {
+          const fetched = await extractWebnovelChapter(sourceUrl, cNum);
+          repairedChapter = fetched.chapter;
+        }
+
+        if (repairedChapter && repairedChapter.content.length > currentLen) {
+          currentChapter.content = repairedChapter.content;
+          if (repairedChapter.title && (!currentChapter.title || currentChapter.title.startsWith('Chương '))) {
+            currentChapter.title = repairedChapter.title;
+          }
+          // Lưu lại vào DB để các lần đọc tiếp theo tải siêu nhanh
+          db.updateNovel(novel.id, { chapters: novel.chapters, sourceUrl });
+        }
+      } catch (err) {
+        // Nếu lỗi mạng, tiếp tục dùng nội dung có sẵn
+      }
+    }
+
     const prevChapter = chapterIndex > 0 ? chapters[chapterIndex - 1].chapterNumber : null;
     const nextChapter = chapterIndex < chapters.length - 1 ? chapters[chapterIndex + 1].chapterNumber : null;
 
@@ -261,114 +289,183 @@ router.delete('/admin/:id/chapters/:chapterNumber', authenticateAdmin, (req: Req
   }
 });
 
+const HTML_ENTITIES_MAP: Record<string, string> = {
+  '&quot;': '"',
+  '&apos;': "'",
+  '&#39;': "'",
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&nbsp;': ' ',
+  '&iexcl;': '¡',
+  '&cent;': '¢',
+  '&pound;': '£',
+  '&curren;': '¤',
+  '&yen;': '¥',
+  '&brvbar;': '¦',
+  '&sect;': '§',
+  '&uml;': '¨',
+  '&copy;': '©',
+  '&ordf;': 'ª',
+  '&laquo;': '«',
+  '&not;': '¬',
+  '&shy;': '',
+  '&reg;': '®',
+  '&macr;': '¯',
+  '&deg;': '°',
+  '&plusmn;': '±',
+  '&sup2;': '²',
+  '&sup3;': '³',
+  '&acute;': '´',
+  '&micro;': 'µ',
+  '&para;': '¶',
+  '&middot;': '·',
+  '&cedil;': '¸',
+  '&sup1;': '¹',
+  '&ordm;': 'º',
+  '&raquo;': '»',
+  '&frac14;': '¼',
+  '&frac12;': '½',
+  '&frac34;': '¾',
+  '&iquest;': '¿',
+  '&Agrave;': 'À',
+  '&Aacute;': 'Á',
+  '&Acirc;': 'Â',
+  '&Atilde;': 'Ã',
+  '&Auml;': 'Ä',
+  '&Aring;': 'Å',
+  '&AElig;': 'Æ',
+  '&Ccedil;': 'Ç',
+  '&Egrave;': 'È',
+  '&Eacute;': 'É',
+  '&Ecirc;': 'Ê',
+  '&Euml;': 'Ë',
+  '&Igrave;': 'Ì',
+  '&Iacute;': 'Í',
+  '&Icirc;': 'Î',
+  '&Iuml;': 'Ï',
+  '&ETH;': 'Đ',
+  '&Dstrok;': 'Đ',
+  '&Ntilde;': 'Ñ',
+  '&Ograve;': 'Ò',
+  '&Oacute;': 'Ó',
+  '&Ocirc;': 'Ô',
+  '&Otilde;': 'Õ',
+  '&Ouml;': 'Ö',
+  '&times;': '×',
+  '&Oslash;': 'Ø',
+  '&Ugrave;': 'Ù',
+  '&Uacute;': 'Ú',
+  '&Ucirc;': 'Û',
+  '&Uuml;': 'Ü',
+  '&Yacute;': 'Ý',
+  '&THORN;': 'Þ',
+  '&szlig;': 'ß',
+  '&agrave;': 'à',
+  '&aacute;': 'á',
+  '&acirc;': 'â',
+  '&atilde;': 'ã',
+  '&auml;': 'ä',
+  '&aring;': 'å',
+  '&aelig;': 'æ',
+  '&ccedil;': 'ç',
+  '&egrave;': 'è',
+  '&eacute;': 'é',
+  '&ecirc;': 'ê',
+  '&euml;': 'ë',
+  '&igrave;': 'ì',
+  '&iacute;': 'í',
+  '&icirc;': 'î',
+  '&iuml;': 'ï',
+  '&eth;': 'đ',
+  '&dstrok;': 'đ',
+  '&ntilde;': 'ñ',
+  '&ograve;': 'ò',
+  '&oacute;': 'ó',
+  '&ocirc;': 'ô',
+  '&otilde;': 'õ',
+  '&ouml;': 'ö',
+  '&divide;': '÷',
+  '&oslash;': 'ø',
+  '&ugrave;': 'ù',
+  '&uacute;': 'ú',
+  '&ucirc;': 'û',
+  '&uuml;': 'ü',
+  '&yacute;': 'ý',
+  '&thorn;': 'þ',
+  '&yuml;': 'ÿ',
+  '&ldquo;': '“',
+  '&rdquo;': '”',
+  '&lsquo;': '‘',
+  '&rsquo;': '’',
+  '&hellip;': '...',
+  '&dagger;': 't',
+  '&ndash;': '–',
+  '&mdash;': '—',
+};
+
 function decodeHtmlEntities(str: string): string {
   if (!str) return '';
-  return str
-    // Đổi cụm từ 2 &nbsp; trở lên thành ngắt đoạn văn bản
+  let res = str
     .replace(/(?:&nbsp;|\u00a0|\s)*(&nbsp;|\u00a0){2,}(?:&nbsp;|\u00a0|\s)*/gi, '\n\n')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/\u00a0/g, ' ')
-    // Ký tự tiếng Việt thường
-    .replace(/&agrave;/gi, 'à').replace(/&aacute;/gi, 'á').replace(/&acirc;/gi, 'â').replace(/&atilde;/gi, 'ã')
-    .replace(/&egrave;/gi, 'è').replace(/&eacute;/gi, 'é').replace(/&ecirc;/gi, 'ê')
-    .replace(/&igrave;/gi, 'ì').replace(/&iacute;/gi, 'í')
-    .replace(/&ograve;/gi, 'ò').replace(/&oacute;/gi, 'ó').replace(/&ocirc;/gi, 'ô').replace(/&otilde;/gi, 'õ')
-    .replace(/&ugrave;/gi, 'ù').replace(/&uacute;/gi, 'ú')
-    .replace(/&yacute;/gi, 'ý')
-    // Ký tự tiếng Việt hoa
-    .replace(/&Agrave;/g, 'À').replace(/&Aacute;/g, 'Á').replace(/&Acirc;/g, 'Â').replace(/&Atilde;/g, 'Ã')
-    .replace(/&Egrave;/g, 'È').replace(/&Eacute;/g, 'É').replace(/&Ecirc;/g, 'Ê')
-    .replace(/&Igrave;/g, 'Ì').replace(/&Iacute;/g, 'Í')
-    .replace(/&Ograve;/g, 'Ò').replace(/&Oacute;/g, 'Ó').replace(/&Ocirc;/g, 'Ô').replace(/&Otilde;/g, 'Õ')
-    .replace(/&Ugrave;/g, 'Ù').replace(/&Uacute;/g, 'Ú')
-    .replace(/&Yacute;/g, 'Ý')
-    // Chữ Đ/đ và ký tự thông dụng
-    .replace(/&(?:ETH|Dstrok);/g, 'Đ').replace(/&(?:eth|dstrok);/g, 'đ')
-    .replace(/&quot;/gi, '"').replace(/&ldquo;/gi, '“').replace(/&rdquo;/gi, '”')
-    .replace(/&lsquo;/gi, '‘').replace(/&rsquo;/gi, '’').replace(/&hellip;/gi, '...')
-    .replace(/&dagger;/gi, 't').replace(/&ndash;/gi, '–').replace(/&mdash;/gi, '—')
-    .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
-    // Decimal & Hex entities
-    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    .replace(/\u00a0/g, ' ');
+
+  for (let iter = 0; iter < 2; iter++) {
+    res = res
+      .replace(/&[a-zA-Z0-9]+;/g, (m) => (HTML_ENTITIES_MAP[m] !== undefined ? HTML_ENTITIES_MAP[m] : m))
+      .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+  }
+  return res;
+}
+
+// Trích xuất các câu văn bị chèn vào thuộc tính ngẫu nhiên của thẻ <p ... [attr]="...">
+function extractSentencesFromTagAttributes(htmlSnippet: string): string[] {
+  const sentences: string[] = [];
+  const seen = new Set<string>();
+  const pTagRegex = /<p\s+([^>]+)>/gi;
+  let pMatch: RegExpExecArray | null;
+  while ((pMatch = pTagRegex.exec(htmlSnippet)) !== null) {
+    const attrs = pMatch[1];
+    const attrMatch = attrs.matchAll(/([a-z]{8,15})="([^"]{4,})"/gi);
+    for (const am of attrMatch) {
+      const attrName = am[1].toLowerCase();
+      if (!['style', 'class', 'onmousedown', 'onselectstart', 'oncopy', 'oncut'].includes(attrName)) {
+        let decoded = decodeHtmlEntities(am[2].trim());
+        if (decoded.includes('&')) decoded = decodeHtmlEntities(decoded);
+        decoded = decoded.trim();
+        if (
+          decoded.length > 3 &&
+          !decoded.toLowerCase().includes('metruyen') &&
+          !decoded.toLowerCase().includes('google') &&
+          !seen.has(decoded)
+        ) {
+          seen.add(decoded);
+          sentences.push(decoded);
+        }
+      }
+    }
+  }
+  return sentences;
 }
 
 // Hàm dọn dẹp các đoạn quảng cáo, watermark và thẻ rác HTML còn sót lại
 export function cleanWatermarkContent(content: string): string {
   if (!content) return '';
 
-  let text = decodeHtmlEntities(content);
-
-  // 1. Kiểm tra nếu có phần chân trang / script của MeTruyenHot lọt vào nội dung
-  const footerScriptRegex = /(?:trước\s*\n\s*đọc tiếp|nhấn mở bình luận|chính sách bảo mật|điều khoản sử dụng|website hoạt động dưới giấy phép|document\.addeventlistener|attachshadow|contents\s*=|var\s+shadowroot)/i;
-  const match = text.match(footerScriptRegex);
-
-  if (match && match.index !== undefined) {
-    const beforeJunk = text.substring(0, match.index);
-    const afterJunk = text.substring(match.index);
-
-    const cleanBefore = beforeJunk
-      .replace(/<[^>]+>/g, '')
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => {
-        if (!l) return false;
-        const lower = l.toLowerCase();
-        if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
-        if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
-        if (lower.includes('content-metruyenhot')) return false;
-        return true;
-      });
-
-    const junkLines = afterJunk
-      .replace(/<[^>]+>/g, '')
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => {
-        if (!l) return false;
-        const lower = l.toLowerCase();
-        if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
-        if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
-        if (lower.includes('content-metruyenhot')) return false;
-        if (lower === 'trước' || lower === 'sau' || lower === 'đọc tiếp' || lower === 'về đầu trang' || lower === 'nhấn mở bình luận') return false;
-        if (lower.includes('chính sách bảo mật') || lower.includes('điều khoản sử dụng') || lower.includes('thỏa thuận quyền riêng tư')) return false;
-        if (lower.includes('quy định về nội dung') || lower.includes('liên hệ') || lower.includes('website hoạt động dưới giấy phép')) return false;
-        if (lower.includes('đọc truyện không bị quảng cáo') || lower.includes('các thông tin, hình ảnh, bài đăng trên website')) return false;
-        if (lower.includes('đọc truyện online, đọc truyện chữ') || lower.includes('hỗ trợ mọi trình duyệt và')) return false;
-        if (
-          lower === 'truyện teen hay' || lower === 'ngôn tình ngược' || lower === 'đam mỹ hài' ||
-          lower === 'đam mỹ hay' || lower === 'đam mỹ h văn' || lower === 'ngôn tình hay' ||
-          lower === 'truyện full' || lower === 'tiên hiệp hay' || lower === 'truyện hot' || lower === 'kiếm hiệp hay'
-        ) return false;
-        if (lower.includes('document.addeventlistener') || lower.includes('attachshadow') || lower.includes('createelement')) return false;
-        if (lower.includes('contents =') || lower.includes('innerhtml') || lower.includes('shadowroot')) return false;
-        if (lower.includes('function()') || lower.includes('var ey') || lower.includes('var f=[]') || lower.includes('var a=0')) return false;
-        if (lower.startsWith(';var ') || lower.startsWith('var ') || lower.includes('::before{content:attr')) return false;
-        if (lower === "';" || lower === "'" || lower === '";' || lower === '"' || lower === '<div') return false;
-        return true;
-      });
-
-    const endChIdx = junkLines.findIndex((l) => /^hết chương/i.test(l));
-    let orderedSentences: string[] = [];
-    if (endChIdx !== -1) {
-      const contentSLines = junkLines.slice(0, endChIdx + 1);
-      const trailingLines = junkLines.slice(endChIdx + 1);
-      orderedSentences = [...trailingLines, ...contentSLines];
-    } else {
-      orderedSentences = junkLines;
-    }
-
-    return [...cleanBefore, ...orderedSentences].join('\n\n');
-  }
-
-  // 2. Nếu không dính footer/script, lọc sạch các thẻ và dòng rác
-  text = text
-    .replace(/<p[^>]*class="[^"]*(?:mshow-hb|ms-k|ads)[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
+  let text = content
+    .replace(/<p[^>]*class="[^"]*mshow[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
+    .replace(/<div[^>]*class="[^"]*mshow[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '')
+    .replace(/<p[^>]*class="[^"]*ads[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
     .replace(/<div id="content-metruyenhot"[\s\S]*?<\/div>/gi, '')
-    .replace(/<div id="content-metruyenhot"[^>]*>/gi, '')
+    .replace(/<\/(?:p|div|h\d)>/gi, '\n\n')
+    .replace(/<br\s*[\/]?>/gi, '\n')
     .replace(/<[^>]+>/g, '');
 
-  let lines = text
+  text = decodeHtmlEntities(text);
+  if (text.includes('&')) text = decodeHtmlEntities(text);
+
+  const lines = text
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => {
@@ -376,35 +473,25 @@ export function cleanWatermarkContent(content: string): string {
       const lower = l.toLowerCase();
       if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
       if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
+      if (lower.includes('bạn đang đọc truyện mới tại')) return false;
       if (lower.includes('content-metruyenhot')) return false;
       if (lower === 'trước' || lower === 'sau' || lower === 'đọc tiếp' || lower === 'về đầu trang' || lower === 'nhấn mở bình luận') return false;
       if (lower.includes('chính sách bảo mật') || lower.includes('điều khoản sử dụng') || lower.includes('thỏa thuận quyền riêng tư')) return false;
       if (lower.includes('quy định về nội dung') || lower.includes('liên hệ') || lower.includes('website hoạt động dưới giấy phép')) return false;
       if (lower.includes('đọc truyện không bị quảng cáo') || lower.includes('các thông tin, hình ảnh, bài đăng trên website')) return false;
-      if (lower.includes('document.addeventlistener') || lower.includes('attachshadow')) return false;
+      if (lower.includes('đọc truyện online, đọc truyện chữ') || lower.includes('hỗ trợ mọi trình duyệt và')) return false;
+      if (
+        lower === 'truyện teen hay' || lower === 'ngôn tình ngược' || lower === 'đam mỹ hài' ||
+        lower === 'đam mỹ hay' || lower === 'đam mỹ h văn' || lower === 'ngôn tình hay' ||
+        lower === 'truyện full' || lower === 'tiên hiệp hay' || lower === 'truyện hot' || lower === 'kiếm hiệp hay'
+      ) return false;
+      if (lower.includes('document.addeventlistener') || lower.includes('attachshadow') || lower.includes('createelement')) return false;
+      if (lower.includes('contents =') || lower.includes('innerhtml') || lower.includes('shadowroot')) return false;
+      if (lower.includes('function()') || lower.includes('var ey') || lower.includes('var f=[]') || lower.includes('var a=0')) return false;
       if (lower.startsWith(';var ') || lower.startsWith('var ') || lower.includes('::before{content:attr')) return false;
       if (lower === "';" || lower === "'" || lower === '";' || lower === '"' || lower === '<div') return false;
       return true;
     });
-
-  // Tái sắp xếp nếu có các câu bị dính sau "Hết chương ..."
-  const endChIdx = lines.findIndex((l) => /^hết chương/i.test(l));
-  if (endChIdx !== -1 && endChIdx < lines.length - 1) {
-    const trailingSentences = lines.slice(endChIdx + 1);
-    const beforeEndCh = lines.slice(0, endChIdx);
-    const endChLine = lines[endChIdx];
-
-    let part2Start = Math.max(0, beforeEndCh.length - 3);
-    for (let i = beforeEndCh.length - 1; i >= Math.max(0, beforeEndCh.length - 6); i--) {
-      if (beforeEndCh[i].startsWith('-')) {
-        part2Start = i;
-      }
-    }
-
-    const head = beforeEndCh.slice(0, part2Start);
-    const part2 = beforeEndCh.slice(part2Start);
-    lines = [...head, ...trailingSentences, ...part2, endChLine];
-  }
 
   return lines.join('\n\n');
 }
@@ -476,7 +563,13 @@ async function extractMetruyenhotChapter(
 
     const chHtml = res.html;
     const chapterTag = 'class="book-list full-story content chapter-c"';
-    const startIdx = chHtml.indexOf(chapterTag);
+    let startIdx = chHtml.indexOf(chapterTag);
+    if (startIdx === -1) {
+      startIdx = chHtml.indexOf('id="chapter-c"');
+    }
+    if (startIdx === -1) {
+      startIdx = chHtml.indexOf('id=chapter-c');
+    }
     if (startIdx === -1) {
       return { chapter: null, is404: false };
     }
@@ -494,62 +587,71 @@ async function extractMetruyenhotChapter(
         endIdx = contentStart + navMatch.index;
       }
     }
-    const scriptIdx = chHtml.indexOf('<script', contentStart);
-    if (scriptIdx !== -1 && (endIdx === -1 || scriptIdx < endIdx)) {
-      endIdx = scriptIdx;
-    }
     if (endIdx === -1) {
       endIdx = chHtml.length;
     }
 
-    const raw = chHtml.substring(contentStart, endIdx);
+    let raw = chHtml.substring(contentStart, endIdx);
 
-    // 1. Trích xuất Phần 1: Các câu bị giấu trong thuộc tính ngẫu nhiên của thẻ <p ... [attr]="...">
-    const seenSentences = new Set<string>();
-    const hiddenSentences: string[] = [];
-    const pTagRegex = /<p\s+([^>]+)>/gi;
-    let pMatch;
-    while ((pMatch = pTagRegex.exec(chHtml)) !== null) {
-      const attrs = pMatch[1];
-      const attrMatch = attrs.matchAll(/([a-z]{8,15})="([^"]{4,})"/gi);
-      for (const am of attrMatch) {
-        const attrName = am[1].toLowerCase();
-        if (!['style', 'class', 'onmousedown', 'onselectstart', 'oncopy', 'oncut'].includes(attrName)) {
-          const decoded = decodeHtmlEntities(am[2].trim());
-          if (
-            decoded.length > 3 &&
-            !decoded.includes('metruyen') &&
-            !decoded.includes('google') &&
-            !seenSentences.has(decoded)
-          ) {
-            seenSentences.add(decoded);
-            hiddenSentences.push(decoded);
-          }
-        }
-      }
-    }
+    // 1. Dọn sạch watermark khỏi raw trước khi trích xuất đoạn văn
+    raw = raw
+      .replace(/<p[^>]*class="[^"]*mshow[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
+      .replace(/<div[^>]*class="[^"]*mshow[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '')
+      .replace(/<p[^>]*class="[^"]*ads[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
+      .replace(/<div id="content-metruyenhot"[\s\S]*?<\/div>/gi, '');
 
-    // 2. Trích xuất Phần 2: Chuỗi contentS được inject qua Shadow DOM trong <script> nếu có
+    // Đổi thẻ khối thành dấu xuống dòng kép để giữ nguyên từng đoạn văn riêng biệt
+    raw = raw
+      .replace(/<\/(?:p|div|h\d)>/gi, '\n\n')
+      .replace(/<(?:p|div|h\d)[^>]*>/gi, '')
+      .replace(/<br\s*[\/]?>/gi, '\n')
+      .replace(/<[^>]+>/g, '');
+
+    let rawText = decodeHtmlEntities(raw);
+    if (rawText.includes('&')) rawText = decodeHtmlEntities(rawText);
+
+    // Tách thành từng đoạn văn và lọc bỏ các câu rác / quảng cáo
+    const rawParagraphs = rawText
+      .split('\n')
+      .map((p) => p.trim())
+      .filter((p) => {
+        if (!p) return false;
+        const lower = p.toLowerCase();
+        if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
+        if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
+        if (lower.includes('bạn đang đọc truyện mới tại')) return false;
+        if (lower.includes('content-metruyenhot')) return false;
+        if (lower === 'trước' || lower === 'sau' || lower === 'đọc tiếp' || lower === 'về đầu trang' || lower === 'nhấn mở bình luận') return false;
+        if (lower.includes('chính sách bảo mật') || lower.includes('điều khoản sử dụng') || lower.includes('thỏa thuận quyền riêng tư')) return false;
+        if (lower.includes('quy định về nội dung') || lower.includes('liên hệ') || lower.includes('website hoạt động dưới giấy phép')) return false;
+        if (lower.includes('đọc truyện không bị quảng cáo') || lower.includes('các thông tin, hình ảnh, bài đăng trên website')) return false;
+        if (lower.includes('document.addeventlistener') || lower.includes('attachshadow')) return false;
+        if (lower.startsWith(';var ') || lower.startsWith('var ') || lower.includes('::before{content:attr')) return false;
+        if (lower === "';" || lower === "'" || lower === '";' || lower === '"' || lower === '<div') return false;
+        return true;
+      });
+
+    // 2. Trích xuất Phần 1: Các câu ẩn trong contentS của Shadow DOM (trong <script>)
     const scriptContentMatch = chHtml.match(/var\s+contentS\s*=\s*'([^']+)'/i);
-    let cleanShadowContent = '';
+    let shadowSentences: string[] = [];
     if (scriptContentMatch) {
-      cleanShadowContent = scriptContentMatch[1]
-        .replace(/<br\s*[\/]?>/gi, '\n')
-        .replace(/<\/p>/gi, '\n\n')
-        .replace(/<[^>]+>/g, '')
-        .trim();
-      cleanShadowContent = decodeHtmlEntities(cleanShadowContent);
+      shadowSentences = extractSentencesFromTagAttributes(scriptContentMatch[1]);
     }
 
-    // 3. Ghép nối theo thứ tự chuẩn: Thân bài -> Phần 1 (thuộc tính ẩn) -> Phần 2 (contentS kết thúc)
-    let clean = cleanWatermarkContent(raw);
-    if (hiddenSentences.length > 0) {
-      clean += '\n\n' + hiddenSentences.join('\n\n');
+    // 3. Trích xuất Phần 2: Các câu ẩn trong thuộc tính thẻ <p ...> sau thẻ #content-metruyenhot
+    let postContentHtml = '';
+    const postStart = chHtml.indexOf('id="content-metruyenhot"');
+    if (postStart !== -1) {
+      const postEnd = chHtml.indexOf('<script', postStart);
+      postContentHtml = postEnd !== -1 ? chHtml.substring(postStart, postEnd) : chHtml.substring(postStart, postStart + 5000);
     }
-    if (cleanShadowContent) {
-      clean += '\n\n' + cleanShadowContent;
-    }
-    clean = cleanWatermarkContent(clean).trim();
+    const postSentences = extractSentencesFromTagAttributes(postContentHtml);
+
+    // 4. Ghép toàn bộ nội dung theo đúng trình tự tự nhiên của chương:
+    // Thân bài (rawParagraphs) -> Đoạn nối từ Shadow DOM -> Đoạn kết (kết thúc bằng "Hết chương X.")
+    const allParagraphs = [...rawParagraphs, ...shadowSentences, ...postSentences];
+
+    const clean = allParagraphs.join('\n\n').trim();
 
     if (clean.length < 100) {
       return { chapter: null, is404: false };
@@ -560,8 +662,7 @@ async function extractMetruyenhotChapter(
     );
     const chTitle = chTitleMatch ? chTitleMatch[1].trim() : `Chương ${ch}`;
 
-    // Tách riêng chuỗi độc lập để V8 giải phóng toàn bộ chHtml gốc (~150KB) khỏi heap
-    const cleanTitle = (' ' + chTitle).slice(1);
+    const cleanTitle = decodeHtmlEntities((' ' + chTitle).slice(1));
     const cleanContent = (' ' + clean).slice(1);
 
     return {
@@ -643,7 +744,7 @@ async function extractWebnovelChapter(
 // POST /api/novels/admin/crawl-webnovel - Tự động cào truyện từ Webnovel.vn và MeTruyenHot
 router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res: Response) => {
   try {
-    const { url, maxChapters, startChapter = 1, isFull: isFullFlag } = req.body;
+    const { url, maxChapters, startChapter = 1, isFull: isFullFlag, overwrite } = req.body;
     if (!url || typeof url !== 'string') {
       return res.status(400).json({
         success: false,
@@ -758,9 +859,10 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     const isFull = isFullFlag === true || maxChapters === 'all' || maxChapters === 'full' || parseInt(maxChapters, 10) >= 999;
     let start = Math.max(parseInt(startChapter, 10) || 1, 1);
 
-    // Nếu truyện đã có một số chương và người dùng chọn Full bộ (hoặc không nhập startChapter cụ thể > 1)
+    // Nếu truyện đã có một số chương và người dùng chọn Full bộ (và KHÔNG chọn ghi đè chương cũ)
     // Tự động bắt đầu từ chương tiếp theo để cào bổ sung cực nhanh!
     if (
+      !overwrite &&
       isFull &&
       parseInt(startChapter, 10) === 1 &&
       existingNovel &&
@@ -870,7 +972,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
 
     let novel;
     if (existingNovel) {
-      // Ghép nối các chương mới vào truyện đã có
+      // Ghép nối hoặc ghi đè các chương vào truyện đã có
       const chapterMap = new Map<number, Chapter>();
       (existingNovel.chapters || []).forEach((c) => chapterMap.set(c.chapterNumber, c));
       chapters.forEach((c) => chapterMap.set(c.chapterNumber, c));
@@ -884,6 +986,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
         coverUrl: coverUrl || existingNovel.coverUrl,
         description: description || existingNovel.description,
         category: category.length > 0 ? category : existingNovel.category,
+        sourceUrl: cleanUrl,
         chapters: mergedChapters,
       });
     } else {
@@ -894,6 +997,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
         category,
         coverUrl,
         description,
+        sourceUrl: cleanUrl,
         status: 'Đang ra',
         chapters,
       });

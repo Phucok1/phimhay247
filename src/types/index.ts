@@ -147,6 +147,7 @@ export interface Novel {
   status: 'Đang ra' | 'Hoàn thành';
   viewCount: number;
   linkedMovieSlug?: string;
+  sourceUrl?: string;
   totalChapters?: number;
   latestChapter?: number;
   latestChapterTitle?: string;

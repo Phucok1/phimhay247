@@ -42,6 +42,7 @@ export const NovelManagePage: React.FC = () => {
   const [crawlUrl, setCrawlUrl] = useState('');
   const [crawlLimit, setCrawlLimit] = useState<number | 'all'>('all');
   const [crawlStartChapter, setCrawlStartChapter] = useState(1);
+  const [crawlOverwrite, setCrawlOverwrite] = useState(false);
   const [crawling, setCrawling] = useState(false);
   const [crawlError, setCrawlError] = useState<string | null>(null);
   const [crawlProgress, setCrawlProgress] = useState<{
@@ -325,7 +326,7 @@ export const NovelManagePage: React.FC = () => {
           text: `Đang cào các chương từ ${currentStart}... (Đã tải ${totalFetched} chương mới)`,
         });
 
-        const res = await crawlWebnovelStory(crawlUrl.trim(), chunkSize, currentStart, isFull);
+        const res = await crawlWebnovelStory(crawlUrl.trim(), chunkSize, currentStart, isFull, crawlOverwrite);
 
         if (!res.success || res.chapterCount === 0) {
           isDone = true;
@@ -1069,6 +1070,18 @@ export const NovelManagePage: React.FC = () => {
                   <span className="text-[11px] text-gray-400">
                     (Mặc định 1. Nếu cào tiếp truyện cũ, điền chương tiếp theo để cào nối)
                   </span>
+                </div>
+                <div className="flex items-center gap-2 mt-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="crawlOverwrite"
+                    checked={crawlOverwrite}
+                    onChange={(e) => setCrawlOverwrite(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 bg-cinema-850 border-cinema-700 cursor-pointer"
+                  />
+                  <label htmlFor="crawlOverwrite" className="text-xs text-amber-300 font-semibold cursor-pointer select-none">
+                    Ghi đè / Cập nhật lại các chương cũ (Bật khi muốn sửa các chương bị lỗi hoặc thiếu chữ)
+                  </label>
                 </div>
               </div>
 

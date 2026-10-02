@@ -149,6 +149,7 @@ export interface Novel {
   status: 'Đang ra' | 'Hoàn thành';
   viewCount: number;
   linkedMovieSlug?: string;
+  sourceUrl?: string;
   chapters: Chapter[];
   createdAt: string;
   updatedAt: string;
@@ -1184,6 +1185,7 @@ class DatabaseService {
       status: novelData.status || 'Đang ra',
       viewCount: 0,
       linkedMovieSlug: novelData.linkedMovieSlug || '',
+      sourceUrl: novelData.sourceUrl || '',
       chapters: novelData.chapters || [],
       createdAt: now,
       updatedAt: now,

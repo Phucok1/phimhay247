@@ -371,7 +371,8 @@ export const crawlWebnovelStory = async (
   url: string,
   maxChapters: number | 'all' = 50,
   startChapter = 1,
-  isFull = false
+  isFull = false,
+  overwrite = false
 ): Promise<{
   success: boolean;
   message: string;
@@ -382,7 +383,7 @@ export const crawlWebnovelStory = async (
   reachedEnd: boolean;
   nextStartChapter: number;
 }> => {
-  const res = await client.post('/novels/admin/crawl-webnovel', { url, maxChapters, startChapter, isFull });
+  const res = await client.post('/novels/admin/crawl-webnovel', { url, maxChapters, startChapter, isFull, overwrite });
   return res.data;
 };
 
