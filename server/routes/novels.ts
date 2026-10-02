@@ -603,10 +603,11 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       });
     }
 
+    let reachedEnd = false;
+
     if (isMetruyenhot) {
       // Crawl MeTruyenHot theo batches đồng thời 6 request
       const concurrency = 6;
-      let reachedEnd = false;
       let currentCh = start;
       let consecutive404Count = 0;
 
@@ -638,7 +639,6 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     } else {
       // Crawl Webnovel.vn theo batches đồng thời 3 request
       const concurrency = 3;
-      let reachedEnd = false;
       let currentCh = start;
       let consecutive404Count = 0;
 
