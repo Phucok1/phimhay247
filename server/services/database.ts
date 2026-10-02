@@ -483,6 +483,10 @@ class DatabaseService {
     }
   }
 
+  public getDbFilePath(): string {
+    return DB_FILE;
+  }
+
   private loadData(): DatabaseSchema {
     if (fs.existsSync(DB_FILE)) {
       try {

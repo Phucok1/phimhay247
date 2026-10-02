@@ -18,6 +18,80 @@ import {
 import { fetchAdminSettings, updateSettings } from '../../services/api';
 import { SiteSettings } from '../../types';
 
+function parseOrRepairJson(rawText: string): { data: any; wasRepaired: boolean } {
+  try {
+    return { data: JSON.parse(rawText), wasRepaired: false };
+  } catch (err: any) {
+    let repaired = rawText.replace(/\\+$/, '') + '"';
+    const stack: string[] = [];
+    let inString = false;
+    let isEscaped = false;
+
+    for (let i = 0; i < repaired.length; i++) {
+      const ch = repaired[i];
+      if (inString) {
+        if (ch === '\\' && !isEscaped) {
+          isEscaped = true;
+        } else {
+          if (ch === '"' && !isEscaped) inString = false;
+          isEscaped = false;
+        }
+      } else {
+        if (ch === '"') {
+          inString = true;
+        } else if (ch === '{' || ch === '[') {
+          stack.push(ch);
+        } else if (ch === '}') {
+          if (stack[stack.length - 1] === '{') stack.pop();
+        } else if (ch === ']') {
+          if (stack[stack.length - 1] === '[') stack.pop();
+        }
+      }
+    }
+
+    while (stack.length > 0) {
+      const top = stack.pop();
+      if (top === '{') repaired += '}';
+      else if (top === '[') repaired += ']';
+    }
+
+    try {
+      return { data: JSON.parse(repaired), wasRepaired: true };
+    } catch {
+      const lastBrace = rawText.lastIndexOf('}');
+      if (lastBrace !== -1) {
+        const cutback = rawText.substring(0, lastBrace + 1);
+        const s2: string[] = [];
+        let inS2 = false;
+        let esc2 = false;
+        for (let i = 0; i < cutback.length; i++) {
+          const ch = cutback[i];
+          if (inS2) {
+            if (ch === '\\' && !esc2) esc2 = true;
+            else {
+              if (ch === '"' && !esc2) inS2 = false;
+              esc2 = false;
+            }
+          } else {
+            if (ch === '"') inS2 = true;
+            else if (ch === '{' || ch === '[') s2.push(ch);
+            else if (ch === '}' && s2[s2.length - 1] === '{') s2.pop();
+            else if (ch === ']' && s2[s2.length - 1] === '[') s2.pop();
+          }
+        }
+        let rep2 = cutback;
+        while (s2.length > 0) {
+          const top = s2.pop();
+          if (top === '{') rep2 += '}';
+          else if (top === '[') rep2 += ']';
+        }
+        return { data: JSON.parse(rep2), wasRepaired: true };
+      }
+      throw err;
+    }
+  }
+}
+
 export const SettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -460,7 +534,7 @@ export const SettingsPage: React.FC = () => {
                     setRestoring(true);
                     try {
                       const text = await file.text();
-                      const json = JSON.parse(text);
+                      const { data: json, wasRepaired } = parseOrRepairJson(text);
                       const res = await fetch('/api/settings/import-db', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -474,7 +548,10 @@ export const SettingsPage: React.FC = () => {
                         throw new Error(errText || 'Lỗi phản hồi từ máy chủ.');
                       }
                       if (result.success) {
-                        alert('Khôi phục database (phim, tập và truyện) thành công! Trang web sẽ được tải lại.');
+                        const repairMsg = wasRepaired
+                          ? '\n(Hệ thống phát hiện file backup trước đó bị ngắt nửa chừng khi tải về và đã tự động hàn gắn & khôi phục dữ liệu thành công!)'
+                          : '';
+                        alert(`Khôi phục database (phim, tập và truyện) thành công!${repairMsg} Trang web sẽ được tải lại.`);
                         window.location.reload();
                       } else {
                         alert(result.error || 'Lỗi khi khôi phục.');
