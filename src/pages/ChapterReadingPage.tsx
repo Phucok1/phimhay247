@@ -5,16 +5,50 @@ import { SEOHead } from '../components/common/SEOHead';
 import { fetchChapter } from '../services/api';
 import { Chapter, Novel } from '../types';
 
+function decodeHtmlEntities(str: string): string {
+  if (!str) return '';
+  return str
+    // Đổi cụm từ 2 &nbsp; trở lên thành ngắt đoạn văn bản
+    .replace(/(?:&nbsp;|\u00a0|\s)*(&nbsp;|\u00a0){2,}(?:&nbsp;|\u00a0|\s)*/gi, '\n\n')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\u00a0/g, ' ')
+    // Ký tự tiếng Việt thường
+    .replace(/&agrave;/gi, 'à').replace(/&aacute;/gi, 'á').replace(/&acirc;/gi, 'â').replace(/&atilde;/gi, 'ã')
+    .replace(/&egrave;/gi, 'è').replace(/&eacute;/gi, 'é').replace(/&ecirc;/gi, 'ê')
+    .replace(/&igrave;/gi, 'ì').replace(/&iacute;/gi, 'í')
+    .replace(/&ograve;/gi, 'ò').replace(/&oacute;/gi, 'ó').replace(/&ocirc;/gi, 'ô').replace(/&otilde;/gi, 'õ')
+    .replace(/&ugrave;/gi, 'ù').replace(/&uacute;/gi, 'ú')
+    .replace(/&yacute;/gi, 'ý')
+    // Ký tự tiếng Việt hoa
+    .replace(/&Agrave;/g, 'À').replace(/&Aacute;/g, 'Á').replace(/&Acirc;/g, 'Â').replace(/&Atilde;/g, 'Ã')
+    .replace(/&Egrave;/g, 'È').replace(/&Eacute;/g, 'É').replace(/&Ecirc;/g, 'Ê')
+    .replace(/&Igrave;/g, 'Ì').replace(/&Iacute;/g, 'Í')
+    .replace(/&Ograve;/g, 'Ò').replace(/&Oacute;/g, 'Ó').replace(/&Ocirc;/g, 'Ô').replace(/&Otilde;/g, 'Õ')
+    .replace(/&Ugrave;/g, 'Ù').replace(/&Uacute;/g, 'Ú')
+    .replace(/&Yacute;/g, 'Ý')
+    // Chữ Đ/đ và ký tự thông dụng
+    .replace(/&(?:ETH|Dstrok);/g, 'Đ').replace(/&(?:eth|dstrok);/g, 'đ')
+    .replace(/&quot;/gi, '"').replace(/&ldquo;/gi, '“').replace(/&rdquo;/gi, '”')
+    .replace(/&lsquo;/gi, '‘').replace(/&rsquo;/gi, '’').replace(/&hellip;/gi, '...')
+    .replace(/&dagger;/gi, 't').replace(/&ndash;/gi, '–').replace(/&mdash;/gi, '—')
+    .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    // Decimal & Hex entities
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
 function cleanDisplayContent(content?: string): string {
   if (!content) return '';
 
+  let text = decodeHtmlEntities(content);
+
   // 1. Kiểm tra nếu có phần chân trang / script của MeTruyenHot lọt vào nội dung
   const footerScriptRegex = /(?:trước\s*\n\s*đọc tiếp|nhấn mở bình luận|chính sách bảo mật|điều khoản sử dụng|website hoạt động dưới giấy phép|document\.addeventlistener|attachshadow|contents\s*=|var\s+shadowroot)/i;
-  const match = content.match(footerScriptRegex);
+  const match = text.match(footerScriptRegex);
 
   if (match && match.index !== undefined) {
-    const beforeJunk = content.substring(0, match.index);
-    const afterJunk = content.substring(match.index);
+    const beforeJunk = text.substring(0, match.index);
+    const afterJunk = text.substring(match.index);
 
     const cleanBefore = beforeJunk
       .replace(/<[^>]+>/g, '')
@@ -53,7 +87,7 @@ function cleanDisplayContent(content?: string): string {
         if (lower.includes('contents =') || lower.includes('innerhtml') || lower.includes('shadowroot')) return false;
         if (lower.includes('function()') || lower.includes('var ey') || lower.includes('var f=[]') || lower.includes('var a=0')) return false;
         if (lower.startsWith(';var ') || lower.startsWith('var ') || lower.includes('::before{content:attr')) return false;
-        if (lower === "';" || lower === "'" || lower === '";' || lower === '"') return false;
+        if (lower === "';" || lower === "'" || lower === '";' || lower === '"' || lower === '<div') return false;
         return true;
       });
 
@@ -70,11 +104,14 @@ function cleanDisplayContent(content?: string): string {
     return [...cleanBefore, ...orderedSentences].join('\n\n');
   }
 
-  return content
+  // 2. Nếu không dính footer/script, lọc sạch các thẻ và dòng rác
+  text = text
     .replace(/<p[^>]*class="[^"]*(?:mshow-hb|ms-k|ads)[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
     .replace(/<div id="content-metruyenhot"[\s\S]*?<\/div>/gi, '')
     .replace(/<div id="content-metruyenhot"[^>]*>/gi, '')
-    .replace(/<[^>]+>/g, '')
+    .replace(/<[^>]+>/g, '');
+
+  let lines = text
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => {
@@ -89,10 +126,30 @@ function cleanDisplayContent(content?: string): string {
       if (lower.includes('đọc truyện không bị quảng cáo') || lower.includes('các thông tin, hình ảnh, bài đăng trên website')) return false;
       if (lower.includes('document.addeventlistener') || lower.includes('attachshadow')) return false;
       if (lower.startsWith(';var ') || lower.startsWith('var ') || lower.includes('::before{content:attr')) return false;
-      if (lower === "';" || lower === "'" || lower === '";' || lower === '"') return false;
+      if (lower === "';" || lower === "'" || lower === '";' || lower === '"' || lower === '<div') return false;
       return true;
-    })
-    .join('\n\n');
+    });
+
+  // Tái sắp xếp nếu có các câu bị dính sau "Hết chương ..."
+  const endChIdx = lines.findIndex((l) => /^hết chương/i.test(l));
+  if (endChIdx !== -1 && endChIdx < lines.length - 1) {
+    const trailingSentences = lines.slice(endChIdx + 1);
+    const beforeEndCh = lines.slice(0, endChIdx);
+    const endChLine = lines[endChIdx];
+
+    let part2Start = Math.max(0, beforeEndCh.length - 3);
+    for (let i = beforeEndCh.length - 1; i >= Math.max(0, beforeEndCh.length - 6); i--) {
+      if (beforeEndCh[i].startsWith('-')) {
+        part2Start = i;
+      }
+    }
+
+    const head = beforeEndCh.slice(0, part2Start);
+    const part2 = beforeEndCh.slice(part2Start);
+    lines = [...head, ...trailingSentences, ...part2, endChLine];
+  }
+
+  return lines.join('\n\n');
 }
 
 export const ChapterReadingPage: React.FC = () => {
