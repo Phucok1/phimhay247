@@ -71,11 +71,14 @@ app.get('/api/health', (req, res) => {
 const distPath = path.resolve(__dirname, '../dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
-  // Điều hướng toàn bộ route còn lại về index.html cho React Router xử lý
+  // Điều hướng toàn bộ route còn lại về index.html cho React Router xử lý (không cache index.html để luôn nhận code mới)
   app.get('*', (req, res, next) => {
     if (req.url.startsWith('/api') || req.url === '/sitemap.xml') {
       return next();
     }
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
