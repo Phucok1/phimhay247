@@ -127,7 +127,7 @@ router.get('/:slug/chapters/:chapterNumber', (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'Không tìm thấy bộ truyện này.' });
     }
 
-    const cNum = parseInt(chapterNumber, 10);
+    const cNum = parseInt(chapterNumber.toString().replace(/^chuong-/i, '').replace(/\D/g, ''), 10);
     const chapters = novel.chapters || [];
     const chapterIndex = chapters.findIndex((c) => c.chapterNumber === cNum);
 

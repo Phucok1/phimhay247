@@ -27,9 +27,11 @@ export const ChapterReadingPage: React.FC = () => {
   });
   const [showSettings, setShowSettings] = useState(false);
 
+  const cleanChapterNum = (chapterNumber || '1').replace(/^chuong-/i, '').replace(/\D/g, '') || '1';
+
   useEffect(() => {
-    if (slug && chapterNumber) {
-      loadChapter(slug, chapterNumber);
+    if (slug) {
+      loadChapter(slug, cleanChapterNum);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [slug, chapterNumber]);

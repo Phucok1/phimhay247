@@ -73,7 +73,8 @@ export const App: React.FC = () => {
             {/* Mục Truyện Chữ (Novel) */}
             <Route path="/truyen" element={<NovelListPage />} />
             <Route path="/truyen/:slug" element={<NovelDetailPage />} />
-            <Route path="/truyen/:slug/chuong-:chapterNumber" element={<ChapterReadingPage />} />
+            <Route path="/truyen/:slug/:chapterNumber" element={<ChapterReadingPage />} />
+            <Route path="/truyen/:slug/chuong/:chapterNumber" element={<ChapterReadingPage />} />
 
             {/* Các trang chính sách chuẩn Google AdSense */}
             <Route path="/gioi-thieu" element={<AboutPage />} />

@@ -329,7 +329,8 @@ export const fetchChapter = async (
   prevChapter: number | null;
   nextChapter: number | null;
 }> => {
-  const res = await client.get(`/novels/${slug}/chapters/${chapterNumber}`);
+  const cleanNum = chapterNumber.toString().replace(/^chuong-/i, '').replace(/\D/g, '') || '1';
+  const res = await client.get(`/novels/${slug}/chapters/${cleanNum}`);
   return res.data.data;
 };
 
