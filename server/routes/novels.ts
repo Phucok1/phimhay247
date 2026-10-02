@@ -464,7 +464,7 @@ async function extractWebnovelChapter(
 // POST /api/novels/admin/crawl-webnovel - Tự động cào truyện từ Webnovel.vn và MeTruyenHot
 router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res: Response) => {
   try {
-    const { url, maxChapters, startChapter = 1 } = req.body;
+    const { url, maxChapters, startChapter = 1, isFull: isFullFlag } = req.body;
     if (!url || typeof url !== 'string') {
       return res.status(400).json({
         success: false,
@@ -576,14 +576,14 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       (n) => (slug && n.slug === slug) || (title && n.title.toLowerCase().trim() === title.toLowerCase().trim())
     );
 
-    const isFull = maxChapters === 'all' || maxChapters === 'full' || parseInt(maxChapters, 10) >= 999;
+    const isFull = isFullFlag === true || maxChapters === 'all' || maxChapters === 'full' || parseInt(maxChapters, 10) >= 999;
     let start = Math.max(parseInt(startChapter, 10) || 1, 1);
 
     // Nếu truyện đã có một số chương và người dùng chọn Full bộ (hoặc không nhập startChapter cụ thể > 1)
     // Tự động bắt đầu từ chương tiếp theo để cào bổ sung cực nhanh!
     if (
       isFull &&
-      (!req.body.startChapter || parseInt(req.body.startChapter, 10) === 1) &&
+      parseInt(startChapter, 10) === 1 &&
       existingNovel &&
       existingNovel.chapters &&
       existingNovel.chapters.length > 0
@@ -730,6 +730,11 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       } catch (e) {}
     }
 
+    const maxCrawledNumber = chapters.length > 0
+      ? chapters.reduce((max, c) => Math.max(max, c.chapterNumber), start)
+      : start + limit - 1;
+    const nextStartChapter = maxCrawledNumber + 1;
+
     res.json({
       success: true,
       message: existingNovel
@@ -744,7 +749,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       totalChapters: totalCount,
       detectedMax: Math.max(detectedMax, totalCount),
       reachedEnd: isReachedEnd,
-      nextStartChapter: totalCount + 1,
+      nextStartChapter: nextStartChapter,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

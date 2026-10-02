@@ -370,7 +370,8 @@ export const deleteChapter = async (novelId: string, chapterNumber: number): Pro
 export const crawlWebnovelStory = async (
   url: string,
   maxChapters: number | 'all' = 50,
-  startChapter = 1
+  startChapter = 1,
+  isFull = false
 ): Promise<{
   success: boolean;
   message: string;
@@ -381,7 +382,7 @@ export const crawlWebnovelStory = async (
   reachedEnd: boolean;
   nextStartChapter: number;
 }> => {
-  const res = await client.post('/novels/admin/crawl-webnovel', { url, maxChapters, startChapter });
+  const res = await client.post('/novels/admin/crawl-webnovel', { url, maxChapters, startChapter, isFull });
   return res.data;
 };
 

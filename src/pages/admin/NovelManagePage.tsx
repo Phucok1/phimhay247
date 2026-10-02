@@ -319,12 +319,12 @@ export const NovelManagePage: React.FC = () => {
       while (!isDone && (isFull || totalFetched < targetLimit)) {
         const chunkSize = isFull ? 30 : Math.min(30, targetLimit - totalFetched);
         setCrawlProgress({
-          current: totalFetched,
+          current: lastTotalInDb || totalFetched,
           total: isFull ? (detectedMaxCh || 0) : targetLimit,
           text: `Đang cào các chương từ ${currentStart}... (Đã tải ${totalFetched} chương mới)`,
         });
 
-        const res = await crawlWebnovelStory(crawlUrl.trim(), chunkSize, currentStart);
+        const res = await crawlWebnovelStory(crawlUrl.trim(), chunkSize, currentStart, isFull);
 
         if (!res.success || res.chapterCount === 0) {
           isDone = true;
@@ -334,12 +334,19 @@ export const NovelManagePage: React.FC = () => {
         totalFetched += res.chapterCount;
         lastTotalInDb = res.totalChapters;
         detectedMaxCh = Math.max(detectedMaxCh, res.detectedMax || 0, lastTotalInDb);
-        currentStart = res.nextStartChapter || currentStart + res.chapterCount;
+
+        // Đảm bảo currentStart LUÔN LUÔN TIẾN LÊN, tuyệt đối không bị dậm chân tại chỗ lặp lại chương cũ
+        const nextCandidate = res.nextStartChapter;
+        if (nextCandidate && nextCandidate > currentStart) {
+          currentStart = nextCandidate;
+        } else {
+          currentStart = currentStart + Math.max(res.chapterCount, chunkSize);
+        }
 
         setCrawlProgress({
-          current: totalFetched,
+          current: lastTotalInDb || totalFetched,
           total: isFull ? (detectedMaxCh || 0) : targetLimit,
-          text: `Đã lưu đến chương ${lastTotalInDb}...`,
+          text: `Đã lưu đến Chương ${currentStart - 1} (Hiện có ${lastTotalInDb} chương trong kho)...`,
         });
 
         if (res.reachedEnd) {
@@ -1087,7 +1094,7 @@ export const NovelManagePage: React.FC = () => {
                     />
                   </div>
                   <p className="text-[10px] text-gray-400">
-                    ⚡ Hệ thống đang cào theo từng đợt 50 chương an toàn, không làm quá tải server.
+                    ⚡ Hệ thống đang cào theo từng đợt an toàn, không làm quá tải server.
                   </p>
                 </div>
               )}
