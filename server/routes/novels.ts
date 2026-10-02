@@ -1,7 +1,43 @@
 import { Router, Request, Response } from 'express';
+import https from 'https';
 import { db, Chapter } from '../services/database.js';
 
 const router = Router();
+
+function fetchHtml(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    https
+      .get(
+        url,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'vi,en;q=0.9',
+          },
+        },
+        (res) => {
+          let data = '';
+          res.on('data', (chunk) => (data += chunk));
+          res.on('end', () => resolve(data));
+        }
+      )
+      .on('error', (err) => reject(err));
+  });
+}
+
+function cleanHtmlText(html: string): string {
+  return html
+    .replace(/<br\s*[\/]?>/gi, '\n')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
 
 // Middleware xác thực Admin
 const authenticateAdmin = (req: Request, res: Response, next: Function) => {
@@ -225,6 +261,135 @@ router.delete('/admin/:id/chapters/:chapterNumber', authenticateAdmin, (req: Req
       return res.status(400).json({ success: false, error: 'Không tìm thấy chương cần xóa.' });
     }
     res.json({ success: true, message: `Đã xóa Chương ${chapterNumber} thành công!` });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/novels/admin/crawl-webnovel - Tự động cào truyện từ Webnovel.vn
+router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { url, maxChapters } = req.body;
+    if (!url || typeof url !== 'string' || !url.includes('webnovel.vn')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Đường dẫn không hợp lệ. Vui lòng nhập link truyện từ webnovel.vn',
+      });
+    }
+
+    let cleanUrl = url.trim().split('#')[0].split('?')[0];
+    if (!cleanUrl.endsWith('/')) cleanUrl += '/';
+
+    const limit = Math.min(Math.max(parseInt(maxChapters, 10) || 20, 1), 50);
+
+    const mainHtml = await fetchHtml(cleanUrl);
+
+    // Tên truyện
+    const ogTitleMatch = mainHtml.match(/<meta property="og:title" content="([^"]+)"/i);
+    let title = ogTitleMatch ? ogTitleMatch[1] : '';
+    title = title
+      .replace(/ bản quyền.*$/i, '')
+      .replace(/ - Tác giả:.*$/i, '')
+      .replace(/ - Webnovel.*$/i, '')
+      .replace(/^Truyện\s+/i, '')
+      .trim();
+
+    if (!title) {
+      const h1Match = mainHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      title = h1Match ? h1Match[1].trim() : 'Truyện Xuyên Không';
+    }
+
+    // Tác giả
+    let author = 'Đang cập nhật';
+    const authorMatch = mainHtml.match(/href="[^"]*\/tac-gia\/[^"]*"[^>]*>([^<]+)<\/a>/i);
+    if (authorMatch) {
+      author = authorMatch[1].trim();
+    } else {
+      const descAuthorMatch = mainHtml.match(/Tác giả:\s*([^<\-]+)/i);
+      if (descAuthorMatch) author = descAuthorMatch[1].trim();
+    }
+
+    // Ảnh bìa
+    const ogImgMatch = mainHtml.match(/<meta property="og:image" content="([^"]+)"/i);
+    const coverUrl = ogImgMatch ? ogImgMatch[1] : '';
+
+    // Mô tả
+    const ogDescMatch = mainHtml.match(/<meta property="og:description" content="([^"]+)"/i);
+    const description = ogDescMatch ? ogDescMatch[1].trim() : '';
+
+    // Thể loại
+    const catMatches = [
+      ...mainHtml.matchAll(
+        /class="[^"]*badge[^"]*"[^>]*href="https:\/\/webnovel\.vn\/([^\/"]+)\/"[^>]*>([^<]+)<\/a>/gi
+      ),
+    ];
+    let category = catMatches.map((m) => m[2].trim());
+    if (category.length === 0) category = ['Xuyên Không', 'Tiên Hiệp'];
+
+    // Cào các chương
+    const chapters: Chapter[] = [];
+    for (let ch = 1; ch <= limit; ch++) {
+      const chUrl = `${cleanUrl}chuong-${ch}/`;
+      try {
+        const chHtml = await fetchHtml(chUrl);
+        const startTag = '<div id="chapter-c">';
+        const startIdx = chHtml.indexOf(startTag);
+        if (startIdx === -1) break;
+
+        const endIdx = chHtml.indexOf('</div>', startIdx);
+        const rawText = chHtml.substring(startIdx + startTag.length, endIdx);
+
+        if (rawText.includes('unlock__full') || rawText.includes('Mở chương')) {
+          // Bắt đầu khóa VIP -> dừng cào
+          break;
+        }
+
+        const content = cleanHtmlText(rawText);
+        if (content.length < 250) break;
+
+        const chTitleMatch =
+          chHtml.match(/<h[12][^>]*class="[^"]*chapter-title[^"]*"[^>]*>([^<]+)<\/h[12]>/i) ||
+          chHtml.match(/<title>([^<]+)<\/title>/i);
+        let chTitle = chTitleMatch ? chTitleMatch[1].trim() : `Chương ${ch}`;
+        chTitle = chTitle.replace(/ - [^|]+$/i, '').replace(/ \| Webnovel.*$/i, '').trim();
+
+        chapters.push({
+          id: `ch-${Date.now()}-${ch}`,
+          novelId: '',
+          chapterNumber: ch,
+          title: chTitle,
+          content,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        break;
+      }
+    }
+
+    if (chapters.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Không thể cào chương từ đường link này. Bộ truyện có thể đã khóa toàn bộ chương VIP.',
+      });
+    }
+
+    // Lưu vào Database
+    const novel = db.createNovel({
+      title,
+      author,
+      category,
+      coverUrl,
+      description,
+      status: 'Đang ra',
+      chapters,
+    });
+
+    res.json({
+      success: true,
+      message: `Đã cào thành công bộ truyện "${title}" với ${chapters.length} chương!`,
+      data: novel,
+      chapterCount: chapters.length,
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

@@ -14,14 +14,34 @@ import {
   Loader2,
   X,
   ExternalLink,
+  Zap,
+  Globe,
+  DownloadCloud,
 } from 'lucide-react';
-import { fetchNovels, createNovel, updateNovel, deleteNovel, fetchNovelBySlug, addChapter, importChapters, deleteChapter } from '../../services/api';
+import {
+  fetchNovels,
+  createNovel,
+  updateNovel,
+  deleteNovel,
+  fetchNovelBySlug,
+  addChapter,
+  importChapters,
+  deleteChapter,
+  crawlWebnovelStory,
+} from '../../services/api';
 import { Novel, Chapter } from '../../types';
 
 export const NovelManagePage: React.FC = () => {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  // Modal Cào Truyện Tự Động Webnovel.vn
+  const [crawlModalOpen, setCrawlModalOpen] = useState(false);
+  const [crawlUrl, setCrawlUrl] = useState('');
+  const [crawlLimit, setCrawlLimit] = useState(20);
+  const [crawling, setCrawling] = useState(false);
+  const [crawlError, setCrawlError] = useState<string | null>(null);
 
   // Modal Tạo/Sửa Truyện
   const [novelModalOpen, setNovelModalOpen] = useState(false);
@@ -266,6 +286,27 @@ export const NovelManagePage: React.FC = () => {
     }
   };
 
+  // Cào truyện tự động từ Webnovel.vn
+  const handleStartCrawl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!crawlUrl.trim()) return;
+
+    setCrawling(true);
+    setCrawlError(null);
+
+    try {
+      const res = await crawlWebnovelStory(crawlUrl.trim(), crawlLimit);
+      alert(res.message || `Đã cào thành công ${res.chapterCount} chương!`);
+      setCrawlModalOpen(false);
+      setCrawlUrl('');
+      loadData();
+    } catch (err: any) {
+      setCrawlError(err.response?.data?.error || err.message || 'Lỗi khi cào truyện.');
+    } finally {
+      setCrawling(false);
+    }
+  };
+
   const filteredNovels = novels.filter(
     (n) =>
       n.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -282,18 +323,33 @@ export const NovelManagePage: React.FC = () => {
             <span>Quản Lý Tủ Sách Truyện Chữ</span>
           </h1>
           <p className="text-xs text-gray-400 mt-1">
-            Đăng truyện, quản lý các chương, hỗ trợ tải lên bằng file text (.txt) tự động tách chương
+            Đăng truyện, cào truyện tự động, tải lên file (.txt) tự động tách chương
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreateNovel}
-          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-cinema-950 font-bold text-xs sm:text-sm transition shadow-lg shadow-amber-950/40 flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Thêm Bộ Truyện Mới</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => {
+              setCrawlUrl('');
+              setCrawlError(null);
+              setCrawlModalOpen(true);
+            }}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm transition shadow-lg shadow-emerald-950/40 flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+            <span>⚡ Cào Webnovel.vn</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenCreateNovel}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-cinema-950 font-bold text-xs sm:text-sm transition shadow-lg shadow-amber-950/40 flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Thêm Bộ Truyện Mới</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter / Search Bar */}
@@ -780,6 +836,112 @@ export const NovelManagePage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cào Truyện Tự Động Từ Webnovel.vn */}
+      {crawlModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-lg rounded-2xl bg-cinema-900 border border-cinema-700 shadow-2xl p-6 overflow-hidden">
+            <div className="flex items-center justify-between pb-4 border-b border-cinema-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                  <Zap className="w-5 h-5 fill-amber-300 text-amber-300" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Cào Truyện Từ Webnovel.vn</h3>
+                  <p className="text-[11px] text-gray-400">Tự động lấy tên truyện, ảnh bìa, tác giả và các chương miễn phí</p>
+                </div>
+              </div>
+              <button
+                disabled={crawling}
+                onClick={() => setCrawlModalOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-cinema-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleStartCrawl} className="mt-5 space-y-4 text-xs">
+              {crawlError && (
+                <div className="p-3 rounded-xl bg-red-950/60 border border-red-800/60 text-red-300 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <span>{crawlError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-gray-300 font-semibold mb-1.5">
+                  Đường dẫn truyện trên Webnovel.vn <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={crawlUrl}
+                  onChange={(e) => setCrawlUrl(e.target.value)}
+                  placeholder="Ví dụ: https://webnovel.vn/bat-dau-danh-dau-tu-bo-khoai/"
+                  className="w-full px-3.5 py-2.5 bg-cinema-850 border border-cinema-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+                />
+                <p className="text-[11px] text-gray-500 mt-1">
+                  Chỉ cần dán link truyện từ danh mục <a href="https://webnovel.vn/xuyen-khong/" target="_blank" rel="noreferrer" className="text-emerald-400 underline">webnovel.vn/xuyen-khong/</a>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-gray-300 font-semibold mb-1.5">
+                  Số lượng chương muốn lấy (Tối đa 50)
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[10, 20, 30, 50].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setCrawlLimit(num)}
+                      className={`py-2 rounded-xl border text-xs font-bold transition ${
+                        crawlLimit === num
+                          ? 'bg-emerald-600 border-emerald-500 text-white'
+                          : 'bg-cinema-850 border-cinema-700 text-gray-300 hover:bg-cinema-800'
+                      }`}
+                    >
+                      {num} chương {num === 20 && '(Chuẩn)'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 text-[11px] text-amber-300/90 leading-relaxed">
+                💡 <strong>Lưu ý:</strong> Webnovel.vn mở đọc miễn phí khoảng 20-25 chương đầu tiên. Hệ thống sẽ tự động quét và tải toàn bộ các chương miễn phí này. Với mục đích duyệt <strong>Google AdSense</strong>, 20 chương dài chất lượng cao cho mỗi truyện là quá chuẩn để vượt qua kiểm duyệt!
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-cinema-800">
+                <button
+                  type="button"
+                  disabled={crawling}
+                  onClick={() => setCrawlModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-cinema-800 hover:bg-cinema-700 text-gray-300 font-medium transition"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={crawling || !crawlUrl.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold transition shadow-lg shadow-emerald-950/40 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {crawling ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Đang tải nội dung từ webnovel.vn...</span>
+                    </>
+                  ) : (
+                    <>
+                      <DownloadCloud className="w-4 h-4" />
+                      <span>Bắt Đầu Cào & Lưu Vào Tủ Sách</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

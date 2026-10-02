@@ -366,3 +366,11 @@ export const deleteChapter = async (novelId: string, chapterNumber: number): Pro
   await client.delete(`/novels/admin/${novelId}/chapters/${chapterNumber}`);
 };
 
+export const crawlWebnovelStory = async (
+  url: string,
+  maxChapters = 20
+): Promise<{ success: boolean; message: string; data: Novel; chapterCount: number }> => {
+  const res = await client.post('/novels/admin/crawl-webnovel', { url, maxChapters });
+  return res.data;
+};
+
