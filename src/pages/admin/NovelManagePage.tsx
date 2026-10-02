@@ -338,7 +338,7 @@ export const NovelManagePage: React.FC = () => {
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm transition shadow-lg shadow-emerald-950/40 flex items-center gap-2"
           >
             <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
-            <span>⚡ Cào Webnovel.vn</span>
+            <span>⚡ Cào Webnovel & MeTruyenHot</span>
           </button>
 
           <button
@@ -850,8 +850,8 @@ export const NovelManagePage: React.FC = () => {
                   <Zap className="w-5 h-5 fill-amber-300 text-amber-300" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Cào Truyện Từ Webnovel.vn</h3>
-                  <p className="text-[11px] text-gray-400">Tự động lấy tên truyện, ảnh bìa, tác giả và các chương miễn phí</p>
+                  <h3 className="text-base font-bold text-white">Cào Truyện Từ Webnovel.vn & MeTruyenHot</h3>
+                  <p className="text-[11px] text-gray-400">Tự động lấy tên truyện, ảnh bìa, tác giả và nội dung các chương tiếng Việt</p>
                 </div>
               </div>
               <button
@@ -873,27 +873,27 @@ export const NovelManagePage: React.FC = () => {
 
               <div>
                 <label className="block text-gray-300 font-semibold mb-1.5">
-                  Đường dẫn truyện trên Webnovel.vn <span className="text-red-400">*</span>
+                  Đường dẫn truyện (Webnovel.vn hoặc MeTruyenHotvn.com) <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="url"
                   required
                   value={crawlUrl}
                   onChange={(e) => setCrawlUrl(e.target.value)}
-                  placeholder="Ví dụ: https://webnovel.vn/bat-dau-danh-dau-tu-bo-khoai/"
+                  placeholder="VD: https://metruyenhotvn.com/huyen-lenh-de-su/ hoặc webnovel.vn"
                   className="w-full px-3.5 py-2.5 bg-cinema-850 border border-cinema-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
                 />
                 <p className="text-[11px] text-gray-500 mt-1">
-                  Chỉ cần dán link truyện từ danh mục <a href="https://webnovel.vn/xuyen-khong/" target="_blank" rel="noreferrer" className="text-emerald-400 underline">webnovel.vn/xuyen-khong/</a>
+                  Hỗ trợ link truyện từ <a href="https://metruyenhotvn.com/" target="_blank" rel="noreferrer" className="text-emerald-400 underline">metruyenhotvn.com</a> và <a href="https://webnovel.vn/xuyen-khong/" target="_blank" rel="noreferrer" className="text-emerald-400 underline">webnovel.vn</a>
                 </p>
               </div>
 
               <div>
                 <label className="block text-gray-300 font-semibold mb-1.5">
-                  Số lượng chương muốn lấy (Tối đa 50)
+                  Số lượng chương muốn lấy (Tối đa 100 chương)
                 </label>
                 <div className="grid grid-cols-4 gap-2">
-                  {[10, 20, 30, 50].map((num) => (
+                  {[10, 20, 50, 100].map((num) => (
                     <button
                       key={num}
                       type="button"
@@ -911,7 +911,7 @@ export const NovelManagePage: React.FC = () => {
               </div>
 
               <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 text-[11px] text-amber-300/90 leading-relaxed">
-                💡 <strong>Lưu ý:</strong> Webnovel.vn mở đọc miễn phí khoảng 20-25 chương đầu tiên. Hệ thống sẽ tự động quét và tải toàn bộ các chương miễn phí này. Với mục đích duyệt <strong>Google AdSense</strong>, 20 chương dài chất lượng cao cho mỗi truyện là quá chuẩn để vượt qua kiểm duyệt!
+                💡 <strong>Gợi ý:</strong> Trang <strong>metruyenhotvn.com</strong> có kho truyện ngôn tình, tiên hiệp, xuyên không khổng lồ và 100% các chương đều miễn phí không bị khóa VIP. Bạn có thể chọn lấy 20, 50 hoặc 100 chương tùy ý!
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-cinema-800">
