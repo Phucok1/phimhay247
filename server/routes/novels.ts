@@ -586,8 +586,8 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       }
     }
 
-    const limit = isFull ? 2000 : Math.min(Math.max(parseInt(maxChapters, 10) || 20, 1), 2000);
-    const targetEnd = isFull ? (detectedMax > 0 ? detectedMax : 2000) : start + limit - 1;
+    const limit = Math.min(Math.max(parseInt(maxChapters, 10) || 50, 1), 60);
+    const targetEnd = (detectedMax > 0 && isFull) ? Math.min(start + limit - 1, detectedMax) : start + limit - 1;
 
     // Nếu truyện đã cào đủ hết các chương
     if (detectedMax > 0 && start > detectedMax && existingNovel && existingNovel.chapters && existingNovel.chapters.length >= detectedMax) {
@@ -597,6 +597,9 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
         data: existingNovel,
         chapterCount: 0,
         totalChapters: existingNovel.chapters.length,
+        detectedMax: detectedMax,
+        reachedEnd: true,
+        nextStartChapter: existingNovel.chapters.length + 1,
       });
     }
 
@@ -708,15 +711,22 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     }
 
     const totalCount = novel?.chapters ? novel.chapters.length : chapters.length;
+    const isReachedEnd =
+      reachedEnd ||
+      chapters.length < limit ||
+      (detectedMax > 0 && totalCount >= detectedMax);
 
     res.json({
       success: true,
       message: existingNovel
         ? `Đã cào bổ sung thêm ${chapters.length} chương mới cho bộ "${title}"! (Hiện có tổng cộng: ${totalCount} chương)`
-        : `Đã cào thành công trọn bộ "${title}" với ${chapters.length} chương!`,
+        : `Đã cào thành công "${title}" với ${chapters.length} chương!`,
       data: novel,
       chapterCount: chapters.length,
       totalChapters: totalCount,
+      detectedMax: detectedMax || totalCount,
+      reachedEnd: isReachedEnd,
+      nextStartChapter: totalCount + 1,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

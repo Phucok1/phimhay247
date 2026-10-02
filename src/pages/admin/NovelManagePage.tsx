@@ -43,6 +43,11 @@ export const NovelManagePage: React.FC = () => {
   const [crawlStartChapter, setCrawlStartChapter] = useState(1);
   const [crawling, setCrawling] = useState(false);
   const [crawlError, setCrawlError] = useState<string | null>(null);
+  const [crawlProgress, setCrawlProgress] = useState<{
+    current: number;
+    total: number;
+    text: string;
+  } | null>(null);
 
   // Modal Tạo/Sửa Truyện
   const [novelModalOpen, setNovelModalOpen] = useState(false);
@@ -287,7 +292,7 @@ export const NovelManagePage: React.FC = () => {
     }
   };
 
-  // Cào truyện tự động từ Webnovel.vn & MeTruyenHot
+  // Cào truyện tự động từ Webnovel.vn & MeTruyenHot (tự động chia nhỏ đợt an toàn không lag server)
   const handleStartCrawl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!crawlUrl.trim()) return;
@@ -296,15 +301,72 @@ export const NovelManagePage: React.FC = () => {
     setCrawlError(null);
 
     try {
-      const res = await crawlWebnovelStory(crawlUrl.trim(), crawlLimit, crawlStartChapter);
-      alert(res.message || `Đã cào thành công ${res.chapterCount} chương!`);
+      let currentStart = crawlStartChapter;
+      let totalFetched = 0;
+      const isFull = crawlLimit === 'all';
+      const targetLimit = isFull ? 2000 : Number(crawlLimit);
+      let isDone = false;
+      let lastTotalInDb = 0;
+      let detectedMaxCh = 0;
+
+      setCrawlProgress({
+        current: 0,
+        total: isFull ? 0 : targetLimit,
+        text: 'Đang kết nối tới trang nguồn...',
+      });
+
+      while (!isDone && totalFetched < targetLimit) {
+        const chunkSize = Math.min(50, targetLimit - totalFetched);
+        setCrawlProgress({
+          current: totalFetched,
+          total: detectedMaxCh || (isFull ? 0 : targetLimit),
+          text: `Đang cào các chương từ ${currentStart}... (Đã tải ${totalFetched} chương mới)`,
+        });
+
+        const res = await crawlWebnovelStory(crawlUrl.trim(), chunkSize, currentStart);
+
+        if (!res.success || res.chapterCount === 0) {
+          isDone = true;
+          break;
+        }
+
+        totalFetched += res.chapterCount;
+        lastTotalInDb = res.totalChapters;
+        detectedMaxCh = res.detectedMax || 0;
+        currentStart = res.nextStartChapter || currentStart + res.chapterCount;
+
+        setCrawlProgress({
+          current: totalFetched,
+          total: detectedMaxCh || (isFull ? 0 : targetLimit),
+          text: `Đã lưu đến chương ${lastTotalInDb}...`,
+        });
+
+        if (res.reachedEnd || (detectedMaxCh > 0 && lastTotalInDb >= detectedMaxCh)) {
+          isDone = true;
+          break;
+        }
+
+        if (res.chapterCount < chunkSize) {
+          isDone = true;
+          break;
+        }
+
+        // Nghỉ nhẹ 300ms giữa các đợt để server giải phóng RAM
+        await new Promise((r) => setTimeout(r, 300));
+      }
+
+      alert(
+        `🎉 Hoàn tất cào truyện! Đã lưu thành công ${totalFetched} chương mới (Hiện có tổng cộng: ${lastTotalInDb || totalFetched} chương trong kho).`
+      );
       setCrawlModalOpen(false);
       setCrawlUrl('');
+      setCrawlProgress(null);
       loadData();
     } catch (err: any) {
       setCrawlError(err.response?.data?.error || err.message || 'Lỗi khi cào truyện.');
     } finally {
       setCrawling(false);
+      setCrawlProgress(null);
     }
   };
 
@@ -956,6 +1018,36 @@ export const NovelManagePage: React.FC = () => {
                   🔄 <strong>Tự động ghép nối:</strong> Nếu bộ truyện này đã có trong danh sách, hệ thống sẽ tự động ghép thêm các chương mới mà không làm mất các chương cũ.
                 </p>
               </div>
+
+              {crawlProgress && (
+                <div className="p-3.5 rounded-xl bg-cinema-850 border border-emerald-500/40 space-y-2 animate-fadeIn">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-emerald-400 flex items-center gap-1.5 truncate">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                      <span>{crawlProgress.text}</span>
+                    </span>
+                    {crawlProgress.total > 0 && (
+                      <span className="text-white shrink-0 ml-2 font-mono">
+                        {Math.min(100, Math.round((crawlProgress.current / crawlProgress.total) * 100))}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-full h-2 bg-cinema-900 rounded-full overflow-hidden border border-cinema-700">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300"
+                      style={{
+                        width:
+                          crawlProgress.total > 0
+                            ? `${Math.min(100, Math.max(5, (crawlProgress.current / crawlProgress.total) * 100))}%`
+                            : '100%',
+                      }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-400">
+                    ⚡ Hệ thống đang cào theo từng đợt 50 chương an toàn, không làm quá tải server.
+                  </p>
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-cinema-800">
                 <button

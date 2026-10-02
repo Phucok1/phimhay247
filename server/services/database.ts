@@ -519,7 +519,7 @@ class DatabaseService {
 
   private saveDataDirect(data: DatabaseSchema) {
     try {
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+      fs.writeFileSync(DB_FILE, JSON.stringify(data), 'utf-8');
     } catch (err) {
       console.error('Lỗi khi ghi dữ liệu ra db.json:', err);
     }
