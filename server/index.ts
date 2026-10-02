@@ -27,8 +27,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middlewares
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '200mb' }));
+app.use(express.urlencoded({ extended: true, limit: '200mb' }));
 
 // Request logging in dev
 app.use((req, res, next) => {
@@ -86,6 +86,12 @@ if (fs.existsSync(distPath)) {
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('API Error:', err);
+  if (err.type === 'entity.too.large' || err.status === 413) {
+    return res.status(413).json({
+      success: false,
+      error: 'Dung lượng file tải lên quá lớn (vượt quá giới hạn 200MB của máy chủ).',
+    });
+  }
   res.status(500).json({
     success: false,
     error: err.message || 'Đã có lỗi hệ thống xảy ra trên server.',

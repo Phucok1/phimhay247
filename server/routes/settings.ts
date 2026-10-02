@@ -79,7 +79,7 @@ router.get('/export-db', (req: Request, res: Response) => {
     const data = db.exportDatabase();
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename=phimhay247_db_${new Date().toISOString().slice(0, 10)}.json`);
-    res.send(JSON.stringify(data, null, 2));
+    res.send(JSON.stringify(data));
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

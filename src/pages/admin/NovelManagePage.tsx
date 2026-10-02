@@ -79,6 +79,7 @@ export const NovelManagePage: React.FC = () => {
   const [bulkText, setBulkText] = useState('');
   const [parsedChapters, setParsedChapters] = useState<Chapter[]>([]);
   const [importing, setImporting] = useState(false);
+  const [importingBackup, setImportingBackup] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -381,6 +382,7 @@ export const NovelManagePage: React.FC = () => {
   const handleImportNovels = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setImportingBackup(true);
     try {
       const text = await file.text();
       const json = JSON.parse(text);
@@ -388,7 +390,10 @@ export const NovelManagePage: React.FC = () => {
       alert(res.message || 'Khôi phục truyện thành công!');
       loadData();
     } catch (err: any) {
-      alert('File JSON không hợp lệ: ' + (err.message || 'Lỗi'));
+      alert('Lỗi khôi phục truyện: ' + (err.response?.data?.error || err.message || 'Lỗi'));
+    } finally {
+      setImportingBackup(false);
+      e.target.value = '';
     }
   };
 
@@ -426,14 +431,21 @@ export const NovelManagePage: React.FC = () => {
 
           {/* Nút Khôi phục truyện */}
           <label
-            className="px-3.5 py-2.5 rounded-xl bg-cinema-850 hover:bg-cinema-800 text-gray-200 border border-cinema-700 font-bold text-xs transition flex items-center gap-2 cursor-pointer"
+            className={`px-3.5 py-2.5 rounded-xl bg-cinema-850 hover:bg-cinema-800 text-gray-200 border border-cinema-700 font-bold text-xs transition flex items-center gap-2 cursor-pointer ${
+              importingBackup ? 'opacity-50 pointer-events-none' : ''
+            }`}
             title="Khôi phục dữ liệu truyện từ file backup JSON"
           >
-            <Upload className="w-4 h-4 text-amber-400" />
-            <span>Khôi Phục Truyện</span>
+            {importingBackup ? (
+              <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4 text-amber-400" />
+            )}
+            <span>{importingBackup ? 'Đang khôi phục...' : 'Khôi Phục Truyện'}</span>
             <input
               type="file"
               accept=".json"
+              disabled={importingBackup}
               className="hidden"
               onChange={handleImportNovels}
             />

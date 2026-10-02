@@ -23,6 +23,7 @@ export const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form Fields
@@ -433,16 +434,30 @@ export const SettingsPage: React.FC = () => {
               </a>
 
               {/* Nút khôi phục backup */}
-              <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cinema-800 hover:bg-cinema-700 text-gray-200 font-semibold cursor-pointer transition border border-cinema-700">
-                <CheckCircle className="w-4 h-4 text-primary" />
-                <span>Khôi Phục Toàn Bộ (Phim & Truyện) Từ File Backup</span>
+              <label
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cinema-800 hover:bg-cinema-700 text-gray-200 font-semibold cursor-pointer transition border border-cinema-700 ${
+                  restoring ? 'opacity-50 pointer-events-none' : ''
+                }`}
+              >
+                {restoring ? (
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                )}
+                <span>
+                  {restoring
+                    ? 'Đang khôi phục dữ liệu (vui lòng đợi)...'
+                    : 'Khôi Phục Toàn Bộ (Phim & Truyện) Từ File Backup'}
+                </span>
                 <input
                   type="file"
                   accept=".json"
+                  disabled={restoring}
                   className="hidden"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
+                    setRestoring(true);
                     try {
                       const text = await file.text();
                       const json = JSON.parse(text);
@@ -451,7 +466,13 @@ export const SettingsPage: React.FC = () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(json),
                       });
-                      const result = await res.json();
+                      let result: any;
+                      try {
+                        result = await res.json();
+                      } catch {
+                        const errText = await res.text();
+                        throw new Error(errText || 'Lỗi phản hồi từ máy chủ.');
+                      }
                       if (result.success) {
                         alert('Khôi phục database (phim, tập và truyện) thành công! Trang web sẽ được tải lại.');
                         window.location.reload();
@@ -459,7 +480,10 @@ export const SettingsPage: React.FC = () => {
                         alert(result.error || 'Lỗi khi khôi phục.');
                       }
                     } catch (err: any) {
-                      alert('File JSON không hợp lệ: ' + err.message);
+                      alert('Lỗi khôi phục: ' + (err.message || 'File JSON không hợp lệ'));
+                    } finally {
+                      setRestoring(false);
+                      e.target.value = '';
                     }
                   }}
                 />
