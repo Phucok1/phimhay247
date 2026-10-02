@@ -5,6 +5,26 @@ import { SEOHead } from '../components/common/SEOHead';
 import { fetchChapter } from '../services/api';
 import { Chapter, Novel } from '../types';
 
+function cleanDisplayContent(content?: string): string {
+  if (!content) return '';
+  return content
+    .replace(/<p[^>]*class="[^"]*(?:mshow-hb|ms-k|ads)[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
+    .replace(/<div id="content-metruyenhot"[\s\S]*?<\/div>/gi, '')
+    .replace(/<div id="content-metruyenhot"[^>]*>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => {
+      if (!l) return false;
+      const lower = l.toLowerCase();
+      if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
+      if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
+      if (lower.includes('content-metruyenhot')) return false;
+      return true;
+    })
+    .join('\n\n');
+}
+
 export const ChapterReadingPage: React.FC = () => {
   const { slug, chapterNumber } = useParams<{ slug: string; chapterNumber: string }>();
   const navigate = useNavigate();
@@ -320,7 +340,7 @@ export const ChapterReadingPage: React.FC = () => {
             }`}
             style={{ fontSize: `${fontSize}px`, lineHeight: 1.85 }}
           >
-            {chapter.content}
+            {cleanDisplayContent(chapter.content)}
           </div>
 
           {/* Vị trí đặt quảng cáo AdSense dưới (Ad Unit Bottom) */}

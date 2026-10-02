@@ -151,7 +151,10 @@ router.get('/:slug/chapters/:chapterNumber', (req: Request, res: Response) => {
           totalChapters: chapters.length,
           linkedMovieSlug: novel.linkedMovieSlug,
         },
-        chapter: currentChapter,
+        chapter: {
+          ...currentChapter,
+          content: cleanWatermarkContent(currentChapter.content),
+        },
         prevChapter,
         nextChapter,
       },
@@ -274,7 +277,29 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&Egrave;/gi, 'È').replace(/&Eacute;/gi, 'É').replace(/&Igrave;/gi, 'Ì').replace(/&Iacute;/gi, 'Í').replace(/&Ograve;/gi, 'Ò').replace(/&Oacute;/gi, 'Ó')
     .replace(/&Ugrave;/gi, 'Ù').replace(/&Uacute;/gi, 'Ú').replace(/&Yacute;/gi, 'Ý').replace(/&quot;/gi, '"').replace(/&ldquo;/gi, '“').replace(/&rdquo;/gi, '”')
     .replace(/&lsquo;/gi, '‘').replace(/&rsquo;/gi, '’').replace(/&hellip;/gi, '...').replace(/&dagger;/gi, 't').replace(/&nbsp;/gi, ' ')
+    .replace(/&ndash;/gi, '–').replace(/&mdash;/gi, '—')
     .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
+}
+
+// Hàm dọn dẹp các đoạn quảng cáo, watermark và thẻ rác HTML còn sót lại
+export function cleanWatermarkContent(content: string): string {
+  if (!content) return '';
+  return content
+    .replace(/<p[^>]*class="[^"]*(?:mshow-hb|ms-k|ads)[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
+    .replace(/<div id="content-metruyenhot"[\s\S]*?<\/div>/gi, '')
+    .replace(/<div id="content-metruyenhot"[^>]*>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => {
+      if (!l) return false;
+      const lower = l.toLowerCase();
+      if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
+      if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
+      if (lower.includes('content-metruyenhot')) return false;
+      return true;
+    })
+    .join('\n\n');
 }
 
 // Helper fetch có tự động Retry nếu mạng chập chờn
@@ -327,7 +352,7 @@ function fetchHtmlWithRetry(
   });
 }
 
-// Helper cào từng chương MeTruyenHot (có retry và kiểm tra 404 chuẩn xác)
+// Helper cào từng chương MeTruyenHot (có retry, giải mã câu bị giấu và xóa sạch watermark)
 async function extractMetruyenhotChapter(
   cleanUrl: string,
   ch: number
@@ -350,28 +375,96 @@ async function extractMetruyenhotChapter(
     }
 
     const contentStart = chHtml.indexOf('>', startIdx) + 1;
-    const endIdx = chHtml.indexOf('</div>', contentStart);
+
+    // Container kết thúc ở nút phân trang bên dưới hoặc khung bình luận/footer
+    let endIdx = chHtml.indexOf('id="chapter-nav-bottom"', contentStart);
     if (endIdx === -1) {
-      return { chapter: null, is404: false };
+      endIdx = chHtml.indexOf('class="container rv-chapt-comment"', contentStart);
+    }
+    if (endIdx === -1) {
+      endIdx = chHtml.indexOf('class="rv-chapt-comment"', contentStart);
+    }
+    if (endIdx === -1) {
+      endIdx = chHtml.indexOf('</main>', contentStart);
+    }
+    if (endIdx === -1) {
+      endIdx = chHtml.length;
     }
 
-    let raw = chHtml.substring(contentStart, endIdx);
+    const raw = chHtml.substring(contentStart, endIdx);
 
-    const attrSentences = [
-      ...raw.matchAll(
-        /<p[^>]+(?:gubhskjlwm|swhfjquylk|thoxqrfwyj|vzxpnuramd|oncopy)="([^"]+)"/gi
-      ),
-    ].map((m) => m[1]);
+    // Tìm thêm chuỗi contentS được inject qua Shadow DOM trong <script> nếu có
+    const scriptContentMatch = chHtml.match(/var\s+contentS\s*=\s*'([^']+)'/i);
+    const shadowContent = scriptContentMatch ? scriptContentMatch[1] : '';
 
-    raw = raw.replace(/<p class="ms-k">[\s\S]*?<\/p>/gi, '');
-    raw = raw.replace(/<div id="content-metruyenhot"><\/div>/gi, '');
-    let clean = raw.replace(/<p[^>]*>/gi, '').replace(/<\/p>/gi, '\n\n').replace(/<br\s*[\/]?>/gi, '\n');
+    const combined = raw + '\n' + shadowContent;
+
+    // Trích xuất tất cả các đoạn văn bị giấu trong thuộc tính ngẫu nhiên của thẻ <p ... [attr]="...">
+    const seenSentences = new Set<string>();
+    const hiddenSentences: string[] = [];
+    const pTagRegex = /<p\s+([^>]+)>/gi;
+    let pMatch;
+    while ((pMatch = pTagRegex.exec(combined)) !== null) {
+      const attrs = pMatch[1];
+      const attrMatch = attrs.matchAll(/([a-z]{8,15})="([^"]{4,})"/gi);
+      for (const am of attrMatch) {
+        const attrName = am[1].toLowerCase();
+        if (!['style', 'class', 'onmousedown', 'onselectstart', 'oncopy', 'oncut'].includes(attrName)) {
+          const decoded = decodeHtmlEntities(am[2].trim());
+          if (
+            decoded.length > 3 &&
+            !decoded.includes('metruyen') &&
+            !decoded.includes('google') &&
+            !seenSentences.has(decoded)
+          ) {
+            seenSentences.add(decoded);
+            hiddenSentences.push(decoded);
+          }
+        }
+      }
+    }
+
+    // Xóa sạch các thẻ quảng cáo / watermark chống copy của MeTruyenHot
+    let clean = raw;
+    clean = clean.replace(/<p[^>]*class="[^"]*(?:mshow-hb|ms-k|ads)[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '');
+    clean = clean.replace(/<div id="content-metruyenhot"[\s\S]*?<\/div>/gi, '');
+    clean = clean.replace(/<div id="content-metruyenhot"[^>]*>/gi, '');
+
+    // Xóa mọi thẻ HTML còn lại, giữ cấu trúc đoạn văn bản
+    clean = clean.replace(/<br\s*[\/]?>/gi, '\n');
+    clean = clean.replace(/<\/p>/gi, '\n\n');
+    clean = clean.replace(/<[^>]+>/g, '');
     clean = decodeHtmlEntities(clean);
 
-    if (attrSentences.length > 0) {
-      clean += '\n\n' + attrSentences.map((s) => decodeHtmlEntities(s.trim())).join('\n\n');
+    // Ghép các câu bị giấu vào cuối văn bản
+    if (hiddenSentences.length > 0) {
+      clean += '\n\n' + hiddenSentences.join('\n\n');
     }
-    clean = clean.trim();
+
+    // Lọc bỏ triệt để các dòng watermark
+    const lines = clean
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => {
+        if (!l) return false;
+        const lower = l.toLowerCase();
+        if (
+          lower.includes('lên google tìm kiếm') ||
+          lower.includes('metruyenh0t') ||
+          lower.includes('metruyenhot')
+        )
+          return false;
+        if (
+          lower.includes('bên khác copy sẽ thiếu') ||
+          lower.includes('copy sẽ thiếu nội dung')
+        )
+          return false;
+        if (lower.includes('content-metruyenhot')) return false;
+        return true;
+      });
+
+    clean = lines.join('\n\n').trim();
+
     if (clean.length < 100) {
       return { chapter: null, is404: false };
     }
