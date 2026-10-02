@@ -595,30 +595,12 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     }
 
     const limit = Math.min(Math.max(parseInt(maxChapters, 10) || 50, 1), 60);
-    const targetEnd = (detectedMax > 0 && isFull) ? Math.min(start + limit - 1, detectedMax) : start + limit - 1;
-
-    // Nếu truyện đã cào đủ hết các chương
-    if (detectedMax > 0 && start > detectedMax && existingNovel && existingNovel.chapters && existingNovel.chapters.length >= detectedMax) {
-      return res.json({
-        success: true,
-        message: `Bộ truyện "${title}" đã có đủ toàn bộ ${existingNovel.chapters.length} chương!`,
-        data: {
-          id: existingNovel.id,
-          title: existingNovel.title,
-          slug: existingNovel.slug,
-        },
-        chapterCount: 0,
-        totalChapters: existingNovel.chapters.length,
-        detectedMax: detectedMax,
-        reachedEnd: true,
-        nextStartChapter: existingNovel.chapters.length + 1,
-      });
-    }
+    const targetEnd = start + limit - 1;
 
     let reachedEnd = false;
 
     if (isMetruyenhot) {
-      // Crawl MeTruyenHot theo batches đồng thời 4 request (giảm từ 6 để bảo vệ RAM 512MB)
+      // Crawl MeTruyenHot theo batches đồng thời 4 request
       const concurrency = 4;
       let currentCh = start;
       let consecutive404Count = 0;
@@ -639,7 +621,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
             consecutive404Count = 0;
           } else if (r.is404) {
             consecutive404Count++;
-            if ((detectedMax > 0 && currentCh >= detectedMax) || consecutive404Count >= 2) {
+            if (consecutive404Count >= 3) {
               reachedEnd = true;
               break;
             }
@@ -673,7 +655,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
             break;
           } else if (r.is404) {
             consecutive404Count++;
-            if (consecutive404Count >= 2) {
+            if (consecutive404Count >= 3) {
               reachedEnd = true;
               break;
             }
@@ -684,7 +666,23 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       }
     }
 
-    if (chapters.length === 0 && (!existingNovel || !existingNovel.chapters || existingNovel.chapters.length === 0)) {
+    if (chapters.length === 0) {
+      if (existingNovel && existingNovel.chapters && existingNovel.chapters.length > 0) {
+        return res.json({
+          success: true,
+          message: `Bộ truyện "${title}" đã có đủ tất cả các chương hiện hành (tổng cộng ${existingNovel.chapters.length} chương)!`,
+          data: {
+            id: existingNovel.id,
+            title: existingNovel.title,
+            slug: existingNovel.slug,
+          },
+          chapterCount: 0,
+          totalChapters: existingNovel.chapters.length,
+          detectedMax: Math.max(detectedMax, existingNovel.chapters.length),
+          reachedEnd: true,
+          nextStartChapter: existingNovel.chapters.length + 1,
+        });
+      }
       return res.status(400).json({
         success: false,
         error: 'Không thể cào chương từ đường link này hoặc truyện đã bị khóa.',
@@ -723,10 +721,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     }
 
     const totalCount = novel?.chapters ? novel.chapters.length : chapters.length;
-    const isReachedEnd =
-      reachedEnd ||
-      chapters.length < limit ||
-      (detectedMax > 0 && totalCount >= detectedMax);
+    const isReachedEnd = reachedEnd || chapters.length < limit;
 
     // Kích hoạt V8 Garbage Collection giải phóng bộ nhớ ngay nếu có flag --expose-gc
     if ((global as any).gc) {
@@ -747,7 +742,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       },
       chapterCount: chapters.length,
       totalChapters: totalCount,
-      detectedMax: detectedMax || totalCount,
+      detectedMax: Math.max(detectedMax, totalCount),
       reachedEnd: isReachedEnd,
       nextStartChapter: totalCount + 1,
     });

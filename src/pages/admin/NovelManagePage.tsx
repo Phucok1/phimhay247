@@ -305,7 +305,7 @@ export const NovelManagePage: React.FC = () => {
       let currentStart = crawlStartChapter;
       let totalFetched = 0;
       const isFull = crawlLimit === 'all';
-      const targetLimit = isFull ? 2000 : Number(crawlLimit);
+      const targetLimit = isFull ? Infinity : Number(crawlLimit);
       let isDone = false;
       let lastTotalInDb = 0;
       let detectedMaxCh = 0;
@@ -316,11 +316,11 @@ export const NovelManagePage: React.FC = () => {
         text: 'Đang kết nối tới trang nguồn...',
       });
 
-      while (!isDone && totalFetched < targetLimit) {
-        const chunkSize = Math.min(30, targetLimit - totalFetched);
+      while (!isDone && (isFull || totalFetched < targetLimit)) {
+        const chunkSize = isFull ? 30 : Math.min(30, targetLimit - totalFetched);
         setCrawlProgress({
           current: totalFetched,
-          total: detectedMaxCh || (isFull ? 0 : targetLimit),
+          total: isFull ? (detectedMaxCh || 0) : targetLimit,
           text: `Đang cào các chương từ ${currentStart}... (Đã tải ${totalFetched} chương mới)`,
         });
 
@@ -333,16 +333,16 @@ export const NovelManagePage: React.FC = () => {
 
         totalFetched += res.chapterCount;
         lastTotalInDb = res.totalChapters;
-        detectedMaxCh = res.detectedMax || 0;
+        detectedMaxCh = Math.max(detectedMaxCh, res.detectedMax || 0, lastTotalInDb);
         currentStart = res.nextStartChapter || currentStart + res.chapterCount;
 
         setCrawlProgress({
           current: totalFetched,
-          total: detectedMaxCh || (isFull ? 0 : targetLimit),
+          total: isFull ? (detectedMaxCh || 0) : targetLimit,
           text: `Đã lưu đến chương ${lastTotalInDb}...`,
         });
 
-        if (res.reachedEnd || (detectedMaxCh > 0 && lastTotalInDb >= detectedMaxCh)) {
+        if (res.reachedEnd) {
           isDone = true;
           break;
         }
@@ -1010,12 +1010,14 @@ export const NovelManagePage: React.FC = () => {
                     <span>🔥 Full bộ (Cào tất cả chương đến khi hết truyện)</span>
                   </button>
                   {[
-                    { num: 20, label: '20 chương (Mẫu)' },
+                    { num: 20, label: '20 chương' },
                     { num: 50, label: '50 chương' },
                     { num: 100, label: '100 chương' },
                     { num: 200, label: '200 chương' },
                     { num: 500, label: '500 chương' },
                     { num: 1000, label: '1000 chương' },
+                    { num: 2000, label: '2000 chương' },
+                    { num: 3000, label: '3000 chương' },
                   ].map((item) => (
                     <button
                       key={item.num}
