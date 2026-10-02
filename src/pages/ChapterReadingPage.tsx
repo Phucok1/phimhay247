@@ -7,6 +7,69 @@ import { Chapter, Novel } from '../types';
 
 function cleanDisplayContent(content?: string): string {
   if (!content) return '';
+
+  // 1. Kiểm tra nếu có phần chân trang / script của MeTruyenHot lọt vào nội dung
+  const footerScriptRegex = /(?:trước\s*\n\s*đọc tiếp|nhấn mở bình luận|chính sách bảo mật|điều khoản sử dụng|website hoạt động dưới giấy phép|document\.addeventlistener|attachshadow|contents\s*=|var\s+shadowroot)/i;
+  const match = content.match(footerScriptRegex);
+
+  if (match && match.index !== undefined) {
+    const beforeJunk = content.substring(0, match.index);
+    const afterJunk = content.substring(match.index);
+
+    const cleanBefore = beforeJunk
+      .replace(/<[^>]+>/g, '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => {
+        if (!l) return false;
+        const lower = l.toLowerCase();
+        if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
+        if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
+        if (lower.includes('content-metruyenhot')) return false;
+        return true;
+      });
+
+    const junkLines = afterJunk
+      .replace(/<[^>]+>/g, '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => {
+        if (!l) return false;
+        const lower = l.toLowerCase();
+        if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
+        if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
+        if (lower.includes('content-metruyenhot')) return false;
+        if (lower === 'trước' || lower === 'sau' || lower === 'đọc tiếp' || lower === 'về đầu trang' || lower === 'nhấn mở bình luận') return false;
+        if (lower.includes('chính sách bảo mật') || lower.includes('điều khoản sử dụng') || lower.includes('thỏa thuận quyền riêng tư')) return false;
+        if (lower.includes('quy định về nội dung') || lower.includes('liên hệ') || lower.includes('website hoạt động dưới giấy phép')) return false;
+        if (lower.includes('đọc truyện không bị quảng cáo') || lower.includes('các thông tin, hình ảnh, bài đăng trên website')) return false;
+        if (lower.includes('đọc truyện online, đọc truyện chữ') || lower.includes('hỗ trợ mọi trình duyệt và')) return false;
+        if (
+          lower === 'truyện teen hay' || lower === 'ngôn tình ngược' || lower === 'đam mỹ hài' ||
+          lower === 'đam mỹ hay' || lower === 'đam mỹ h văn' || lower === 'ngôn tình hay' ||
+          lower === 'truyện full' || lower === 'tiên hiệp hay' || lower === 'truyện hot' || lower === 'kiếm hiệp hay'
+        ) return false;
+        if (lower.includes('document.addeventlistener') || lower.includes('attachshadow') || lower.includes('createelement')) return false;
+        if (lower.includes('contents =') || lower.includes('innerhtml') || lower.includes('shadowroot')) return false;
+        if (lower.includes('function()') || lower.includes('var ey') || lower.includes('var f=[]') || lower.includes('var a=0')) return false;
+        if (lower.startsWith(';var ') || lower.startsWith('var ') || lower.includes('::before{content:attr')) return false;
+        if (lower === "';" || lower === "'" || lower === '";' || lower === '"') return false;
+        return true;
+      });
+
+    const endChIdx = junkLines.findIndex((l) => /^hết chương/i.test(l));
+    let orderedSentences: string[] = [];
+    if (endChIdx !== -1) {
+      const contentSLines = junkLines.slice(0, endChIdx + 1);
+      const trailingLines = junkLines.slice(endChIdx + 1);
+      orderedSentences = [...trailingLines, ...contentSLines];
+    } else {
+      orderedSentences = junkLines;
+    }
+
+    return [...cleanBefore, ...orderedSentences].join('\n\n');
+  }
+
   return content
     .replace(/<p[^>]*class="[^"]*(?:mshow-hb|ms-k|ads)[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
     .replace(/<div id="content-metruyenhot"[\s\S]*?<\/div>/gi, '')
@@ -20,6 +83,13 @@ function cleanDisplayContent(content?: string): string {
       if (lower.includes('lên google tìm kiếm') || lower.includes('metruyenh0t') || lower.includes('metruyenhot')) return false;
       if (lower.includes('bên khác copy sẽ thiếu') || lower.includes('copy sẽ thiếu nội dung')) return false;
       if (lower.includes('content-metruyenhot')) return false;
+      if (lower === 'trước' || lower === 'sau' || lower === 'đọc tiếp' || lower === 'về đầu trang' || lower === 'nhấn mở bình luận') return false;
+      if (lower.includes('chính sách bảo mật') || lower.includes('điều khoản sử dụng') || lower.includes('thỏa thuận quyền riêng tư')) return false;
+      if (lower.includes('quy định về nội dung') || lower.includes('liên hệ') || lower.includes('website hoạt động dưới giấy phép')) return false;
+      if (lower.includes('đọc truyện không bị quảng cáo') || lower.includes('các thông tin, hình ảnh, bài đăng trên website')) return false;
+      if (lower.includes('document.addeventlistener') || lower.includes('attachshadow')) return false;
+      if (lower.startsWith(';var ') || lower.startsWith('var ') || lower.includes('::before{content:attr')) return false;
+      if (lower === "';" || lower === "'" || lower === '";' || lower === '"') return false;
       return true;
     })
     .join('\n\n');
