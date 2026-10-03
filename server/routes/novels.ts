@@ -1055,9 +1055,12 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       existingNovel.chapters &&
       existingNovel.chapters.length > 0
     ) {
-      const maxExisting = existingNovel.chapters.reduce((max, c) => Math.max(max, c.chapterNumber), 0);
-      if (maxExisting > 0) {
-        start = maxExisting + 1;
+      const hasChapter1 = existingNovel.chapters.some((c) => c.chapterNumber === 1);
+      if (hasChapter1) {
+        const maxExisting = existingNovel.chapters.reduce((max, c) => Math.max(max, c.chapterNumber), 0);
+        if (maxExisting > 0) {
+          start = maxExisting + 1;
+        }
       }
     }
 

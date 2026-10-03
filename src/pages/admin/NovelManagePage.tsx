@@ -402,7 +402,7 @@ export const NovelManagePage: React.FC = () => {
 
         let res: any = null;
         let retryCount = 0;
-        const maxRetries = 3;
+        const maxRetries = 5;
 
         while (retryCount <= maxRetries) {
           try {
@@ -410,14 +410,14 @@ export const NovelManagePage: React.FC = () => {
             break;
           } catch (chunkErr: any) {
             const status = chunkErr.response?.status;
-            if ((status === 502 || status === 503 || status === 504 || !status) && retryCount < maxRetries) {
+            if ((status === 502 || status === 503 || status === 504 || status === 429 || !status) && retryCount < maxRetries) {
               retryCount++;
               setCrawlProgress({
                 current: lastTotalInDb || totalFetched,
                 total: isFull ? (detectedMaxCh || 0) : targetLimit,
-                text: `Máy chủ đang bận hoặc giải phóng RAM (Lỗi ${status || 'kết nối'}), đang tự động thử lại lần ${retryCount}/${maxRetries} sau 4 giây...`,
+                text: `Máy chủ đang bận khởi động hoặc giải phóng RAM (Lỗi HTTP ${status || 'kết nối'}), đang tự động thử lại lần ${retryCount}/${maxRetries} sau 5 giây...`,
               });
-              await new Promise((r) => setTimeout(r, 4000));
+              await new Promise((r) => setTimeout(r, 5000));
             } else {
               throw chunkErr;
             }
