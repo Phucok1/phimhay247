@@ -64,9 +64,9 @@ router.get('/', (req: Request, res: Response) => {
       status: n.status,
       viewCount: n.viewCount || 0,
       linkedMovieSlug: n.linkedMovieSlug,
-      totalChapters: n.chapters ? n.chapters.length : 0,
-      latestChapter: n.chapters && n.chapters.length > 0 ? n.chapters[n.chapters.length - 1].chapterNumber : 0,
-      latestChapterTitle: n.chapters && n.chapters.length > 0 ? n.chapters[n.chapters.length - 1].title : '',
+      totalChapters: n.chapterCount || 0,
+      latestChapter: n.latestChapter || 0,
+      latestChapterTitle: n.latestChapterTitle || '',
       createdAt: n.createdAt,
       updatedAt: n.updatedAt,
     }));
@@ -90,7 +90,7 @@ router.get('/:slug', (req: Request, res: Response) => {
     db.incrementNovelViews(slug);
 
     // Danh sách mục lục các chương
-    const chapterList = (novel.chapters || []).map((c) => ({
+    const chapterList = db.getChapters(novel.id).map((c) => ({
       chapterNumber: c.chapterNumber,
       title: c.title,
       createdAt: c.createdAt,
@@ -120,7 +120,7 @@ router.get('/:slug/chapters/:chapterNumber', async (req: Request, res: Response)
     }
 
     const cNum = parseInt(chapterNumber.toString().replace(/^chuong-/i, '').replace(/\D/g, ''), 10);
-    const chapters = novel.chapters || [];
+    const chapters = db.getChapters(novel.id);
     const chapterIndex = chapters.findIndex((c) => c.chapterNumber === cNum);
 
     if (chapterIndex === -1) {
@@ -149,7 +149,8 @@ router.get('/:slug/chapters/:chapterNumber', async (req: Request, res: Response)
             currentChapter.title = repairedChapter.title;
           }
           // Lưu lại vào DB để các lần đọc tiếp theo tải siêu nhanh
-          db.updateNovel(novel.id, { chapters: novel.chapters, sourceUrl });
+          db.saveChapters(novel.id, chapters);
+          if (!novel.sourceUrl) db.updateNovel(novel.id, { sourceUrl });
         }
       } catch (err) {
         // Nếu lỗi mạng, tiếp tục dùng nội dung có sẵn
@@ -1041,6 +1042,8 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     const existingNovel = existingNovels.find(
       (n) => (slug && n.slug === slug) || (title && n.title.toLowerCase().trim() === title.toLowerCase().trim())
     );
+    // Chỉ đọc file chương của đúng bộ truyện này (không nạp toàn bộ kho truyện vào RAM)
+    const existingChapters = existingNovel ? db.getChapters(existingNovel.id) : [];
 
     const isFull = isFullFlag === true || maxChapters === 'all' || maxChapters === 'full' || parseInt(maxChapters, 10) >= 999;
     let start = Math.max(parseInt(startChapter, 10) || 1, 1);
@@ -1052,12 +1055,11 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       isFull &&
       parseInt(startChapter, 10) === 1 &&
       existingNovel &&
-      existingNovel.chapters &&
-      existingNovel.chapters.length > 0
+      existingChapters.length > 0
     ) {
-      const hasChapter1 = existingNovel.chapters.some((c) => c.chapterNumber === 1);
+      const hasChapter1 = existingChapters.some((c) => c.chapterNumber === 1);
       if (hasChapter1) {
-        const maxExisting = existingNovel.chapters.reduce((max, c) => Math.max(max, c.chapterNumber), 0);
+        const maxExisting = existingChapters.reduce((max, c) => Math.max(max, c.chapterNumber), 0);
         if (maxExisting > 0) {
           start = maxExisting + 1;
         }
@@ -1168,20 +1170,20 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     }
 
     if (chapters.length === 0) {
-      if (existingNovel && existingNovel.chapters && existingNovel.chapters.length > 0) {
+      if (existingNovel && existingChapters.length > 0) {
         return res.json({
           success: true,
-          message: `Bộ truyện "${title}" đã có đủ tất cả các chương hiện hành (tổng cộng ${existingNovel.chapters.length} chương)!`,
+          message: `Bộ truyện "${title}" đã có đủ tất cả các chương hiện hành (tổng cộng ${existingChapters.length} chương)!`,
           data: {
             id: existingNovel.id,
             title: existingNovel.title,
             slug: existingNovel.slug,
           },
           chapterCount: 0,
-          totalChapters: existingNovel.chapters.length,
-          detectedMax: Math.max(detectedMax, existingNovel.chapters.length),
+          totalChapters: existingChapters.length,
+          detectedMax: Math.max(detectedMax, existingChapters.length),
           reachedEnd: true,
-          nextStartChapter: existingNovel.chapters.length + 1,
+          nextStartChapter: existingChapters.length + 1,
         });
       }
       return res.status(400).json({
@@ -1194,7 +1196,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
     if (existingNovel) {
       // Ghép nối hoặc ghi đè các chương vào truyện đã có
       const chapterMap = new Map<number, Chapter>();
-      (existingNovel.chapters || []).forEach((c) => chapterMap.set(c.chapterNumber, c));
+      existingChapters.forEach((c) => chapterMap.set(c.chapterNumber, c));
       chapters.forEach((c) => chapterMap.set(c.chapterNumber, c));
 
       const mergedChapters = Array.from(chapterMap.values()).sort(
@@ -1223,7 +1225,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
       });
     }
 
-    const totalCount = novel?.chapters ? novel.chapters.length : chapters.length;
+    const totalCount = novel?.chapterCount ?? chapters.length;
     const isReachedEnd = reachedEnd || chapters.length < limit;
 
     // Kích hoạt V8 Garbage Collection giải phóng bộ nhớ ngay nếu có flag --expose-gc
@@ -1259,18 +1261,27 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
   }
 });
 
-// GET /api/novels/admin/export - Tải toàn bộ truyện và chương về file JSON
-router.get('/admin/export', authenticateAdmin, (req: Request, res: Response) => {
+// GET /api/novels/admin/export - Tải toàn bộ truyện và chương về file JSON (dạng stream, tiết kiệm RAM)
+router.get('/admin/export', authenticateAdmin, async (req: Request, res: Response) => {
   try {
-    const novels = db.getNovels();
     res.setHeader('Content-Type', 'application/json');
     res.setHeader(
       'Content-Disposition',
       `attachment; filename=phimhay247_truyen_${new Date().toISOString().slice(0, 10)}.json`
     );
-    res.send(JSON.stringify(novels));
+    const write = (chunk: string) =>
+      new Promise<void>((resolve) => {
+        if (!res.write(chunk)) res.once('drain', () => resolve());
+        else resolve();
+      });
+    await db.streamNovelsWithChapters(write);
+    res.end();
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: error.message });
+    } else {
+      res.end();
+    }
   }
 });
 

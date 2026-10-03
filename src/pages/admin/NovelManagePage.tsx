@@ -402,7 +402,7 @@ export const NovelManagePage: React.FC = () => {
 
         let res: any = null;
         let retryCount = 0;
-        const maxRetries = 5;
+        const maxRetries = 8;
 
         while (retryCount <= maxRetries) {
           try {
@@ -410,14 +410,26 @@ export const NovelManagePage: React.FC = () => {
             break;
           } catch (chunkErr: any) {
             const status = chunkErr.response?.status;
-            if ((status === 502 || status === 503 || status === 504 || status === 429 || !status) && retryCount < maxRetries) {
+            const retryable = status === 429 || status === 500 || status === 502 || status === 503 || status === 504 || !status;
+            if (retryable && retryCount < maxRetries) {
               retryCount++;
-              setCrawlProgress({
-                current: lastTotalInDb || totalFetched,
-                total: isFull ? (detectedMaxCh || 0) : targetLimit,
-                text: `Máy chủ đang bận khởi động hoặc giải phóng RAM (Lỗi HTTP ${status || 'kết nối'}), đang tự động thử lại lần ${retryCount}/${maxRetries} sau 5 giây...`,
-              });
-              await new Promise((r) => setTimeout(r, 5000));
+              // 429 = bị giới hạn tần suất -> chờ lâu hơn (ưu tiên header Retry-After nếu có)
+              const retryAfterHeader = Number(chunkErr.response?.headers?.['retry-after']);
+              const waitSec =
+                status === 429
+                  ? Math.min(Number.isFinite(retryAfterHeader) && retryAfterHeader > 0 ? retryAfterHeader : 20 * retryCount, 120)
+                  : Math.min(5 * retryCount, 30);
+              for (let s = waitSec; s > 0; s--) {
+                setCrawlProgress({
+                  current: lastTotalInDb || totalFetched,
+                  total: isFull ? (detectedMaxCh || 0) : targetLimit,
+                  text:
+                    status === 429
+                      ? `Máy chủ yêu cầu giảm tốc (HTTP 429). Tự động thử lại lần ${retryCount}/${maxRetries} sau ${s} giây...`
+                      : `Máy chủ đang bận/khởi động lại (Lỗi ${status || 'kết nối'}). Tự động thử lại lần ${retryCount}/${maxRetries} sau ${s} giây...`,
+                });
+                await new Promise((r) => setTimeout(r, 1000));
+              }
             } else {
               throw chunkErr;
             }

@@ -149,26 +149,28 @@ export function repairTruncatedJson(rawText: string): any {
   }
 }
 
-// GET /api/settings/export-db (Tải toàn bộ database json về máy dưới dạng stream 0 MB RAM)
-router.get('/export-db', (req: Request, res: Response) => {
+// GET /api/settings/export-db (Tải toàn bộ database json về máy dưới dạng stream, gồm cả chương truyện)
+router.get('/export-db', async (req: Request, res: Response) => {
   try {
     db.save(); // Ghi toàn bộ dữ liệu mới nhất trong RAM xuống đĩa
-    const filePath = db.getDbFilePath();
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, error: 'Database file không tồn tại.' });
-    }
-    const stat = fs.statSync(filePath);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Content-Length', stat.size);
     res.setHeader(
       'Content-Disposition',
       `attachment; filename=phimhay247_db_${new Date().toISOString().slice(0, 10)}.json`
     );
-
-    const stream = fs.createReadStream(filePath);
-    stream.pipe(res);
+    const write = (chunk: string) =>
+      new Promise<void>((resolve) => {
+        if (!res.write(chunk)) res.once('drain', () => resolve());
+        else resolve();
+      });
+    await db.streamFullDatabase(write);
+    res.end();
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: error.message });
+    } else {
+      res.end();
+    }
   }
 });
 

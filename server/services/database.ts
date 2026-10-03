@@ -150,7 +150,10 @@ export interface Novel {
   viewCount: number;
   linkedMovieSlug?: string;
   sourceUrl?: string;
-  chapters: Chapter[];
+  chapterCount?: number;
+  latestChapter?: number;
+  latestChapterTitle?: string;
+  chapters?: Chapter[]; // Chỉ dùng tạm khi nhập/xuất; chương thật lưu ở server/data/novels/<id>.json
   createdAt: string;
   updatedAt: string;
 }
@@ -170,6 +173,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.resolve(__dirname, '../data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const NOVELS_DIR = path.join(DATA_DIR, 'novels');
 
 // Hàm tạo slug tiếng Việt chuẩn SEO
 export function generateSlug(text: string): string {
@@ -488,11 +492,12 @@ class DatabaseService {
   }
 
   private loadData(): DatabaseSchema {
+    let data: DatabaseSchema;
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
         const parsed = JSON.parse(raw);
-        return {
+        data = {
           movies: parsed.movies || [],
           episodes: parsed.episodes || [],
           categories: parsed.categories || DEFAULT_CATEGORIES,
@@ -504,22 +509,151 @@ class DatabaseService {
         };
       } catch (err) {
         console.error('Lỗi khi đọc file db.json, khởi tạo lại dữ liệu mặc định:', err);
+        data = {
+          movies: [],
+          episodes: [],
+          categories: DEFAULT_CATEGORIES,
+          settings: DEFAULT_SETTINGS,
+          chatMessages: [],
+          feedbacks: [],
+          memberSubmissions: [],
+          novels: DEFAULT_NOVELS,
+        };
+      }
+    } else {
+      data = {
+        movies: [],
+        episodes: [],
+        categories: DEFAULT_CATEGORIES,
+        settings: DEFAULT_SETTINGS,
+        chatMessages: [],
+        feedbacks: [],
+        memberSubmissions: [],
+        novels: DEFAULT_NOVELS,
+      };
+      this.saveDataDirect(data);
+    }
+    this.migrateChaptersIfNeeded(data);
+    return data;
+  }
+
+  private migrateChaptersIfNeeded(data: DatabaseSchema) {
+    if (!fs.existsSync(NOVELS_DIR)) {
+      try {
+        fs.mkdirSync(NOVELS_DIR, { recursive: true });
+      } catch (e) {}
+    }
+    let migrated = false;
+    if (Array.isArray(data.novels)) {
+      for (const n of data.novels) {
+        if (Array.isArray(n.chapters)) {
+          // Truyện còn chứa chương trực tiếp trong db.json -> tách ra file riêng
+          const chs = n.chapters;
+          delete n.chapters;
+          this.writeChaptersFile(n, chs);
+          migrated = true;
+        } else if (n.chapterCount === undefined || n.latestChapter === undefined) {
+          const chs = this.readChaptersFile(n.id);
+          this.applyChapterMeta(n, chs);
+          migrated = true;
+        }
       }
     }
+    if (migrated) {
+      console.log('[DATABASE] Đã tách riêng chương truyện sang server/data/novels/*.json để tối ưu RAM!');
+      this.saveDataDirect(data);
+    }
+  }
 
-    // Khởi tạo mới nếu chưa có
-    const initialData: DatabaseSchema = {
-      movies: [],
-      episodes: [],
-      categories: DEFAULT_CATEGORIES,
-      settings: DEFAULT_SETTINGS,
-      chatMessages: [],
-      feedbacks: [],
-      memberSubmissions: [],
-      novels: DEFAULT_NOVELS,
-    };
-    this.saveDataDirect(initialData);
-    return initialData;
+  // ---------- Lưu trữ chương theo từng bộ truyện (mỗi truyện 1 file) ----------
+  private chapterCache = new Map<string, Chapter[]>();
+  private static CHAPTER_CACHE_SIZE = 2;
+
+  private chapterFilePath(novelId: string): string {
+    const safeId = novelId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    return path.join(NOVELS_DIR, `${safeId}.json`);
+  }
+
+  private readChaptersFile(novelId: string): Chapter[] {
+    const file = this.chapterFilePath(novelId);
+    if (!fs.existsSync(file)) return [];
+    try {
+      const parsed = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.error(`Lỗi đọc file chương ${file}:`, e);
+      return [];
+    }
+  }
+
+  private applyChapterMeta(novel: Novel, chapters: Chapter[]) {
+    novel.chapterCount = chapters.length;
+    const last = chapters.length > 0 ? chapters[chapters.length - 1] : null;
+    novel.latestChapter = last ? last.chapterNumber : 0;
+    novel.latestChapterTitle = last ? last.title : '';
+  }
+
+  private writeChaptersFile(novel: Novel, chapters: Chapter[]) {
+    if (!fs.existsSync(NOVELS_DIR)) fs.mkdirSync(NOVELS_DIR, { recursive: true });
+    chapters.sort((a, b) => a.chapterNumber - b.chapterNumber);
+    const file = this.chapterFilePath(novel.id);
+    const tmp = `${file}.tmp`;
+    // Ghi ra file tạm rồi đổi tên để không bao giờ để lại file hỏng nếu tiến trình bị ngắt giữa chừng
+    fs.writeFileSync(tmp, JSON.stringify(chapters), 'utf-8');
+    fs.renameSync(tmp, file);
+    this.applyChapterMeta(novel, chapters);
+    this.cacheChapters(novel.id, chapters);
+  }
+
+  private cacheChapters(novelId: string, chapters: Chapter[]) {
+    this.chapterCache.delete(novelId);
+    this.chapterCache.set(novelId, chapters);
+    while (this.chapterCache.size > DatabaseService.CHAPTER_CACHE_SIZE) {
+      const oldest = this.chapterCache.keys().next().value;
+      if (oldest === undefined) break;
+      this.chapterCache.delete(oldest);
+    }
+  }
+
+  /** Lấy toàn bộ chương (kèm nội dung) của 1 bộ truyện */
+  public getChapters(novelId: string): Chapter[] {
+    const cached = this.chapterCache.get(novelId);
+    if (cached) {
+      this.cacheChapters(novelId, cached); // đánh dấu vừa dùng
+      return cached;
+    }
+    const chs = this.readChaptersFile(novelId);
+    this.cacheChapters(novelId, chs);
+    return chs;
+  }
+
+  /** Ghi đè toàn bộ danh sách chương của 1 bộ truyện */
+  public saveChapters(novelId: string, chapters: Chapter[]): boolean {
+    const novel = this.getNovelById(novelId);
+    if (!novel) return false;
+    this.writeChaptersFile(novel, chapters);
+    novel.updatedAt = new Date().toISOString();
+    this.save();
+    return true;
+  }
+
+  /** Nội dung JSON thô của file chương (dùng cho xuất backup dạng stream) */
+  public getChaptersRawJson(novelId: string): string {
+    const file = this.chapterFilePath(novelId);
+    if (!fs.existsSync(file)) return '[]';
+    try {
+      return fs.readFileSync(file, 'utf-8') || '[]';
+    } catch (e) {
+      return '[]';
+    }
+  }
+
+  private deleteChaptersFile(novelId: string) {
+    this.chapterCache.delete(novelId);
+    const file = this.chapterFilePath(novelId);
+    try {
+      if (fs.existsSync(file)) fs.unlinkSync(file);
+    } catch (e) {}
   }
 
   private saveDataDirect(data: DatabaseSchema) {
@@ -904,10 +1038,36 @@ class DatabaseService {
     return this.data;
   }
 
+  /** Ghi mảng JSON các bộ truyện KÈM đầy đủ chương, từng truyện một (không dựng cả chuỗi lớn trong RAM) */
+  public async streamNovelsWithChapters(write: (chunk: string) => Promise<void> | void): Promise<void> {
+    const novels = this.data.novels || [];
+    await write('[');
+    for (let i = 0; i < novels.length; i++) {
+      const { chapters: _ignored, ...meta } = novels[i];
+      const metaJson = JSON.stringify(meta);
+      // Bỏ dấu '}' cuối của meta rồi nối thêm trường chapters lấy nguyên văn từ file
+      await write(`${i > 0 ? ',' : ''}${metaJson.slice(0, -1)},"chapters":`);
+      await write(this.getChaptersRawJson(meta.id));
+      await write('}');
+    }
+    await write(']');
+  }
+
+  /** Ghi toàn bộ database (phim, tập, cài đặt, truyện + chương) dạng stream */
+  public async streamFullDatabase(write: (chunk: string) => Promise<void> | void): Promise<void> {
+    const { novels: _n, ...rest } = this.data;
+    const restJson = JSON.stringify(rest);
+    await write(`${restJson.slice(0, -1)}${restJson.length > 2 ? ',' : ''}"novels":`);
+    await this.streamNovelsWithChapters(write);
+    await write('}');
+  }
+
   public importDatabase(newData: any): boolean {
     if (!newData || !Array.isArray(newData.movies) || !Array.isArray(newData.episodes)) {
       return false;
     }
+    const importedNovels: Novel[] | null =
+      Array.isArray(newData.novels) && newData.novels.length > 0 ? newData.novels : null;
     this.data = {
       movies: newData.movies,
       episodes: newData.episodes,
@@ -916,8 +1076,9 @@ class DatabaseService {
       chatMessages: Array.isArray(newData.chatMessages) ? newData.chatMessages : (this.data.chatMessages || []),
       feedbacks: Array.isArray(newData.feedbacks) ? newData.feedbacks : (this.data.feedbacks || []),
       memberSubmissions: Array.isArray(newData.memberSubmissions) ? newData.memberSubmissions : (this.data.memberSubmissions || []),
-      novels: Array.isArray(newData.novels) && newData.novels.length > 0 ? newData.novels : (this.data.novels || DEFAULT_NOVELS),
+      novels: importedNovels ? this.prepareImportedNovels(importedNovels) : (this.data.novels || DEFAULT_NOVELS),
     };
+    this.migrateChaptersIfNeeded(this.data);
     this.save();
     return true;
   }
@@ -928,11 +1089,26 @@ class DatabaseService {
 
     const novelMap = new Map<string, Novel>();
     this.data.novels.forEach((n) => novelMap.set(n.slug || n.id, n));
-    novels.forEach((n) => novelMap.set(n.slug || n.id, n));
+    this.prepareImportedNovels(novels).forEach((n) => novelMap.set(n.slug || n.id, n));
 
     this.data.novels = Array.from(novelMap.values());
+    this.migrateChaptersIfNeeded(this.data);
     this.save();
     return true;
+  }
+
+  /** Truyện nhập vào không kèm chương -> xóa metadata cũ để tính lại từ file chương đang có trên đĩa */
+  private prepareImportedNovels(novels: Novel[]): Novel[] {
+    return novels.map((n) => {
+      if (!Array.isArray(n.chapters)) {
+        const copy = { ...n };
+        delete copy.chapterCount;
+        delete copy.latestChapter;
+        delete copy.latestChapterTitle;
+        return copy;
+      }
+      return n;
+    });
   }
 
   // --- CHAT MESSAGES (Tự động xóa sau 7 ngày) ---
@@ -1145,7 +1321,8 @@ class DatabaseService {
   // ==================== NOVELS (TRUYỆN CHỮ) ====================
   public getNovels(filter?: { category?: string; query?: string }): Novel[] {
     if (!this.data.novels || this.data.novels.length === 0) {
-      this.data.novels = DEFAULT_NOVELS;
+      this.data.novels = JSON.parse(JSON.stringify(DEFAULT_NOVELS));
+      this.migrateChaptersIfNeeded(this.data);
       this.save();
     }
     let list = [...this.data.novels];
@@ -1166,7 +1343,8 @@ class DatabaseService {
 
   public getNovelBySlug(slug: string): Novel | null {
     if (!this.data.novels || this.data.novels.length === 0) {
-      this.data.novels = DEFAULT_NOVELS;
+      this.data.novels = JSON.parse(JSON.stringify(DEFAULT_NOVELS));
+      this.migrateChaptersIfNeeded(this.data);
       this.save();
     }
     return this.data.novels.find((n) => n.slug === slug) || null;
@@ -1195,11 +1373,11 @@ class DatabaseService {
       viewCount: 0,
       linkedMovieSlug: novelData.linkedMovieSlug || '',
       sourceUrl: novelData.sourceUrl || '',
-      chapters: novelData.chapters || [],
       createdAt: now,
       updatedAt: now,
     };
 
+    this.writeChaptersFile(newNovel, [...(novelData.chapters || [])]);
     this.data.novels.unshift(newNovel);
     this.save();
     return newNovel;
@@ -1210,15 +1388,20 @@ class DatabaseService {
     const index = this.data.novels.findIndex((n) => n.id === id);
     if (index === -1) return null;
 
+    const { chapters: newChapters, ...metaUpdate } = update;
     const existing = this.data.novels[index];
     const updated: Novel = {
       ...existing,
-      ...update,
+      ...metaUpdate,
       id: existing.id,
       updatedAt: new Date().toISOString(),
     };
+    delete updated.chapters;
     if (update.title && !update.slug) {
       updated.slug = generateSlug(update.title);
+    }
+    if (Array.isArray(newChapters)) {
+      this.writeChaptersFile(updated, newChapters);
     }
     this.data.novels[index] = updated;
     this.save();
@@ -1230,58 +1413,37 @@ class DatabaseService {
     const index = this.data.novels.findIndex((n) => n.id === id);
     if (index === -1) return false;
     this.data.novels.splice(index, 1);
+    this.deleteChaptersFile(id);
     this.save();
     return true;
   }
 
   public addChapter(novelId: string, chapter: Chapter): boolean {
-    if (!this.data.novels) return false;
-    const novel = this.data.novels.find((n) => n.id === novelId);
-    if (!novel) return false;
-
-    if (!novel.chapters) novel.chapters = [];
-    const existIdx = novel.chapters.findIndex((c) => c.chapterNumber === chapter.chapterNumber);
-    if (existIdx !== -1) {
-      novel.chapters[existIdx] = { ...chapter, createdAt: new Date().toISOString() };
-    } else {
-      novel.chapters.push({ ...chapter, createdAt: new Date().toISOString() });
-    }
-    novel.chapters.sort((a, b) => a.chapterNumber - b.chapterNumber);
-    novel.updatedAt = new Date().toISOString();
-    this.save();
-    return true;
+    return this.importChapters(novelId, [chapter]);
   }
 
   public importChapters(novelId: string, chapters: Chapter[]): boolean {
     if (!this.data.novels || !chapters || chapters.length === 0) return false;
-    const novel = this.data.novels.find((n) => n.id === novelId);
+    const novel = this.getNovelById(novelId);
     if (!novel) return false;
 
-    if (!novel.chapters) novel.chapters = [];
+    const map = new Map<number, Chapter>();
+    this.getChapters(novelId).forEach((c) => map.set(c.chapterNumber, c));
+    const now = new Date().toISOString();
     for (const ch of chapters) {
-      const existIdx = novel.chapters.findIndex((c) => c.chapterNumber === ch.chapterNumber);
-      if (existIdx !== -1) {
-        novel.chapters[existIdx] = { ...ch, createdAt: new Date().toISOString() };
-      } else {
-        novel.chapters.push({ ...ch, createdAt: new Date().toISOString() });
-      }
+      map.set(ch.chapterNumber, { ...ch, createdAt: now });
     }
-    novel.chapters.sort((a, b) => a.chapterNumber - b.chapterNumber);
-    novel.updatedAt = new Date().toISOString();
-    this.save();
-    return true;
+    return this.saveChapters(novelId, Array.from(map.values()));
   }
 
   public deleteChapter(novelId: string, chapterNumber: number): boolean {
-    if (!this.data.novels) return false;
-    const novel = this.data.novels.find((n) => n.id === novelId);
-    if (!novel || !novel.chapters) return false;
-    const idx = novel.chapters.findIndex((c) => c.chapterNumber === chapterNumber);
+    const novel = this.getNovelById(novelId);
+    if (!novel) return false;
+    const chapters = this.getChapters(novelId);
+    const idx = chapters.findIndex((c) => c.chapterNumber === chapterNumber);
     if (idx === -1) return false;
-    novel.chapters.splice(idx, 1);
-    novel.updatedAt = new Date().toISOString();
-    this.save();
-    return true;
+    const remaining = chapters.filter((_, i) => i !== idx);
+    return this.saveChapters(novelId, remaining);
   }
 
   public incrementNovelViews(slug: string): void {
