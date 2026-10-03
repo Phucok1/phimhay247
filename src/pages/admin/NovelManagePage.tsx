@@ -393,16 +393,38 @@ export const NovelManagePage: React.FC = () => {
       });
 
       while (!isDone && (isFull || totalFetched < targetLimit)) {
-        const chunkSize = isFull ? 30 : Math.min(30, targetLimit - totalFetched);
+        const chunkSize = isFull ? 20 : Math.min(20, targetLimit - totalFetched);
         setCrawlProgress({
           current: lastTotalInDb || totalFetched,
           total: isFull ? (detectedMaxCh || 0) : targetLimit,
           text: `Đang cào các chương từ ${currentStart}... (Đã tải ${totalFetched} chương mới)`,
         });
 
-        const res = await crawlWebnovelStory(crawlUrl.trim(), chunkSize, currentStart, isFull, crawlOverwrite);
+        let res: any = null;
+        let retryCount = 0;
+        const maxRetries = 3;
 
-        if (!res.success || res.chapterCount === 0) {
+        while (retryCount <= maxRetries) {
+          try {
+            res = await crawlWebnovelStory(crawlUrl.trim(), chunkSize, currentStart, isFull, crawlOverwrite);
+            break;
+          } catch (chunkErr: any) {
+            const status = chunkErr.response?.status;
+            if ((status === 502 || status === 503 || status === 504 || !status) && retryCount < maxRetries) {
+              retryCount++;
+              setCrawlProgress({
+                current: lastTotalInDb || totalFetched,
+                total: isFull ? (detectedMaxCh || 0) : targetLimit,
+                text: `Máy chủ đang bận hoặc giải phóng RAM (Lỗi ${status || 'kết nối'}), đang tự động thử lại lần ${retryCount}/${maxRetries} sau 4 giây...`,
+              });
+              await new Promise((r) => setTimeout(r, 4000));
+            } else {
+              throw chunkErr;
+            }
+          }
+        }
+
+        if (!res || !res.success || res.chapterCount === 0) {
           isDone = true;
           break;
         }
@@ -435,8 +457,8 @@ export const NovelManagePage: React.FC = () => {
           break;
         }
 
-        // Nghỉ nhẹ 600ms giữa các đợt để server V8 Garbage Collection thu hồi RAM
-        await new Promise((r) => setTimeout(r, 600));
+        // Nghỉ 1200ms giữa các đợt để server V8 Garbage Collection thu hồi RAM hoàn toàn
+        await new Promise((r) => setTimeout(r, 1200));
       }
 
       alert(

@@ -9,10 +9,10 @@
     "client:build": "tsc -b && vite build",
     "client:preview": "vite preview",
     "server:dev": "tsx watch server/index.ts",
-    "server:start": "node --max-old-space-size=400 --expose-gc node_modules/tsx/dist/cli.mjs server/index.ts",
+    "server:start": "node --max-old-space-size=460 --expose-gc node_modules/tsx/dist/cli.mjs server/index.ts",
     "build": "tsc -b && vite build",
     "sync": "node scripts/sync_from_live.js",
-    "start": "node --max-old-space-size=400 --expose-gc node_modules/tsx/dist/cli.mjs server/index.ts"
+    "start": "node --max-old-space-size=460 --expose-gc node_modules/tsx/dist/cli.mjs server/index.ts"
   },
   "dependencies": {
     "axios": "^1.7.9",

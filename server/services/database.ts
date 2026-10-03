@@ -525,6 +525,11 @@ class DatabaseService {
   private saveDataDirect(data: DatabaseSchema) {
     try {
       fs.writeFileSync(DB_FILE, JSON.stringify(data), 'utf-8');
+      if ((global as any).gc) {
+        try {
+          (global as any).gc();
+        } catch (e) {}
+      }
     } catch (err) {
       console.error('Lỗi khi ghi dữ liệu ra db.json:', err);
     }

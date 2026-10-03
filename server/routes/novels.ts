@@ -1088,7 +1088,7 @@ router.post('/admin/crawl-webnovel', authenticateAdmin, async (req: Request, res
             consecutive404Count = 0;
           } else if (r.is404) {
             consecutive404Count++;
-            if (consecutive404Count >= 2) {
+            if (consecutive404Count >= 3) {
               reachedEnd = true;
               break;
             }
