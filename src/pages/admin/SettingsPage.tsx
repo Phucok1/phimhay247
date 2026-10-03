@@ -535,6 +535,18 @@ export const SettingsPage: React.FC = () => {
                     try {
                       const text = await file.text();
                       const { data: json, wasRepaired } = parseOrRepairJson(text);
+                      
+                      // Bóc tách chapters ra khỏi JSON chính để tránh lỗi Payload Too Large (200MB) của Express
+                      const novelsWithChapters: any[] = [];
+                      if (Array.isArray(json.novels)) {
+                        for (const novel of json.novels) {
+                          if (Array.isArray(novel.chapters) && novel.chapters.length > 0) {
+                            novelsWithChapters.push({ id: novel.id, chapters: novel.chapters });
+                            delete novel.chapters;
+                          }
+                        }
+                      }
+
                       const res = await fetch('/api/settings/import-db', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -547,14 +559,34 @@ export const SettingsPage: React.FC = () => {
                         const errText = await res.text();
                         throw new Error(errText || 'Lỗi phản hồi từ máy chủ.');
                       }
+                      
+                      if (!result.success) {
+                        throw new Error(result.error || 'Lỗi khi khôi phục gốc.');
+                      }
+
+                      // Import các chương rời
+                      const token = localStorage.getItem('adminToken') || adminKey || 'admin-session-token';
+                      for (let i = 0; i < novelsWithChapters.length; i++) {
+                        const n = novelsWithChapters[i];
+                        try {
+                          const cRes = await fetch(`/api/novels/admin/${n.id}/chapters`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'x-admin-key': token },
+                            body: JSON.stringify({ chapters: n.chapters, replace: true })
+                          });
+                          const cData = await cRes.json();
+                          if (!cData.success) console.error('Lỗi import chương cho ' + n.id, cData.error);
+                        } catch (err) {
+                          console.error('Lỗi mạng khi import chương ' + n.id, err);
+                        }
+                      }
+
                       if (result.success) {
                         const repairMsg = wasRepaired
                           ? '\n(Hệ thống phát hiện file backup trước đó bị ngắt nửa chừng khi tải về và đã tự động hàn gắn & khôi phục dữ liệu thành công!)'
                           : '';
                         alert(`Khôi phục database (phim, tập và truyện) thành công!${repairMsg} Trang web sẽ được tải lại.`);
                         window.location.reload();
-                      } else {
-                        alert(result.error || 'Lỗi khi khôi phục.');
                       }
                     } catch (err: any) {
                       alert('Lỗi khôi phục: ' + (err.message || 'File JSON không hợp lệ'));

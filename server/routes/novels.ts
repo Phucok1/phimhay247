@@ -244,11 +244,11 @@ router.delete('/admin/:id', authenticateAdmin, (req: Request, res: Response) => 
 router.post('/admin/:id/chapters', authenticateAdmin, (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { chapters, chapterNumber, title, content } = req.body;
+    const { chapters, chapterNumber, title, content, replace } = req.body;
 
-    // Trường hợp 1: Nhập danh sách chương hàng loạt (từ file hoặc parser)
+    // Trường hợp 1: Nhập danh sách chương hàng loạt (từ file, parser hoặc từng gói khi khôi phục backup)
     if (Array.isArray(chapters) && chapters.length > 0) {
-      const ok = db.importChapters(id, chapters as Chapter[]);
+      const ok = db.importChapters(id, chapters as Chapter[], replace === true);
       if (!ok) {
         return res.status(400).json({ success: false, error: 'Không thể nhập các chương truyện.' });
       }

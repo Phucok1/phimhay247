@@ -1422,16 +1422,19 @@ class DatabaseService {
     return this.importChapters(novelId, [chapter]);
   }
 
-  public importChapters(novelId: string, chapters: Chapter[]): boolean {
+  public importChapters(novelId: string, chapters: Chapter[], replace = false): boolean {
     if (!this.data.novels || !chapters || chapters.length === 0) return false;
     const novel = this.getNovelById(novelId);
     if (!novel) return false;
 
     const map = new Map<number, Chapter>();
-    this.getChapters(novelId).forEach((c) => map.set(c.chapterNumber, c));
+    // replace = true: gói đầu tiên khi khôi phục backup -> thay thế hoàn toàn chương cũ
+    if (!replace) {
+      this.getChapters(novelId).forEach((c) => map.set(c.chapterNumber, c));
+    }
     const now = new Date().toISOString();
     for (const ch of chapters) {
-      map.set(ch.chapterNumber, { ...ch, createdAt: now });
+      map.set(ch.chapterNumber, { ...ch, createdAt: ch.createdAt || now });
     }
     return this.saveChapters(novelId, Array.from(map.values()));
   }
