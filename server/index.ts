@@ -106,10 +106,10 @@ process.on('unhandledRejection', (reason) => {
   console.error('[UNHANDLED_REJECTION]', reason);
 });
 
-app.listen(PORT, () => {
+app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`=========================================`);
   console.log(`🎬 PHIM HAY 247 API Server running!`);
-  console.log(`🚀 Port: http://localhost:${PORT}`);
+  console.log(`🚀 Port: http://0.0.0.0:${PORT}`);
   console.log(`🔗 Channel: https://www.youtube.com/@phimhay.momtiti`);
   console.log(`=========================================`);
 });
