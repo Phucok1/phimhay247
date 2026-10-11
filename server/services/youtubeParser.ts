@@ -66,7 +66,13 @@ export function parseYouTubeUrl(url: string): { success: true; data: ParsedVideo
     return { success: false, error: 'Đường dẫn video không được để trống.' };
   }
 
-  const trimmed = url.trim();
+  let trimmed = url.trim();
+
+  // Tự động trích xuất đường dẫn src nếu người dùng dán nguyên đoạn mã <iframe src="...">
+  const iframeMatch = trimmed.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+  if (iframeMatch) {
+    trimmed = iframeMatch[1].replace(/&amp;/g, '&').trim();
+  }
 
   // 1. YouTube
   const ytId = extractYouTubeVideoId(trimmed);
@@ -80,6 +86,28 @@ export function parseYouTubeUrl(url: string): { success: true; data: ParsedVideo
         embedUrl: `https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1`,
         thumbnailUrl: `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
         watchUrl: `https://www.youtube.com/watch?v=${ytId}`,
+        originalUrl: trimmed,
+      },
+    };
+  }
+
+  // 2. Facebook Plugin Embed (link nhúng từ popup "Embed Video" của Facebook)
+  if (/facebook\.com\/plugins\/video\.php/i.test(trimmed)) {
+    const hrefMatch = trimmed.match(/[?&]href=([^&]+)/i);
+    const actualHref = hrefMatch ? decodeURIComponent(hrefMatch[1]) : trimmed;
+    const fbMatch = actualHref.match(/(?:reel\/|videos\/|watch\/\?v=|v=|\/r\/|\/v\/)([0-9]{8,})/i) ||
+                    actualHref.match(/([0-9]{9,})/);
+    const fbId = fbMatch ? fbMatch[1] : `fb-${Date.now()}`;
+    const cleanEmbedUrl = trimmed.includes('autoplay') ? trimmed : `${trimmed}&autoplay=1`;
+    return {
+      success: true,
+      data: {
+        videoId: fbId,
+        videoType: 'facebook',
+        platformName: 'Facebook Video',
+        embedUrl: cleanEmbedUrl,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80',
+        watchUrl: actualHref,
         originalUrl: trimmed,
       },
     };

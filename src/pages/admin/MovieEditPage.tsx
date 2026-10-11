@@ -325,7 +325,15 @@ export const MovieEditPage: React.FC = () => {
               <input
                 type="url"
                 value={posterUrl}
-                onChange={(e) => setPosterUrl(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value.trim();
+                  // Tự động nhận diện nếu người dùng dán link có chứa https://i.postimg.cc/... trong BBCode hoặc Markdown
+                  const directMatch = val.match(/https:\/\/i\.postimg\.cc\/[^\s"')\]]+/);
+                  if (directMatch) {
+                    val = directMatch[0];
+                  }
+                  setPosterUrl(val);
+                }}
                 placeholder="https://.../poster.jpg hoặc lấy thumbnail YouTube"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white placeholder-gray-500 focus:outline-none focus:border-primary text-xs"
               />
@@ -342,7 +350,14 @@ export const MovieEditPage: React.FC = () => {
               <input
                 type="url"
                 value={bannerUrl}
-                onChange={(e) => setBannerUrl(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value.trim();
+                  const directMatch = val.match(/https:\/\/i\.postimg\.cc\/[^\s"')\]]+/);
+                  if (directMatch) {
+                    val = directMatch[0];
+                  }
+                  setBannerUrl(val);
+                }}
                 placeholder="https://.../banner.jpg"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-cinema-850 border border-cinema-700 text-white placeholder-gray-500 focus:outline-none focus:border-primary text-xs"
               />
@@ -353,12 +368,28 @@ export const MovieEditPage: React.FC = () => {
             {posterUrl && (
               <div className="md:col-span-2 pt-2">
                 <p className="text-xs font-semibold text-gray-400 mb-2">Xem trước ảnh bìa:</p>
-                <img
-                  src={posterUrl}
-                  alt="Poster preview"
-                  className="w-28 h-40 object-cover rounded-xl border border-cinema-700 shadow-md bg-cinema-850"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
+                <div className="flex flex-col sm:flex-row items-start gap-3">
+                  <img
+                    key={posterUrl}
+                    src={posterUrl}
+                    alt="Poster preview"
+                    className="w-28 h-40 object-cover rounded-xl border border-cinema-700 shadow-md bg-cinema-850"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const notice = document.getElementById('poster-error-notice');
+                      if (notice) notice.style.display = 'block';
+                    }}
+                    onLoad={() => {
+                      const notice = document.getElementById('poster-error-notice');
+                      if (notice) notice.style.display = 'none';
+                    }}
+                  />
+                  <div id="poster-error-notice" style={{ display: 'none' }} className="p-3 rounded-xl bg-amber-950/60 border border-amber-800 text-amber-300 text-xs max-w-md space-y-1">
+                    <p className="font-bold">⚠️ Không thể hiển thị ảnh từ đường link này:</p>
+                    <p>Đường link bạn dán có thể là link trang web (ví dụ <code>https://postimg.cc/...</code>) thay vì link trực tiếp.</p>
+                    <p>👉 Hãy chắc chắn copy dòng thứ 2 <strong>"Liên kết trực tiếp"</strong> (bắt đầu bằng <code>https://i.postimg.cc/...</code> và kết thúc bằng <code>.jpg</code>, <code>.png</code>, <code>.webp</code>).</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
