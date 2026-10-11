@@ -45,6 +45,17 @@ app.use((req, res, next) => {
 // Sitemap & SEO Routes
 app.use('/', sitemapRouter);
 
+// Google AdSense ads.txt
+app.get('/ads.txt', (req, res) => {
+  const adsPath = path.resolve(__dirname, '../public/ads.txt');
+  if (fs.existsSync(adsPath)) {
+    res.header('Content-Type', 'text/plain; charset=utf-8');
+    return res.sendFile(adsPath);
+  }
+  res.header('Content-Type', 'text/plain; charset=utf-8');
+  res.send('google.com, pub-1312795651122233, DIRECT, f08c47fec0942fa0');
+});
+
 // API Routes
 app.use('/api/movies', moviesRouter);
 app.use('/api/episodes', episodesRouter);

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"tsx watch server/index.ts\" \"vite\"",
+    "dev": "concurrently \"tsx watch --clear-screen=false --exclude \\\"server/data/**\\\" server/index.ts\" \"vite\"",
     "client:dev": "vite",
     "client:build": "tsc -b && vite build",
     "client:preview": "vite preview",
